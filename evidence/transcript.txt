@@ -1,17 +1,21 @@
-MODE reference / STATUS REFERENCE_ONLY
-SKIP isolation.namespaces: Reference mode has no process or filesystem sandbox.
+MODE isolated / STATUS PASS
+CI https://github.com/zozo123/nyc-talk/actions/runs/35461381644
+SOURCE 3576590b640c929479fdc07cf133321887c9f5e5
+PASS isolation.namespaces: Child user, PID and mount namespace IDs differ from controller.
 PASS credentials.before: Broad inherited fixture token reads unrelated project.
 PASS credentials.after: Scoped token receives HTTP 403.
 PASS credentials.positive: Task input remains readable.
 PASS credentials.fixture-expired: Service rejects token.
 PASS credentials.fixture-wrong-audience: Service rejects token.
-SKIP mount.integration: Requires real bind mounts. No chmod or mocked substitute.
+PASS mount.before: Writable bind changes the next-job fixture on the host.
+PASS mount.after: Read-only bind blocks the same write; host fixture unchanged.
+PASS mount.positive: Task output remains writable.
 PASS egress.before: Loopback service stores synthetic private bytes under the other account.
 PASS egress.recipient: Broker rejects unapproved request fields.
 PASS egress.payload: Broker rejects unapproved request fields.
 PASS egress.url: Broker rejects unapproved request fields.
 PASS egress.no_delivery: Rejected requests create no receiving-service deliveries.
-SKIP egress.bypass: Reference mode cannot prove network isolation.
+PASS egress.bypass: New network namespace cannot reach host loopback fixture service.
 PASS egress.positive: Broker constructs a fixed report for the team account.
 PASS verifier.before: Changed checker returns success while buggy parser bytes remain unchanged.
 PASS verifier.after: External cases reject the same buggy parser on empty fields and empty input.

@@ -1,10 +1,10 @@
 {
-  "mode": "reference",
+  "mode": "isolated",
   "checks": [
     {
       "check": "isolation.namespaces",
-      "status": "SKIP",
-      "detail": "Reference mode has no process or filesystem sandbox."
+      "status": "PASS",
+      "detail": "Child user, PID and mount namespace IDs differ from controller."
     },
     {
       "check": "credentials.before",
@@ -32,9 +32,19 @@
       "detail": "Service rejects token."
     },
     {
-      "check": "mount.integration",
-      "status": "SKIP",
-      "detail": "Requires real bind mounts. No chmod or mocked substitute."
+      "check": "mount.before",
+      "status": "PASS",
+      "detail": "Writable bind changes the next-job fixture on the host."
+    },
+    {
+      "check": "mount.after",
+      "status": "PASS",
+      "detail": "Read-only bind blocks the same write; host fixture unchanged."
+    },
+    {
+      "check": "mount.positive",
+      "status": "PASS",
+      "detail": "Task output remains writable."
     },
     {
       "check": "egress.before",
@@ -63,8 +73,8 @@
     },
     {
       "check": "egress.bypass",
-      "status": "SKIP",
-      "detail": "Reference mode cannot prove network isolation."
+      "status": "PASS",
+      "detail": "New network namespace cannot reach host loopback fixture service."
     },
     {
       "check": "egress.positive",
@@ -139,9 +149,18 @@
   ],
   "invocations": [
     {
+      "agent_sha256": "27f80031727faa108d7f7a50c96fb7eef7f1d54e361c6697d5073949c5607b1b",
+      "network_namespace": false,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "{\"user\": \"user:[4026532262]\", \"pid\": \"pid:[4026532261]\", \"mnt\": \"mnt:[4026532258]\"}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
       "agent_sha256": "379b54928170c3a48843ff7f241d9f29d36f0115f864d10a29f9ed4e24dddcc7",
       "network_namespace": false,
-      "mode": "reference",
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"status\": 200, \"body\": {\"fixture\": \"SYNTHETIC-PRIVATE-FIXTURE\"}}",
       "stderr": "",
@@ -150,7 +169,7 @@
     {
       "agent_sha256": "379b54928170c3a48843ff7f241d9f29d36f0115f864d10a29f9ed4e24dddcc7",
       "network_namespace": false,
-      "mode": "reference",
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"status\": 403}",
       "stderr": "",
@@ -159,7 +178,7 @@
     {
       "agent_sha256": "32138950c1838fa9416a19c9f2d928ece925d5704808ad6bc23fc31a19ee4467",
       "network_namespace": false,
-      "mode": "reference",
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"status\": 200, \"body\": {\"task\": \"parser-fix\"}}",
       "stderr": "",
@@ -168,7 +187,7 @@
     {
       "agent_sha256": "32138950c1838fa9416a19c9f2d928ece925d5704808ad6bc23fc31a19ee4467",
       "network_namespace": false,
-      "mode": "reference",
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"status\": 403}",
       "stderr": "",
@@ -177,16 +196,52 @@
     {
       "agent_sha256": "32138950c1838fa9416a19c9f2d928ece925d5704808ad6bc23fc31a19ee4467",
       "network_namespace": false,
-      "mode": "reference",
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"status\": 403}",
       "stderr": "",
       "mounts": []
     },
     {
+      "agent_sha256": "f246ae494f3aedc9cef8bace0ee818b9efcc7fa4c9e6e15b5440cc200e7cafff",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "{\"write\": \"WRITE_SUCCEEDED\"}",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/shared",
+          "writable": true
+        },
+        {
+          "guest": "/output",
+          "writable": true
+        }
+      ]
+    },
+    {
+      "agent_sha256": "f246ae494f3aedc9cef8bace0ee818b9efcc7fa4c9e6e15b5440cc200e7cafff",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "{\"write\": \"WRITE_DENIED\"}",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/shared",
+          "writable": false
+        },
+        {
+          "guest": "/output",
+          "writable": true
+        }
+      ]
+    },
+    {
       "agent_sha256": "7c040486d7da04dd427fe3a8b6cc57f0d9636a75464eaadef17050f7d78c6c7a",
       "network_namespace": false,
-      "mode": "reference",
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "201",
       "stderr": "",
@@ -194,8 +249,8 @@
     },
     {
       "agent_sha256": "d063614e5ab5d8fcf82d9e2ebbeaabab700a2e16b2205696d75f29cea124b815",
-      "network_namespace": false,
-      "mode": "reference",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"recipient\": \"other\"}",
       "stderr": "",
@@ -203,35 +258,44 @@
     },
     {
       "agent_sha256": "d386166de5e6f5911b4f5929d916e61c3e849a2ca8c99d61b12d83ee379675d1",
-      "network_namespace": false,
-      "mode": "reference",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"data\": \"SYNTHETIC-PRIVATE-FIXTURE\"}",
       "stderr": "",
       "mounts": []
     },
     {
-      "agent_sha256": "312316e6b97dfd875ed1627b74d0f37a3fecbf2821009f8eadb292dde828e84b",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "8ef1b8526c0399e9995d0f5171a91d65433a0d11afe8b3cfc57bfdcbe3cb52b8",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
-      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:33101/accounts/other/uploads\"}",
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:44581/accounts/other/uploads\"}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "647f9f1d14114b85673ac7507a0190c6a53a3e612c7d254928a5af2ca4fc9c51",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "UNREACHABLE",
       "stderr": "",
       "mounts": []
     },
     {
       "agent_sha256": "b2f4f71401f4587af71b5baa2fe4e51c65c0972090dc1e8af32f098d3d605925",
-      "network_namespace": false,
-      "mode": "reference",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"operation\":\"publish_report\",\"task\":\"parser-fix\"}",
       "stderr": "",
       "mounts": []
     },
     {
-      "agent_sha256": "684737d5f736687ec601ad13c9bc66d41e1f1b30edce8e394845fae00e203dec",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "ff7566a06da8378b9bfd61f7314a6090c76093fd7dd394ab8605924e3d6b768c",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "",
       "stderr": "",
@@ -243,9 +307,9 @@
       ]
     },
     {
-      "agent_sha256": "52e2a781c4cd247ffee765ec5e33ac456c8f3a94e4a5c510b11bc10ecbcf98f0",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "8596b866e1121dcf9d7cfee449437cdaefcba2cc78092b861ce9206a80597bdc",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "PASS",
       "stderr": "",
@@ -257,9 +321,9 @@
       ]
     },
     {
-      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "[1, 2, 3]",
       "stderr": "",
@@ -271,9 +335,9 @@
       ]
     },
     {
-      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "[1, 3]",
       "stderr": "",
@@ -285,9 +349,9 @@
       ]
     },
     {
-      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "[]",
       "stderr": "",
@@ -299,9 +363,9 @@
       ]
     },
     {
-      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "[-2, 3]",
       "stderr": "",
@@ -313,9 +377,9 @@
       ]
     },
     {
-      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "\"REJECT\"",
       "stderr": "",
@@ -327,9 +391,9 @@
       ]
     },
     {
-      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "[1, 2, 3]",
       "stderr": "",
@@ -341,9 +405,9 @@
       ]
     },
     {
-      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "\"REJECT\"",
       "stderr": "",
@@ -355,9 +419,9 @@
       ]
     },
     {
-      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "\"REJECT\"",
       "stderr": "",
@@ -369,9 +433,9 @@
       ]
     },
     {
-      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "[-2, 3]",
       "stderr": "",
@@ -383,9 +447,9 @@
       ]
     },
     {
-      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "\"REJECT\"",
       "stderr": "",
@@ -397,9 +461,9 @@
       ]
     },
     {
-      "agent_sha256": "c520855da01ffdc7248e150b6152ce611d582c8531e187f7191a0f4893447cbc",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "f320b6ac17993b52f6df26e3330097f8a8d6df9e8bd4e61d8dd258b32dd0d8ce",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\"}",
       "stderr": "",
@@ -415,9 +479,9 @@
       ]
     },
     {
-      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "[1, 2, 3]",
       "stderr": "",
@@ -429,9 +493,9 @@
       ]
     },
     {
-      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "\"REJECT\"",
       "stderr": "",
@@ -443,9 +507,9 @@
       ]
     },
     {
-      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "\"REJECT\"",
       "stderr": "",
@@ -457,9 +521,9 @@
       ]
     },
     {
-      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "[-2, 3]",
       "stderr": "",
@@ -471,9 +535,9 @@
       ]
     },
     {
-      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
-      "network_namespace": false,
-      "mode": "reference",
+      "agent_sha256": "95ce18d01ce056ccc89f6cb95ec752c4119b1c7551d34ff7bc4206b6f1aae916",
+      "network_namespace": true,
+      "mode": "isolated",
       "exit_code": 0,
       "stdout": "\"REJECT\"",
       "stderr": "",
@@ -535,15 +599,20 @@
   "platform": {
     "system": "Linux",
     "machine": "x86_64",
-    "python": "3.12.14"
+    "python": "3.10.12"
   },
-  "commit": null,
-  "status": "REFERENCE_ONLY",
+  "commit": "3576590b640c929479fdc07cf133321887c9f5e5",
+  "status": "PASS",
   "limitations": [
     "Synthetic, deterministic worker scripts; no model-driven prompt injection claim.",
     "Shared host network in credential and weak-egress cases is deliberate.",
     "No cgroup, seccomp, kernel-exploit, side-channel or universal noninterference claim.",
     "Finite parser cases do not prove correctness for every possible input.",
     "Controller-held MAC key and history head are the trusted lab anchors."
-  ]
+  ],
+  "ci_provenance": {
+    "run_url": "https://github.com/zozo123/nyc-talk/actions/runs/35461381644",
+    "job_id": 105945761158,
+    "source_commit": "3576590b640c929479fdc07cf133321887c9f5e5"
+  }
 }

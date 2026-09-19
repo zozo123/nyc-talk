@@ -5,7 +5,9 @@
 
 NYC · AI Agent Security Summit · October 21, 2026
 
-[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Recorded results](evidence/transcript.txt)
+[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Spoken script](TALK.md) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Recorded results](evidence/transcript.txt)
+
+**Verified:** all 29 checks passed in the [recorded Linux isolation run](https://github.com/zozo123/nyc-talk/actions/runs/35461381644), including real namespace, mount and network checks. The same CI run compiled the deck. Recorded lab source hashes match this repository.
 
 ## The story
 
