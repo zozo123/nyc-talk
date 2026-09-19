@@ -1,0 +1,28 @@
+MODE reference / STATUS REFERENCE_ONLY
+SKIP isolation.namespaces: Reference mode has no process or filesystem sandbox.
+PASS credentials.before: Broad inherited fixture token reads unrelated project.
+PASS credentials.after: Scoped token receives HTTP 403.
+PASS credentials.positive: Task input remains readable.
+PASS credentials.fixture-expired: Service rejects token.
+PASS credentials.fixture-wrong-audience: Service rejects token.
+SKIP mount.integration: Requires real bind mounts. No chmod or mocked substitute.
+PASS egress.before: Loopback service stores synthetic private bytes under the other account.
+PASS egress.recipient: Broker rejects unapproved request fields.
+PASS egress.payload: Broker rejects unapproved request fields.
+PASS egress.url: Broker rejects unapproved request fields.
+PASS egress.no_delivery: Rejected requests create no receiving-service deliveries.
+SKIP egress.bypass: Reference mode cannot prove network isolation.
+PASS egress.positive: Broker constructs a fixed report for the team account.
+PASS verifier.before: Changed checker returns success while buggy parser bytes remain unchanged.
+PASS verifier.after: External cases reject the same buggy parser on empty fields and empty input.
+PASS verifier.positive: Fixed parser passes all five external cases.
+PASS gate.invalid: Rejected artifact cannot publish.
+PASS gate.substitution: Approval does not authorize substituted bytes.
+PASS gate.cross_run: Other run rejects approval.
+PASS gate.stale_run: Authentic approval with the same MAC key cannot authorize a different run.
+PASS gate.verifier_changed: Authentic approval cannot authorize a changed verifier identity.
+PASS gate.forgery: Modified approval fails authentication.
+PASS gate.positive: Verified bytes publish.
+PASS gate.replay: Consumed approval cannot replay.
+PASS history.rewrite: Recomputed attacker chain disagrees with independently retained controller head.
+PASS final.task: Worker emits fixed parser; external verifier accepts; exact bytes publish; report delivered.

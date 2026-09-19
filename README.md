@@ -5,82 +5,63 @@
 
 NYC · AI Agent Security Summit · October 21, 2026
 
-## Deck
+[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Recorded results](evidence/transcript.txt)
 
-[Read the PDF](slides/talk.pdf) · [LaTeX source](slides/talk.tex) · [Speaker notes](SPEAKER_NOTES.md)
+## The story
 
-28 slides (26 main + 2 appendix), in a dark security-conference style. A single fictional parser-fix task connects four failure paths. The terminal snippets are illustrative; runnable demos remain planned. No affiliation with DEF CON is implied.
+One task: **fix a parser and publish its report**.
 
-Build with TeX Live (Beamer, Latin Modern, listings):
+Four independent experiments reveal excess authority:
+
+1. **Identity:** an inherited runner credential reads another project.
+2. **Files:** a writable bind mount changes the next job's host fixture.
+3. **Data release:** an allowed upload service receives private data in the wrong account.
+4. **Acceptance:** a rewritten checker reports success while the parser stays broken.
+
+Each experiment tests the repair and a legitimate operation. The final run fixes the parser, checks its frozen bytes independently, obtains a publication decision and sends the permitted report.
+
+**The question: who gave this process the authority?**
+
+## Run it
+
+Python 3.10+ standard library. For actual isolation, use a disposable Linux host with bubblewrap and working unprivileged user namespaces.
 
 ```sh
-make
+make demo       # strict namespace/mount/network experiments
+make reference  # policy logic only; integration checks explicitly skipped
+make deck       # verify recorded source hashes, export notes, compile PDF
 ```
 
-The PDF is written to `build/talk.pdf`. The checked-in `slides/talk.pdf` is the reviewed snapshot. Speaker notes also live in the LaTeX `\\note{}` commands.
+Install bubblewrap through your Linux distribution. The deck needs TeX Live with Beamer, listings and Latin Modern. Example on Ubuntu:
+
+```sh
+sudo apt-get install bubblewrap texlive-latex-recommended texlive-pictures lmodern
+```
+
+A missing isolation capability causes **failure**, never automatic fallback. Fresh temporary fixtures are removed after each run. No real credentials, external targets or model API are used. Reference mode executes only this repo's deterministic fixtures and provides no sandbox.
+
+## What's here
+
+| File | Purpose |
+|---|---|
+| [slides/talk.tex](slides/talk.tex) | 20 editable Beamer slides: 17 main + 3 appendix |
+| [lab/run.py](lab/run.py) | Four experiments, positive controls and final task |
+| [evidence/results.json](evidence/results.json) | Recorded mode, source hashes, checks and subprocess output |
+| [evidence/transcript.txt](evidence/transcript.txt) | Offline demo fallback |
+| [RUNBOOK.md](RUNBOOK.md) | Story, live commands, reset and evidence limits |
+| [tools/evidence.py](tools/evidence.py) | Refuses stale evidence before building the deck |
+| [.github/workflows/verify.yml](.github/workflows/verify.yml) | Linux integration and deck build |
+
+The PDF labels its evidence mode. The source digest in the record must match the lab. Use `make record` after an isolated run to refresh the record, then `make snapshot` to refresh the checked-in PDF.
+
+The lab uses deterministic worker scripts, a local fixture service and controller-held trust anchors. It demonstrates specific authority failures. It does not measure live-model prompt-injection susceptibility, cgroup enforcement, kernel exploit resistance or all possible data channels. The history anchor is ephemeral. Five parser cases establish the demonstrated defect and fix, not complete correctness.
 
 ## Accepted Sessionize abstract
 
 > Every namespace and cgroup can work exactly as designed and an agent can still cause a real breach. This talk demonstrates four non-escape escapes: inherited credentials, dangerous mounts, exfiltration through an allowed endpoint, and verifier tampering. Then we close each one at the layer that can actually enforce it: real process isolation, capability-scoped filesystems, short-lived credential projection, and tamper-evident execution history. You leave with four boundaries you can check against your own agent deployment.
 
-Accepted title, abstract, tagline, and status supplied by the speaker from Sessionize.
+Title, abstract, tagline and accepted status supplied by the speaker from Sessionize. The technical treatment distinguishes process isolation, authorization, independent verification and tamper detection.
 
-## Schedule: confirmation needed
+## Scheduling
 
-The speaker reports a public schedule entry for **October 21, 15:45–16:45, Room 1**. That is a 60-minute calendar block; the actual speaking time and Q&A allocation still need confirmation from Zenity. Do not assume either a 15-minute talk or 60 minutes of speaking time. This modular draft proceeds at the speaker's request. Final pacing remains pending that confirmation.
-
-## Core argument
-
-A process can stay inside its sandbox while using authority that should never have been available to it. For every demo, ask: **which authority crossed which boundary, and which component can refuse it?**
-
-## Four demos to build
-
-These are demo specifications, not implemented or validated demonstrations. Use synthetic data and local fixtures throughout.
-
-| Scenario | Deliberately weak setup | Enforcing control | Evidence to show |
-|---|---|---|---|
-| Inherited credentials | Child process receives a synthetic parent credential | Clean environment and closed inherited descriptors; brokered, audience- and action-scoped credentials with expiry | Forbidden action succeeds before; denied after; intended action still works |
-| Dangerous mounts | Agent can write a fixture outside its intended workspace through an overbroad bind mount | Minimal mount set, read-only inputs, bounded writable outputs, no runtime control socket | Out-of-scope fixture changes before; remains unchanged after |
-| Allowed-endpoint exfiltration | Mock allowed service accepts synthetic private data in an upload | External broker validates operation, destination account, and data scope; isolate workloads with secrets from unrestricted egress | Mock unauthorized recipient receives data before; denied after; permitted upload succeeds |
-| Verifier tampering | Agent can edit the checker or expected result used for acceptance | Verifier and policy outside agent write authority; immutable input/artifact digests; externally anchored execution history | Invalid artifact passes mutable checker before; external verifier rejects it after |
-
-Process isolation provides a foundation; it cannot revoke credentials or mounts deliberately granted to a process. Short-lived credentials still require narrow authority. A hostname allowlist alone does not establish a safe recipient. Tamper-evident history supports detection and audit; trusted verification and publication gates enforce acceptance.
-
-## Talk structure
-
-1. **Opening:** “The sandbox reports success. The breach already happened.”
-2. **Threat model:** the agent controls its code and writable workspace; the host, broker, and external verifier are trusted.
-3. **Four acts:** show a failing boundary, identify the granted authority, enforce a control outside the agent, rerun the same action.
-4. **Synthesis:** connect execution, filesystem, authority/egress, and evidence boundaries.
-5. **Audience takeaway:** four questions to use in a deployment review.
-6. **Q&A:** time allocation pending organizer confirmation.
-
-For each act, preserve the same sequence: intended task → adversarial action → observed outcome → enforcing control → negative and positive controls.
-
-## Four boundaries to check
-
-- **Execution:** Which processes, descriptors, identities, and host interfaces can agent code reach?
-- **Filesystem:** Which exact inputs, outputs, mounts, and control sockets are accessible?
-- **Authority and egress:** Which actions, recipients, accounts, payloads, and credential lifetimes are permitted?
-- **Evidence:** Can the agent rewrite its verifier, policy, expected results, or the history used to approve publication?
-
-## Build plan
-
-- [ ] Confirm speaking time, Q&A, room setup, and live-demo connectivity with Zenity.
-- [ ] Implement four local, synthetic before/after demos.
-- [ ] Assert both blocked attacks and successful legitimate operations.
-- [ ] Record deterministic fallback transcripts and videos.
-- [x] Build a modular LaTeX draft and compiled PDF.
-- [ ] Adjust pacing after the duration is confirmed.
-- [ ] Rehearse to the confirmed time budget.
-- [ ] Publish audience checklist and reproducible demo instructions.
-
-## Demo acceptance criteria
-
-Each demo must have a one-command reset, synthetic fixtures, explicit expected outcomes, recorded exit status, and a repeatable before/after run. No real credentials, external exfiltration targets, privileged host mounts, or production services are needed. Clearly distinguish simulations from isolation mechanisms actually exercised.
-
-## Organizer question
-
-“Could you confirm the speaking time and Q&A allocation for ‘Your Agent Escaped Without Escaping the Sandbox’? The public schedule shows October 21, 15:45–16:45 in Room 1. Is that a full session or a shared block, and what time budget should I prepare for?”
-
-This question is prepared here; it has not been sent.
+The speaker reports **Oct 21, 15:45–16:45, Room 1** in the public feed. That is a 60-minute calendar block, not confirmation of speaking time. **Zenity still needs to confirm speaking and Q&A allocations.** No organizer message has been sent. The main story and appendix can be paced after confirmation.

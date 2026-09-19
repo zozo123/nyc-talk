@@ -217,7 +217,7 @@ class Gate:
         self.key = secrets.token_bytes(32)
         self.run = secrets.token_hex(16)
         self.used = set()
-        self.verifier = digest(canonical(CASES))
+        self.verifier = digest(Path(__file__).read_bytes())
 
     def issue(self, artifact, accepted):
         value = {"run": self.run, "artifact": digest(artifact), "accepted": accepted,
@@ -303,6 +303,7 @@ print(json.dumps({"write":status}))
             check("mount.before", before["write"] == "WRITE_SUCCEEDED" and target.read_bytes() != original,
                   "Writable bind changes the next-job fixture on the host.")
             target.write_bytes(original)
+            (output / "patch.txt").unlink()
             after = json.loads(runner.run(attack, mounts=[
                 (shared, "/shared", False), (output, "/output", True)], network=False))
             check("mount.after", after["write"] == "WRITE_DENIED" and target.read_bytes() == original,
@@ -372,6 +373,16 @@ Path("/work/check.py").write_text('print("PASS")\\nraise SystemExit(0)\\n')
         check("gate.substitution", not gate.publish(approval, invalid),
               "Approval does not authorize substituted bytes.")
         check("gate.cross_run", not Gate().publish(approval, GOOD.encode()), "Other run rejects approval.")
+        saved_run = gate.run
+        gate.run = "different-task-run"
+        check("gate.stale_run", not gate.publish(approval, GOOD.encode()),
+              "Authentic approval with the same MAC key cannot authorize a different run.")
+        gate.run = saved_run
+        saved_verifier = gate.verifier
+        gate.verifier = "changed-verifier"
+        check("gate.verifier_changed", not gate.publish(approval, GOOD.encode()),
+              "Authentic approval cannot authorize a changed verifier identity.")
+        gate.verifier = saved_verifier
         forged = json.loads(json.dumps(approval)); forged["value"]["artifact"] = digest(invalid)
         check("gate.forgery", not gate.publish(forged, invalid), "Modified approval fails authentication.")
         check("gate.positive", gate.publish(approval, GOOD.encode()), "Verified bytes publish.")

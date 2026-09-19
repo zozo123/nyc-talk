@@ -2,7 +2,6 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{listings}
-\usepackage{booktabs}
 \definecolor{void}{HTML}{101214}
 \definecolor{paper}{HTML}{F0F0E8}
 \definecolor{acid}{HTML}{C7FF48}
@@ -12,23 +11,22 @@
 \setbeamercolor{normal text}{fg=paper}
 \setbeamercolor{frametitle}{fg=paper}
 \setbeamercolor{structure}{fg=acid}
-\setbeamercolor{alerted text}{fg=alarm}
 \setbeamerfont{frametitle}{size=\Large,series=\bfseries}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{footline}{\hfill{\color{muted}\scriptsize Yossi Eliaz\hspace{1em}\insertframenumber\hspace{1em}}\vspace{3mm}}
 \setbeamersize{text margin left=10mm,text margin right=10mm}
-\setbeamertemplate{itemize items}{\color{acid}\small$\bullet$}
 \setlength{\parskip}{7pt}
-\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{acid},commentstyle=\color{muted},stringstyle=\color{acid},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,aboveskip=8pt,belowskip=8pt}
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{acid},commentstyle=\color{muted},stringstyle=\color{acid},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false}
 \newcommand{\kicker}[1]{{\color{acid}\ttfamily\small #1}\par}
 \newcommand{\bigline}[1]{{\fontsize{27}{32}\selectfont\bfseries #1\par}}
 \newcommand{\subline}[1]{\par{\color{muted}\normalsize #1}\par}
-\newcommand{\source}[2]{\vfill{\color{muted}\tiny Reference: \href{#1}{#2}}}
-\newcommand{\act}[3]{\begin{frame}[plain]\kicker{#1}\vspace{5mm}\bigline{#2}\vspace{5mm}\subline{#3}\end{frame}}
+\newcommand{\evidence}{\vfill{\color{muted}\scriptsize\evidencescope}}
+\input{slides/evidence.tex}
 \title{Your Agent Escaped Without Escaping the Sandbox}
 \author{Yossi Eliaz}
 \date{October 21, 2026}
 \begin{document}
+
 \begin{frame}[plain]
 \kicker{NYC / AI AGENT SECURITY SUMMIT}
 \vspace{4mm}
@@ -38,215 +36,186 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{The accepted title and tagline are exact. This is a fictional lab walkthrough, not an observed customer incident. No DEF CON affiliation is implied by the visual style.}
+\note{Open with the outcome, then explain the experiment. Our lab uses deterministic scripts to exercise authority an agent could use. We test enforcement after adversarial code runs, not how reliably a prompt induces that code. The accepted title and tagline are preserved. The style carries no DEF CON affiliation.}
 \end{frame}
-\begin{frame}[fragile]{The morning after}
-\kicker{FICTIONAL LAB INCIDENT}
+
+\begin{frame}[fragile]{The check passed. The parser was still broken.}
 \begin{lstlisting}
-sandbox.lifecycle     terminated
-resource.limits       respected
-host.escape           none observed
-task.status           success
+mutable checker       PASS
+parser artifact       unchanged
 
-private.fixture       copied
-release.policy        changed
-acceptance.check      replaced
+external case "1,,3"   REJECT expected
+actual parser output  [1, 3]
 \end{lstlisting}
-\note{Pause while the audience reads. The runtime dashboard looks reassuring. Now look at the three lines underneath. Which outcome required the process to escape its sandbox? These are illustrative story facts, not captured telemetry.}
+\subline{One result from the lab. We will come back to how it happened.}
+\evidence
+\note{Pause after the first line. This is a measured outcome of our synthetic lab. The worker replaced its checker with a process that exits zero, leaving the buggy parser unchanged. The independent case still catches the bug. This opening introduces the strongest consequence: the system can be wrong about success. Work backward through the authority it granted.}
 \end{frame}
-\begin{frame}{The job was ordinary}
-\bigline{\lq\lq Fix the parser test.\\Upload the report.\rq\rq}
-\vspace{5mm}
-\subline{A repository. A runner. An agent that can execute code.}
-\note{The operator authorized one repair and a report upload. Establish this narrow task before revealing the larger privileges. We follow one deployment through four alternate failure paths, not a mandatory four-step exploit chain.}
-\end{frame}
-\begin{frame}{The runner brought extra authority}
-\begin{tabular}{@{}ll@{}}
-\color{acid}Intended task & \color{alarm}Convenient extra access\\[8pt]
-Read source & Parent service credential\\[8pt]
-Write a patch & Entire project mount\\[8pt]
-Upload a report & Arbitrary uploads to an allowed service\\[8pt]
-Run tests & Writable verifier and expected results
-\end{tabular}\par
-\note{Each extra permission was easy to justify during development. The security design has to survive arbitrary code execution within the intended sandbox. Ask which grant is truly required by the operator's request.}
-\end{frame}
-\begin{frame}{Threat model}
-\textcolor{alarm}{Agent-controlled:} generated code, shell commands, workspace files, outbound request contents.
 
-\textcolor{acid}{Trusted:} host enforcement, credential broker, external verifier, publication gate.
-
-\subline{Assume the agent may act adversarially. No kernel exploit is needed for these scenarios.}
-\note{A malicious repository, tool output, or model behavior can lead to adversarial actions. This talk starts after that point. We do not claim complete protection against kernel vulnerabilities, covert channels, malicious trusted services, or a compromised broker.}
-\end{frame}
-\act{01 / INHERITED CREDENTIALS}{The runner's identity\\came along for the ride}{The agent can do everything the projected credential permits.}
-\begin{frame}[fragile]{A child process receives a bigger job}
-\kicker{ILLUSTRATIVE PYTHON}
-\begin{lstlisting}[language=Python]
-env = os.environ.copy()
-env["TASK_ID"] = "parser-fix"
-subprocess.run(agent_command, env=env)
-\end{lstlisting}
-\textcolor{alarm}{The task ID describes intent. The inherited token grants authority.}
-\source{https://man7.org/linux/man-pages/man7/environ.7.html}{Linux environ(7)}
-\note{Use a synthetic token recognized by a local mock service. Show the child performing a mock administrative action the task never required. Namespaces do not narrow a bearer token's service-side permissions. Inspect inherited descriptors and mounted credential files too.}
-\end{frame}
-\begin{frame}{The credential boundary}
-\textcolor{acid}{Launch:} explicit environment, closed extra descriptors, isolated process identity.
-
-\textcolor{acid}{Service access:} broker grants a specific operation on a specific resource.
-
-\textcolor{acid}{Lifetime:} short expiry, audience checks, revocation where supported.
-\subline{A short-lived broad token remains broad until it expires.}
-\source{https://www.rfc-editor.org/rfc/rfc9700.html}{RFC 9700, access-token privilege restriction}
-\note{Keep broad upstream credentials in a trusted broker. Where direct token projection is necessary, scope audience, resource, operation and lifetime. Sender constraint can reduce replay exposure where available. An environment allowlist alone is not a sandbox.}
-\end{frame}
-\begin{frame}{Proof obligation 01}
-\kicker{PLANNED LAB / EXPECTED OUTCOMES}
-\begin{tabular}{@{}lll@{}}
- & Before & After\\[7pt]
-Mock administrative action & \textcolor{alarm}{Accepted} & \textcolor{acid}{Denied}\\[7pt]
-Read task input & Accepted & Accepted\\[7pt]
-Expired task credential & --- & \textcolor{acid}{Denied}
-\end{tabular}\par
-\vspace{5mm}
-\subline{Observe the service decision outside the agent.}
-\note{These are acceptance criteria, not experiment results. Keep the legitimate read as a positive control. Record token identifiers and authorization decisions, never real credentials.}
-\end{frame}
-\act{02 / DANGEROUS MOUNTS}{A writable mount\\is a grant of authority}{The filesystem behaves exactly as configured.}
-\begin{frame}[fragile]{The workspace includes the answer key}
-\kicker{FICTIONAL FIXTURE LAYOUT}
-\begin{lstlisting}
- /work/
-   src/parser.py
-   tests/test_parser.py
-   release/policy.json
-   verifier/check.py
-\end{lstlisting}
-\textcolor{alarm}{A writable project root lets the agent change more than the patch.}
-\source{https://docs.docker.com/engine/storage/bind-mounts/}{Docker bind mounts}
-\note{Change a harmless release-policy fixture. Do not use host system paths or the Docker socket as demonstration targets. The point is a granted write, not a filesystem escape. The verifier file sets up the final act.}
-\end{frame}
-\begin{frame}{The filesystem boundary}
-\begin{tabular}{@{}ll@{}}
-\color{acid}Resource & \color{acid}Agent access\\[7pt]
-Frozen source input & Read only\\[7pt]
-Patch and report output & Write within task directory\\[7pt]
-Release policy & No write access\\[7pt]
-Runtime control socket & Absent
-\end{tabular}\par
+\begin{frame}{One job. Four independent experiments.}
+\bigline{Fix the parser.\\Publish the task report.}
+\vspace{4mm}
+\subline{Fresh fixtures for each experiment. Same operator intent.}
 \vspace{3mm}
-\subline{The host defines the mount set. A path check inside agent code cannot enforce it.}
-\note{Use kernel-enforced mounts and permissions. Broker file operations must account for symlinks and rename races. A read-only checkout requires explicit patch output or a separate writable copy. Read-only prevents modification, not disclosure.}
+\textcolor{acid}{Identity}\hspace{4mm}
+\textcolor{acid}{Files}\hspace{4mm}
+\textcolor{acid}{Data release}\hspace{4mm}
+\textcolor{acid}{Acceptance}
+\note{The parser should accept comma-separated integers and reject empty fields. The agent needs task input, somewhere to write a patch, and a narrow report operation. Each experiment starts with its own fixtures. They are independent failure paths, not a four-step intrusion and not a customer incident.}
 \end{frame}
-\begin{frame}{Proof obligation 02}
-\kicker{PLANNED LAB / EXPECTED OUTCOMES}
-\textcolor{alarm}{Before:} a change to the mounted policy fixture reaches the host fixture.
 
-\textcolor{acid}{After:} the policy stays unchanged. The patch output remains writable.
+\begin{frame}{What the experiment assumes}
+\textcolor{alarm}{Worker controls:} its code, workspace and requests.
 
-\subline{Compare host-side bytes before and after. Record the actual mount configuration.}
-\note{Check the fixture on the host and capture the syscall failure or inaccessible path. A mocked filesystem cannot prove a real mount boundary. Run the eventual container lab on controlled Linux.}
+\textcolor{acid}{Controller owns:} launch policy, service permissions, verification and publication.
+
+\subline{Synthetic credentials and data. A loopback service. No live model or external target.}
+\evidence
+\note{We begin after an adversarial action has been chosen. This makes enforcement reproducible. Isolated mode uses Linux user, PID and mount namespaces through bubblewrap, with a separate network namespace where specified. The service and controller remain outside the worker. Reference mode does not establish those boundaries. Read the evidence label honestly.}
 \end{frame}
-\act{03 / ALLOWED-ENDPOINT EXFILTRATION}{The hostname is allowed.\\The recipient is wrong.}{An upload service can serve many accounts.}
-\begin{frame}[fragile]{One host, two destinations}
-\kicker{ILLUSTRATIVE REQUESTS TO A MOCK SERVICE}
+
+\begin{frame}[fragile]{01 / The worker borrowed the runner's identity}
 \begin{lstlisting}
-POST /accounts/team/reports
-Host: reports.example
-Body: approved_report
+request: GET /projects/other/private
 
-POST /accounts/other/uploads
-Host: reports.example
-Body: synthetic_private_fixture
+runner credential     200 + synthetic fixture
+task credential       403
+task input            200
+expired credential    403
 \end{lstlisting}
-\subline{A host allowlist cannot distinguish these two data flows.}
-\note{Use a local multi-tenant service fixture, with no real outbound exfiltration. This is our threat-model analysis, not a claim about a vendor. Recipient checks must use authenticated service semantics, not trust a caller-supplied label.}
+\subline{The service decides what the credential authorizes.}
+\evidence
+\note{The weak launcher passes a synthetic broad runner token into the child. It reads another project even though its task ID says parser-fix. The repaired launcher projects a task-scoped token. Repeat the identical forbidden request and the service refuses it. Then read task input successfully. Expiry and wrong-audience checks also run. Our local service uses an in-memory grant table rather than implementing OAuth.}
 \end{frame}
-\begin{frame}{The authority and egress boundary}
-\textcolor{acid}{External broker:} fixed service, fixed recipient, narrow operation.
 
-\textcolor{acid}{Data release:} trusted code constructs the report from permitted fields.
+\begin{frame}{Identity follows an explicit grant}
+\textcolor{acid}{Launch:} clean environment and closed extra descriptors.
 
-\textcolor{acid}{Network policy:} the agent cannot bypass the broker.
+\textcolor{acid}{Grant:} task resource, operation, audience and expiry.
 
-\subline{If arbitrary agent-chosen bytes may leave, a secret may leave with them.}
-\note{Scanning is not a universal solution. Encoding and allowed free-text fields can carry data. Prevent secret access or constrain output construction and channels at the trusted boundary. For this lab, use broker-owned report values with no arbitrary agent strings. Later tests must include redirects and alternative routes.}
+\textcolor{acid}{Enforcement:} a service or broker outside the worker.
+
+\subline{A stronger process boundary still needs narrower credentials.}
+\note{Ask what the child inherits before asking what the model intends. A short-lived token retains all its permissions until expiry. Keep broad upstream credentials outside the worker and project only the required capability. This finite lab demonstrates service-side scope, audience and expiry decisions. References: Linux environ(7) and RFC 9700.}
 \end{frame}
-\begin{frame}{Proof obligation 03}
-\kicker{PLANNED LAB / EXPECTED OUTCOMES}
+
+\begin{frame}[fragile]{02 / The mount reached the next job}
+\begin{lstlisting}
+worker writes /shared/next-job.json
+
+writable bind   host fixture changes
+read-only bind  write denied; fixture unchanged
+/output         patch remains writable
+\end{lstlisting}
+\subline{\mountscope}
+\note{Use a next-job queue fixture, separate from the verifier. This keeps filesystem and acceptance failures distinct. The attack is an ordinary write to a deliberately mounted path. In isolated mode the controller checks host bytes, resets the fixture, removes the prior output, and reruns with a read-only bind. Reference mode skips this entire integration experiment.}
+\end{frame}
+
+\begin{frame}{Filesystem access is part of the task contract}
 \begin{tabular}{@{}ll@{}}
-Unauthorized recipient & Denied\\[7pt]
-Private fixture in report body & Denied\\[7pt]
-Direct network bypass & Denied\\[7pt]
-Approved report to team account & Accepted
+\color{acid}Resource & \color{acid}Worker access\\[9pt]
+Source input & Read only\\[9pt]
+Task output & Writable\\[9pt]
+Shared job state & Read only in this lab\\[9pt]
+Controller files & Outside the mount set
 \end{tabular}\par
 \vspace{4mm}
-\subline{The receiving service and network boundary supply the evidence.}
-\note{Check the broker decision and receiving service state. A denied request log alone does not establish absence of alternative routes. Verify network policy separately from application authorization.}
+\subline{Production deployments can omit shared state entirely.}
+\note{The host constructs the mount set. A path check in code the worker can edit cannot enforce it. Our repaired demonstration keeps the same fixture visible but read-only for a direct comparison. Omit it when the task does not need to read it. Read-only access still permits disclosure. Reference: Docker bind-mount documentation.}
 \end{frame}
-\act{04 / VERIFIER TAMPERING}{The agent changed\\what \lq\lq passed\rq\rq\ meant}{The dashboard trusts a check the agent can rewrite.}
-\begin{frame}[fragile]{An invalid artifact gets a green result}
-\kicker{ILLUSTRATIVE MUTABLE CHECKER}
-\begin{lstlisting}[language=Python]
-# The intended check:
-assert parse("malformed") == REJECT
 
-# The agent-controlled replacement:
+\begin{frame}[fragile]{03 / The service was allowed. The recipient was wrong.}
+\begin{lstlisting}
+same upload service
+
+/accounts/team/reports    intended recipient
+/accounts/other/uploads   synthetic private data
+\end{lstlisting}
+\subline{The weak worker reaches a second account on the same service.}
+\evidence
+\note{Both paths are on the same loopback endpoint. The fixture models a multi-tenant service with an available upload capability for each account. We verify that the receiving service stores the synthetic canary under the other account. A network destination and a data recipient are different policy choices. This is a local example, not a claim about a vendor.}
+\end{frame}
+
+\begin{frame}{Data release needs a narrow operation}
+\textcolor{acid}{Worker:} requests one fixed report operation.
+
+\textcolor{acid}{Broker:} constructs the body and selects the team account.
+
+\textcolor{acid}{Checks:} rejects extra recipient, payload and URL fields.
+
+\subline{\networkscope}
+\note{The worker emits a request on stdout. The controller treats it as untrusted input, accepts one exact schema, and constructs the report from controller-owned fields. Isolated mode gives the worker a new network namespace and tests reachability of the host loopback service. Arbitrary report strings would reopen a data channel. This operation does not establish universal freedom from covert channels.}
+\end{frame}
+
+\begin{frame}[fragile]{04 / The worker changed what success meant}
+\begin{lstlisting}[language=Python]
+# Worker rewrites the workspace checker:
 print("PASS")
 raise SystemExit(0)
 \end{lstlisting}
-\textcolor{alarm}{Exit code zero proves only that this process returned zero.}
-\note{Keep the invalid artifact identical across runs. Show the mutable acceptance mechanism accepting it, then the external checker rejecting the same bytes. Editable unit tests remain useful feedback but cannot be the sole publication authority.}
+\subline{The old controller accepts exit code zero. The parser stays broken.}
+\evidence
+\note{Return to the opening. The vulnerable controller executes a workspace checker the worker can replace. File mutation is the mechanism, but the security failure is who owns acceptance. The repaired controller never delegates expected results or its decision to that checker. It executes candidate code as a worker and compares output outside that worker.}
 \end{frame}
-\begin{frame}{The evidence boundary}
-\textcolor{acid}{Verifier:} outside the agent's write and process authority.
 
-\textcolor{acid}{Decision:} binds artifact digest, verifier identity and policy version.
-
-\textcolor{acid}{History:} externally anchored records expose later rewriting.
-
-\subline{The publication gate accepts only the exact verified artifact.}
-\source{https://slsa.dev/spec/v1.2/verifying-artifacts}{SLSA artifact verification}
-\note{SLSA motivates artifact identity and trusted provenance checks. This architecture applies those ideas without claiming SLSA conformance. Separate acceptance enforcement from audit. Provenance alone does not establish semantic correctness.}
-\end{frame}
-\begin{frame}{A hash chain needs an external anchor}
-\bigline{An attacker who owns\\the whole log can\\rewrite the whole chain.}
-\vspace{4mm}
-\subline{Keep the checkpoint or signing authority outside the agent.}
-\note{Hash linkage detects change relative to a trusted reference. External keys, independently retained checkpoints or independently controlled append-only storage provide that reference. Signed logs still require identity, freshness and completeness checks.}
-\end{frame}
-\begin{frame}{Proof obligation 04}
-\kicker{PLANNED LAB / EXPECTED OUTCOMES}
-\textcolor{acid}{Reject:} invalid artifact, modified verifier, stale approval, substituted artifact.
-
-\textcolor{acid}{Accept:} valid artifact under the pinned verifier and policy.
-
-\subline{Verification and publication must refer to the same immutable bytes.}
-\note{Exercise the time-of-check/time-of-use gap by swapping output after verification. The gate should fetch or validate the exact digest-bound object. Bind approvals to task identity and freshness to prevent replay.}
-\end{frame}
-\begin{frame}{Where enforcement belongs}
-\begin{tabular}{@{}ll@{}}
-\color{acid}Boundary & \color{acid}Authority that enforces it\\[8pt]
-Execution & Host kernel or hypervisor\\[8pt]
-Filesystem & Host mount and access policy\\[8pt]
-Credentials and egress & Broker, service and network policy\\[8pt]
-Evidence and acceptance & External verifier and publication gate
+\begin{frame}{The same artifact meets an independent verifier}
+\begin{tabular}{@{}lll@{}}
+\color{acid}Input & \color{acid}Buggy parser & \color{acid}Fixed parser\\[8pt]
+\texttt{1,2,3} & Accept & Accept\\[8pt]
+\texttt{1,,3} & \textcolor{alarm}{Accept} & Reject\\[8pt]
+Empty input & \textcolor{alarm}{Accept} & Reject\\[8pt]
+\texttt{-2, 3} & Accept & Accept\\[8pt]
+\texttt{x} & Reject & Reject
 \end{tabular}\par
-\note{Process isolation establishes enforceable separation. Each capability still needs a boundary. A microVM does not repair broad injected credentials or unsafe network permissions. Four attacks do not map automatically onto four independent products.}
+\evidence
+\note{The controller snapshots exact parser bytes after the producer exits. It runs those bytes in a separate worker per case and compares output with controller-held expected results. The buggy parser fails two cases. The fixed parser passes five. Candidate code never executes inside the controller process. Five cases show this defect and repair; they do not prove complete parser correctness.}
 \end{frame}
-\begin{frame}{The same job, with bounded authority}
-\bigline{Read the input.\\Produce the patch.\\Request a narrow action.\\Submit evidence for verification.}
-\note{Return to the original operator request. The agent still does useful work. The system makes explicit grants and keeps acceptance authority outside the agent.}
+
+\begin{frame}{Acceptance belongs to exact bytes}
+\begin{tabular}{@{}ll@{}}
+Rejected artifact & Denied\\[7pt]
+Artifact swapped after verification & Denied\\[7pt]
+Authentic approval from a stale run & Denied\\[7pt]
+Verifier identity changed & Denied\\[7pt]
+Replayed approval & Denied\\[7pt]
+Verified artifact, current run & \textcolor{acid}{Accepted}
+\end{tabular}\par
+\evidence
+\note{The controller authenticates an approval binding artifact digest, run, verifier source digest, policy and a single-use nonce. Its MAC key remains outside worker mounts and environment. We separately test a stale run with the same key, changed verifier identity, forged approval, substituted artifact and replay. The lab gate returns a publication decision; it does not deploy software externally.}
 \end{frame}
-\begin{frame}{Four questions for your deployment}
+
+\begin{frame}{History needs an independent anchor}
+\bigline{The worker can rebuild\\a chain it owns.}
+\vspace{4mm}
+\subline{The controller retains the original head. Rewritten history disagrees.}
+\evidence
+\note{Change a failed verification event to success and recompute every subsequent link. The chain differs from the controller-held head. This demonstrates the need for a reference outside attacker control. The lab reference lives in controller memory, not durable transparency infrastructure. History provides evidence of rewriting. The verifier and gate enforce acceptance.}
+\end{frame}
+
+\begin{frame}{The original job still succeeds}
 \begin{enumerate}
-\item Which host interfaces can this process reach?
-\item Which exact bytes can it read and change?
-\item Which actions and recipients can it authorize?
-\item Can it change the evidence used to accept its work?
+\item Worker reads input and writes the fixed parser.
+\item External verifier checks the frozen artifact.
+\item Gate accepts exactly those bytes.
+\item Broker publishes the fixed task report.
 \end{enumerate}
-\note{Ask the audience to apply these to one deployment. Product names are insufficient. We need concrete paths, identities, resources, operations and owners for the enforcing controls.}
+\vspace{3mm}
+\subline{\evidencecount}
+\evidence
+\note{This is the positive end-to-end control. In isolated mode the worker has read-only input, writable task output, no projected service credential and a separate network namespace. Publication and reporting happen only after external verification. The parser fix is deterministic fixture code, not live model output. Reference mode runs the sequence without isolation and must be described that way.}
 \end{frame}
+
+\begin{frame}{Four boundaries to inspect}
+\begin{tabular}{@{}ll@{}}
+\color{acid}Question & \color{acid}Enforcing owner\\[9pt]
+What can execute and reach the host? & Runtime\\[9pt]
+What can read and change files? & Host mount policy\\[9pt]
+What can act and send data? & Service and broker\\[9pt]
+What can declare success? & Verifier and gate
+\end{tabular}\par
+\note{Map every permission to a component that can refuse the action outside worker control. Execution isolation is the foundation. Filesystem, credential, egress and acceptance policies govern granted authority. A microVM changes the execution boundary but does not automatically narrow a token, destination or acceptance decision.}
+\end{frame}
+
 \begin{frame}[plain]
 \kicker{THE QUESTION TO TAKE HOME}
 \vspace{5mm}
@@ -254,30 +223,41 @@ Evidence and acceptance & External verifier and publication gate
 \vspace{7mm}
 {\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
 \subline{Yossi Eliaz / Questions}
-\note{Close the loop with the opening dashboard. Isolation may hold while granted authority allows a breach. Invite questions about the trusted computing base and the evidence required to validate each control.}
+\note{Recall the green checker and broken parser. Every demonstrated action used an interface the deployment supplied. Make each grant explicit, enforce it outside the worker, and preserve a legitimate successful path. Pause for questions. The remaining slides are backup material.}
 \end{frame}
-\appendix
-\begin{frame}{References and scope}
-{\small
-\href{https://man7.org/linux/man-pages/man7/environ.7.html}{Linux environ(7)}: process environment.\\[4pt]
-\href{https://docs.docker.com/engine/storage/bind-mounts/}{Docker bind mounts}: host filesystem access.\\[4pt]
-\href{https://www.rfc-editor.org/rfc/rfc9700.html}{RFC 9700}: OAuth access-token privilege restriction.\\[4pt]
-\href{https://slsa.dev/spec/v1.2/verifying-artifacts}{SLSA verification}: artifact identity and trusted provenance.
-}
-\vspace{3mm}
-\subline{The incident is fictional. Demo outcomes are planned assertions. This deck contains no measured security results.}
-\note{Primary-source references checked during preparation. No production incident attribution or conference affiliation beyond the speaker-provided NYC acceptance.}
+
+\begin{frame}[fragile]{Appendix / Reproduction}
+\begin{lstlisting}
+make demo       # Linux + bubblewrap; strict
+make reference  # policy checks; explicit skips
+make deck       # evidence check + PDF build
+\end{lstlisting}
+\subline{Records include source digests, subprocess output and service observations.}
+\note{Run isolated mode on a disposable Linux host that permits user namespaces. It fails when isolation is unavailable and never silently falls back. Reference mode tests policy logic but skips mount and network integration. The deck build checks recorded lab source digests and refuses stale evidence. The runbook includes demo order and an offline transcript fallback.}
 \end{frame}
-\begin{frame}{Discussion: residual risk}
-A trusted broker can still contain bugs.
 
-A valid signature can authenticate incorrect evidence.
+\begin{frame}{Appendix / Limits of the evidence}
+Deterministic scripts exercise chosen actions.
 
-A correct verifier can check an incomplete specification.
+Namespace and mount checks require the isolated run.
 
-Permitted output can still disclose information.
+Five parser cases establish one demonstrated repair.
 
-\subline{Every boundary needs a named owner and a testable claim.}
-\note{Explain the residual trusted computing base, semantic limits and output-channel risks without diluting the concrete controls in the main talk.}
+Controller code, keys and decisions remain trusted.
+
+\subline{No cgroup, kernel-exploit, covert-channel or universal security claim.}
+\note{Do not imply we measured model susceptibility to prompt injection or proved the absence of all sandbox escapes. The controls address named failure paths. The network probe targets the fixture endpoint. The history anchor is ephemeral. Production hardening and broader adversarial analysis remain separate engineering work.}
+\end{frame}
+
+\begin{frame}{Appendix / Primary references}
+\href{https://man7.org/linux/man-pages/man7/environ.7.html}{Linux environ(7)}
+\subline{Environment inheritance}
+\href{https://docs.docker.com/engine/storage/bind-mounts/}{Docker bind mounts}
+\subline{Host filesystem effects and read-only mounts}
+\href{https://www.rfc-editor.org/rfc/rfc9700.html}{RFC 9700}
+\subline{Access-token privilege restriction}
+\href{https://slsa.dev/spec/v1.2/verifying-artifacts}{SLSA artifact verification}
+\subline{Trusted provenance and artifact identity}
+\note{Additional implementation reference: github.com/containers/bubblewrap. These primary sources support the mechanisms discussed. The experiments are synthetic examples and do not claim OAuth or SLSA conformance. README.md preserves the exact accepted abstract and the unconfirmed schedule details.}
 \end{frame}
 \end{document}

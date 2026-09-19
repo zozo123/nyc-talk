@@ -1,0 +1,549 @@
+{
+  "mode": "reference",
+  "checks": [
+    {
+      "check": "isolation.namespaces",
+      "status": "SKIP",
+      "detail": "Reference mode has no process or filesystem sandbox."
+    },
+    {
+      "check": "credentials.before",
+      "status": "PASS",
+      "detail": "Broad inherited fixture token reads unrelated project."
+    },
+    {
+      "check": "credentials.after",
+      "status": "PASS",
+      "detail": "Scoped token receives HTTP 403."
+    },
+    {
+      "check": "credentials.positive",
+      "status": "PASS",
+      "detail": "Task input remains readable."
+    },
+    {
+      "check": "credentials.fixture-expired",
+      "status": "PASS",
+      "detail": "Service rejects token."
+    },
+    {
+      "check": "credentials.fixture-wrong-audience",
+      "status": "PASS",
+      "detail": "Service rejects token."
+    },
+    {
+      "check": "mount.integration",
+      "status": "SKIP",
+      "detail": "Requires real bind mounts. No chmod or mocked substitute."
+    },
+    {
+      "check": "egress.before",
+      "status": "PASS",
+      "detail": "Loopback service stores synthetic private bytes under the other account."
+    },
+    {
+      "check": "egress.recipient",
+      "status": "PASS",
+      "detail": "Broker rejects unapproved request fields."
+    },
+    {
+      "check": "egress.payload",
+      "status": "PASS",
+      "detail": "Broker rejects unapproved request fields."
+    },
+    {
+      "check": "egress.url",
+      "status": "PASS",
+      "detail": "Broker rejects unapproved request fields."
+    },
+    {
+      "check": "egress.no_delivery",
+      "status": "PASS",
+      "detail": "Rejected requests create no receiving-service deliveries."
+    },
+    {
+      "check": "egress.bypass",
+      "status": "SKIP",
+      "detail": "Reference mode cannot prove network isolation."
+    },
+    {
+      "check": "egress.positive",
+      "status": "PASS",
+      "detail": "Broker constructs a fixed report for the team account."
+    },
+    {
+      "check": "verifier.before",
+      "status": "PASS",
+      "detail": "Changed checker returns success while buggy parser bytes remain unchanged."
+    },
+    {
+      "check": "verifier.after",
+      "status": "PASS",
+      "detail": "External cases reject the same buggy parser on empty fields and empty input."
+    },
+    {
+      "check": "verifier.positive",
+      "status": "PASS",
+      "detail": "Fixed parser passes all five external cases."
+    },
+    {
+      "check": "gate.invalid",
+      "status": "PASS",
+      "detail": "Rejected artifact cannot publish."
+    },
+    {
+      "check": "gate.substitution",
+      "status": "PASS",
+      "detail": "Approval does not authorize substituted bytes."
+    },
+    {
+      "check": "gate.cross_run",
+      "status": "PASS",
+      "detail": "Other run rejects approval."
+    },
+    {
+      "check": "gate.stale_run",
+      "status": "PASS",
+      "detail": "Authentic approval with the same MAC key cannot authorize a different run."
+    },
+    {
+      "check": "gate.verifier_changed",
+      "status": "PASS",
+      "detail": "Authentic approval cannot authorize a changed verifier identity."
+    },
+    {
+      "check": "gate.forgery",
+      "status": "PASS",
+      "detail": "Modified approval fails authentication."
+    },
+    {
+      "check": "gate.positive",
+      "status": "PASS",
+      "detail": "Verified bytes publish."
+    },
+    {
+      "check": "gate.replay",
+      "status": "PASS",
+      "detail": "Consumed approval cannot replay."
+    },
+    {
+      "check": "history.rewrite",
+      "status": "PASS",
+      "detail": "Recomputed attacker chain disagrees with independently retained controller head."
+    },
+    {
+      "check": "final.task",
+      "status": "PASS",
+      "detail": "Worker emits fixed parser; external verifier accepts; exact bytes publish; report delivered."
+    }
+  ],
+  "invocations": [
+    {
+      "agent_sha256": "379b54928170c3a48843ff7f241d9f29d36f0115f864d10a29f9ed4e24dddcc7",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"status\": 200, \"body\": {\"fixture\": \"SYNTHETIC-PRIVATE-FIXTURE\"}}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "379b54928170c3a48843ff7f241d9f29d36f0115f864d10a29f9ed4e24dddcc7",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"status\": 403}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "32138950c1838fa9416a19c9f2d928ece925d5704808ad6bc23fc31a19ee4467",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"status\": 200, \"body\": {\"task\": \"parser-fix\"}}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "32138950c1838fa9416a19c9f2d928ece925d5704808ad6bc23fc31a19ee4467",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"status\": 403}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "32138950c1838fa9416a19c9f2d928ece925d5704808ad6bc23fc31a19ee4467",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"status\": 403}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "7c040486d7da04dd427fe3a8b6cc57f0d9636a75464eaadef17050f7d78c6c7a",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "201",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "d063614e5ab5d8fcf82d9e2ebbeaabab700a2e16b2205696d75f29cea124b815",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"recipient\": \"other\"}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "d386166de5e6f5911b4f5929d916e61c3e849a2ca8c99d61b12d83ee379675d1",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"data\": \"SYNTHETIC-PRIVATE-FIXTURE\"}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "312316e6b97dfd875ed1627b74d0f37a3fecbf2821009f8eadb292dde828e84b",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:33101/accounts/other/uploads\"}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "b2f4f71401f4587af71b5baa2fe4e51c65c0972090dc1e8af32f098d3d605925",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"operation\":\"publish_report\",\"task\":\"parser-fix\"}",
+      "stderr": "",
+      "mounts": []
+    },
+    {
+      "agent_sha256": "684737d5f736687ec601ad13c9bc66d41e1f1b30edce8e394845fae00e203dec",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/work",
+          "writable": true
+        }
+      ]
+    },
+    {
+      "agent_sha256": "52e2a781c4cd247ffee765ec5e33ac456c8f3a94e4a5c510b11bc10ecbcf98f0",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "PASS",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/work",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "[1, 2, 3]",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "[1, 3]",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "[]",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "[-2, 3]",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "a56a3f38197b146f0b3fd6e0dd52393aad817d7601f61173d76ec1413662749b",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "\"REJECT\"",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "[1, 2, 3]",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "\"REJECT\"",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "\"REJECT\"",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "[-2, 3]",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "662e19270eb8366cb116633170e8ae933534d288691d1ab643cfc6bc0cc33694",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "\"REJECT\"",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "c520855da01ffdc7248e150b6152ce611d582c8531e187f7191a0f4893447cbc",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\"}",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/input",
+          "writable": false
+        },
+        {
+          "guest": "/output",
+          "writable": true
+        }
+      ]
+    },
+    {
+      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "[1, 2, 3]",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "\"REJECT\"",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "\"REJECT\"",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "[-2, 3]",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "1fa545f06abe8ca58552193791a2da6f1b92d1676f4d44a3069347e4a7e781b0",
+      "network_namespace": false,
+      "mode": "reference",
+      "exit_code": 0,
+      "stdout": "\"REJECT\"",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    }
+  ],
+  "service_events": [
+    {
+      "path": "/projects/other/private",
+      "allowed": true
+    },
+    {
+      "path": "/projects/other/private",
+      "allowed": false
+    },
+    {
+      "path": "/input/parser-fix",
+      "allowed": true
+    },
+    {
+      "path": "/input/parser-fix",
+      "allowed": false
+    },
+    {
+      "path": "/input/parser-fix",
+      "allowed": false
+    }
+  ],
+  "deliveries": [
+    {
+      "path": "/accounts/other/uploads",
+      "body": {
+        "data": "SYNTHETIC-PRIVATE-FIXTURE"
+      }
+    },
+    {
+      "path": "/accounts/team/reports",
+      "body": {
+        "status": "completed",
+        "task": "parser-fix"
+      }
+    },
+    {
+      "path": "/accounts/team/reports",
+      "body": {
+        "status": "completed",
+        "task": "parser-fix"
+      }
+    }
+  ],
+  "source_sha256": {
+    "lab/run.py": "9f111728533aa2d2454583da2f883a6ae5d47df30fcdb137b2dafcc92570d4e7"
+  },
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64",
+    "python": "3.12.14"
+  },
+  "commit": null,
+  "status": "REFERENCE_ONLY",
+  "limitations": [
+    "Synthetic, deterministic worker scripts; no model-driven prompt injection claim.",
+    "Shared host network in credential and weak-egress cases is deliberate.",
+    "No cgroup, seccomp, kernel-exploit, side-channel or universal noninterference claim.",
+    "Finite parser cases do not prove correctness for every possible input.",
+    "Controller-held MAC key and history head are the trusted lab anchors."
+  ]
+}
