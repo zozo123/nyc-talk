@@ -1,0 +1,25 @@
+name: Verify talk experiments
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux-boundaries:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install isolated lab runtime
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap
+      - name: Run actual namespace and mount experiments
+        run: python3 lab/run.py --mode isolated --output build/evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: isolated-lab-evidence
+          path: build/evidence
+          if-no-files-found: error
