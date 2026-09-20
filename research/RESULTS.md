@@ -1,31 +1,17 @@
-# Results
+# Final result summary
 
-Pinned factory: `factory/` on this branch. Educational lab remains `lab/` at `fc34e2f`.
-
-## Local (`make factory`)
-
-| Check | Result | Classification |
+| Scenario | Observed result | Classification |
 |---|---|---|
-| Intended: locked `/admin` frozen, accepted, published | PASS | successful defense, our factory |
-| Intended: open `/admin` rejected, not published | PASS | successful defense, our factory |
-| Intended: approval does not authorize swapped digest | PASS | successful defense, our factory |
-| Intended: consumed nonce cannot replay | PASS | successful defense, our factory |
-| Weakened: worker PASS file accepted the bug | PASS | **deliberate** boundary violation (detector) |
-| Weakened: protected checker + worker `expected.json` → PASS | PASS | **deliberate** boundary violation (detector) |
+| Overbroad fixture credential | Other project 200; scoped token 403; own input 200 | Controlled authority violation and successful restriction |
+| Writable host bind | Host file changed; read-only bind denies; output still written | Controlled authority violation and successful restriction |
+| Allowed host, other account | Private canary uploaded; direct route/broker restriction prevents delivery; team report delivered | Narrow, controlled disclosure channel |
+| Unchanged checker, worker expectations | FAIL becomes PASS; unauthenticated HTTP `/admin` remains 200 | Deliberately weakened verifier dependency |
+| Independent five-case policy | Open handler denied; good handler actually released | Reference protocol behavior |
+| Fresh approval and wrong digest | Wrong artifact denied, same approval accepts correct artifact | Artifact binding tested independently of nonce consumption |
+| Reuse after publication | Denied | Sequential replay protection |
+| Mutated baseline Frozen payload | Baseline gate accepted unchanged label | Our reference-API defect; no remote exploit path established |
+| Actual final released file | HTTP vector `[401, 200, 403, 200, 401]` | Observed release bytes and finite policy |
 
-Independent judge on the bug: `admin:none` and `admin:expired` must be 401; `admin:user` must be 403. The open handler returns 200 for all five.
+Active records: 29 isolated-Linux assertions, six local-factory assertions, eleven HTTP assertions. Regression suite: 25 unit tests. These are not vulnerability counts or statistical samples. See [DOSSIER.md](DOSSIER.md) for pins, prerequisites, sources, limitations and the stage-16 decision.
 
-## Boat accept-VM (`make factory-boat`)
-
-`noEnv: true`. Fresh VM executed frozen bytes. Controller compared. Idle was not used as quiescence.
-
-| Candidate | Verdict |
-|---|---|
-| Locked `/admin` | accept, five matches |
-| Open `/admin` | reject (no-cookie and expired fail) |
-
-Sandbox stopped after the run. Infrastructure: completed, not a crash-as-defense.
-
-## What we will not claim
-
-Not a Boat product vulnerability. Not novelty for in-sandbox graders (known). Not model ASR. Not 29 lab assertions as 29 bugs.
+The final talk does not claim a vendor zero-day, customer incident, model attack-success rate, kernel-escape resistance, general DLP or production-grade concurrent publication. Historical cloud observations are archived, not represented as fresh runs.

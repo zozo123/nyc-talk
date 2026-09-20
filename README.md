@@ -1,51 +1,53 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
 **Yossi Eliaz**  
-**Principal Engineer and Head of DevRel at Incredibuild.com**
+Principal Engineer and Head of DevRel / Incredibuild  
+**AI Agent Security Summit, New York / 21 October 2026 / 15 minutes**
 
-NYC · AI Agent Security Summit · October 21, 2026
+> The checker passed. An unauthenticated HTTP request to `/admin` still returned `200`.
+> The checker bytes had not changed. The worker changed the expected-results file it loaded.
 
-**15-minute lightning talk.** Nine main slides, three appendix. Manuscript targets 14 minutes.
+**11 main slides + 5 Q&A appendices.** A 1,651-word spoken script targets 14 minutes including pauses, with one minute of margin. Timings are rehearsal targets, not an already measured performance.
 
-[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Spoken script](TALK.md) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Q&A](QUESTIONS.md)
+[Stage PDF](slides/talk.pdf) | [Editable PowerPoint](slides/talk.pptx) | [Beamer source](slides/talk.tex) | [Spoken script](TALK.md) | [Speaker notes and sources](SPEAKER_NOTES.md) | [Runbook](RUNBOOK.md) | [Skeptical Q&A](QUESTIONS.md) | [Research dossier](research/DOSSIER.md)
 
-## What this talk is
+## What the talk demonstrates
 
-Fifteen minutes. Four recorded cases from the abstract. Full sentences and the commands on the slides.
+| Interface | Unwanted observation | Restriction and positive control |
+|---|---|---|
+| Inherited credential | Fixture runner token reads another project: `200` | Task-scoped token: `403` there, `200` on its own input |
+| Writable mount | Ordinary write changes a host-side next-job file | Read-only bind denies it; legitimate patch output still works |
+| Allowed endpoint | Same service accepts the private canary for another account | Direct route removed; narrow broker owns recipient/body; team report still arrives |
+| Verifier dependency | Same checker and handler change from `FAIL` to `PASS` after worker expectations change | Controller-owned five-case policy rejects the open handler and releases the correct file |
 
-1. Inherited credentials: runner token reads another project (`200`). Task token returns `403`. Task input still `200`.
-2. Dangerous mounts: writable bind changes `next-job.json`. Read-only bind denies the write. `/output` still works.
-3. Allowed endpoint: `POST /accounts/other/uploads` stores the fixture. Broker sends only `/accounts/team/reports`.
-4. Verifier tampering: `checker.py` hash unchanged. Worker writes `expected.json` so `admin:none` is `200`. Independent case still requires `401`.
+The final sequence follows actual bytes: freeze, compare under controller-owned criteria, authenticate approval, rehash the stored object, release that file, and request it over HTTP. An **unused** approval rejects a swapped artifact and then accepts the correct artifact; replay is tested separately.
 
-Locks: short-lived credential projection, capability-scoped filesystems, process isolation, freeze-and-compare plus a hash chain the worker cannot rewrite.
-
-`lab/` is cases 1–3. `factory/` is case 4. Neither is a vendor 0-day.
-
-## Run it
-
-```sh
-make factory        # local freeze / judge / gate; no cloud
-make demo           # Linux + bubblewrap isolation lab
-make deck           # verify recorded hashes, export notes, compile PDF
-```
-
-Optional Boat accept-VM (`BOAT_API_KEY`, `noEnv`, short TTL):
+## Reproduce
 
 ```sh
-make factory-boat
+make verify       # 25 unit tests, 6 factory assertions, 11 HTTP assertions, evidence check
+make demo         # 29 isolated Linux assertions; requires bubblewrap
+make deck         # validate source-bound records; compile Beamer PDF
+npm install --ignore-scripts
+make pptx         # native editable presentation, same content and notes
 ```
 
-`make deck` does not provision machines.
+Python 3.10+ standard library. `make verify` uses only committed deterministic fixtures and loopback HTTP. It requires permission to bind a local port. It does **not** require cloud credentials or a model API. `make demo` needs disposable Linux with user namespaces and bubblewrap. See [RUNBOOK.md](RUNBOOK.md) for packages, commands, recording, and stage fallback.
 
-Python 3.10+ standard library. Isolation lab needs bubblewrap on disposable Linux. Deck needs TeX Live with Beamer.
+`slides/content.json` is the shared content source. `tools/build_deck.py` generates Beamer, `TALK.md` and `SPEAKER_NOTES.md`; `tools/build_deck.js` generates editable PowerPoint. The workflow reruns experiments and generates release artifacts. After successful verification on `main`, a separate narrowly permitted job commits only the generated PDF and PPTX; experiment sources are not rewritten by that job.
 
-## What the evidence is not
+## Evidence and limits
 
-Not a named-product zero-day. Not a customer incident. Not a model attack-success rate. Not kernel-escape resistance. Five `/admin` cases prove this policy, not that the app is secure. The old lab’s 29 checks remain educational isolation demonstrations; they are not 29 vulnerabilities.
+The [stage-16 decision](research/DOSSIER.md#16-decision-finalize-a-methodology-talk) approves an evidence-backed methodology talk, not a vendor zero-day claim. There are 29 Linux assertions, six local-factory assertions, eleven HTTP assertions and 25 regression tests. These are **not vulnerability counts** or a model attack-success rate.
 
-## Accepted abstract
+The Linux lab and the local acceptance fixture are separate demonstrations. Python isolated mode is not an operating-system sandbox; never feed arbitrary hostile source to `factory/`. The HTTP wrapper uses synthetic authorization credentials, not a production identity provider. Five cases do not establish complete application security. The reference assumes one trusted controller; atomic concurrent publication, crash consistency, durable keys and strong executor isolation remain deployment requirements.
 
-> Every namespace and cgroup can work exactly as designed and an agent can still cause a real breach. This talk demonstrates four non-escape escapes: inherited credentials, dangerous mounts, exfiltration through an allowed endpoint, and verifier tampering. Then we close each one at the layer that can actually enforce it: real process isolation, capability-scoped filesystems, short-lived credential projection, and tamper-evident execution history. You leave with four boundaries you can check against your own agent deployment.
+This review also found and fixed a defect in **our own** baseline reference API: mutable payload bytes could retain an old digest label, and publication logged a digest without releasing a file. The prerequisite was access to a controller-side object; no remote-worker exploit path was established. The [dossier](research/DOSSIER.md#11-a-defect-found-in-our-own-reference-api) and regression tests preserve that distinction.
 
-The session is 15 minutes. History **detects** rewrites. The gate **enforces** acceptance. Those are different jobs.
+Active results are in `evidence/`; earlier factory/Boat observations are clearly archived under `evidence/archive/`. The optional cloud adapter is not part of the final fresh evidence. Source hashes detect stale source/record combinations; they do not authenticate a record's author. Keep the workflow's commit ID, source archive and evidence together.
+
+## Speaker framing
+
+The accepted title and four interfaces are preserved. The final delivery describes synthetic policy violations, actual namespace/mount observations and real loopback HTTP. It makes no cgroup or kernel-escape-resistance claim. History detects a rewrite against a trusted anchor; the gate separately enforces release.
+
+[Event page](https://zenity.io/resources/events/ai-agent-security-summit-2026)

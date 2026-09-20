@@ -1,6 +1,13 @@
 SHELL := /bin/sh
-.PHONY: all demo reference factory factory-boat record record-factory deck snapshot clean
+.PHONY: all test verify demo reference factory http factory-boat record record-factory record-http deck pptx snapshot clean
 all: deck
+
+test:
+	python3 -m unittest discover -s tests -v
+
+# Fixtures only. No cloud or model calls. Not an arbitrary-code sandbox.
+verify: test factory http
+	python3 tools/evidence.py
 
 demo:
 	python3 lab/run.py --mode isolated --output build/evidence
@@ -8,11 +15,12 @@ demo:
 reference:
 	python3 lab/run.py --mode reference --output build/reference
 
-# Local logic only. Does not provision machines.
 factory:
 	python3 -m factory.run --output build/factory
 
-# Credentialed Boat accept-VM. Requires BOAT_API_KEY. Bounded TTL.
+http:
+	python3 -m factory.http_demo --output build/http
+
 factory-boat:
 	python3 -m factory.run --boat --output build/factory
 
@@ -24,18 +32,27 @@ record: demo
 record-factory: factory
 	mkdir -p evidence
 	cp build/factory/results.json evidence/factory-results.json
-	python3 -c "import json,pathlib; p=pathlib.Path('build/factory/local.json'); d=json.loads(p.read_text()); t=['MODE local / STATUS '+d['status']]+[c['status']+' '+c['check']+': '+c['detail'] for c in d['checks']]; pathlib.Path('evidence/factory-transcript.txt').write_text('\n'.join(t)+'\n')"
+	python3 -c "import json,pathlib; d=json.loads(pathlib.Path('build/factory/local.json').read_text()); t=['MODE local / STATUS '+d['status']]+[c['status']+' '+c['check']+': '+c['detail'] for c in d['checks']]; pathlib.Path('evidence/factory-transcript.txt').write_text('\n'.join(t)+'\n')"
 
-# Recorded evidence must match lab and factory source before any slide build.
+record-http: http
+	mkdir -p evidence
+	cp build/http/results.json evidence/http-results.json
+	cp build/http/transcript.txt evidence/http-transcript.txt
+
 deck:
 	python3 tools/evidence.py
-	python3 tools/notes.py
+	python3 tools/build_deck.py
 	mkdir -p build
 	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build slides/talk.tex
 	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build slides/talk.tex
 
-snapshot: deck
+pptx:
+	python3 tools/evidence.py
+	node tools/build_deck.js
+
+snapshot: deck pptx
 	cp build/talk.pdf slides/talk.pdf
+	cp build/talk.pptx slides/talk.pptx
 
 clean:
 	rm -rf build factory/store

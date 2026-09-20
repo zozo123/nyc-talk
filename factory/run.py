@@ -37,10 +37,13 @@ LAUNCH = {
     "cases": len(CASES),
 }
 ACCEPT_ENV = {
-    "role": "accept",
-    "inherits_producer_disk": False,
-    "checker_in_vm": False,
-    "expected_results_in_vm": False,
+    "role": "local-fixture-executor",
+    "os_isolation": False,
+    "network_isolation": False,
+    "fresh_workdir": True,
+    "shares_controller_host": True,
+    "controller_state_os_protected": False,
+    "expected_results_copied_to_workdir": False,
     "api_credential": "none",
 }
 
@@ -68,9 +71,10 @@ def intended(store: Path, candidate: bytes) -> dict:
             launch=LAUNCH, env_manifest=ACCEPT_ENV,
         )
         if verdict["accepted"]:
-            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
             swapped = freeze({SUBJECT: BAD.encode() if candidate != BAD.encode() else GOOD.encode()})
+            # Probe the wrong digest BEFORE consuming this approval.
             swap = gate.replay_or_swap(approval, swapped, LAUNCH, ACCEPT_ENV)
+            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
             replay = gate.replay_or_swap(approval, frozen, LAUNCH, ACCEPT_ENV)
         else:
             published = "NOT_PUBLISHED"
@@ -107,17 +111,17 @@ def weakened_report(candidate: bytes) -> dict:
 
 
 def weakened_deps(candidate: bytes) -> dict:
-    """Protected checker file. Worker-controlled expected.json in the same cwd."""
+    """Unedited checker file. Worker-controlled expected.json in the same cwd."""
     result = execute_weak_checker(candidate, WORKER_EXPECTED)
     independent = judge(execute_frozen(candidate))
     return {
         "config": "deliberately-weakened-untrusted-deps",
-        "checker_sha256": digest(WEAK_CHECKER.encode()),
+        "checker_sha256": result["checker_sha256"],
         "checker_stdout": result["stdout"],
         "checker_exit": result["exit"],
         "worker_expected_sha256": result["expected_sha256"],
         "independent_verdict": independent,
-        "checker_file_changed": False,
+        "checker_file_changed": result["checker_sha256_before"] != result["checker_sha256"],
     }
 
 
@@ -161,7 +165,7 @@ def run_local(store: Path) -> dict:
     check(
         "intended.replay",
         good.get("replay") == "DENIED",
-        "Consumed approval cannot be replayed. Restart would still see the nonce file.",
+        "Consumed approval cannot be replayed. Process restart invalidates ephemeral approvals.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
@@ -318,8 +322,8 @@ def main():
     (out / "results.json").write_text(json.dumps(result, indent=2) + "\n")
     if local["status"] != "PASS":
         raise SystemExit(1)
-    if args.boat and result.get("boat", {}).get("status") == "FAIL":
-        raise SystemExit(1)
+    if args.boat and result.get("boat", {}).get("status") != "PASS":
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":
