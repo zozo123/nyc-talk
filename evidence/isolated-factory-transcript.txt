@@ -1,0 +1,12 @@
+MODE isolated-factory / STATUS PASS
+PASS answer_key.honest_key_fails: The unchanged checker rejects the same candidate with the honest answer key.
+PASS answer_key.checker_write_denied: Read-only checker mount rejects the direct write.
+PASS answer_key.checker_unchanged: Checker SHA-256 is identical before and after the worker step.
+PASS answer_key.candidate_unchanged: The always-200 candidate bytes are also unchanged.
+PASS answer_key.expected_changed: Worker changed only the answer key to expect 200 for every case.
+PASS answer_key.weak_pass: Unchanged, read-only checker accepts the open-admin fixture.
+PASS answer_key.independent_reject: Controller-owned cases reject the same always-200 bytes.
+PASS answer_key.positive: Fixed handler satisfies all five controller-owned cases.
+PASS release.fresh_swap: Substitution is tested BEFORE the approval nonce is consumed.
+PASS release.exact_bytes: The same unused approval still publishes the exact accepted bytes into the local database.
+PASS release.replay: A second publication with the consumed approval is rejected.

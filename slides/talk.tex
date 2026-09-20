@@ -1,178 +1,516 @@
+% Generated from slides/deck.json by tools/build_deck.py. Edit the JSON.
 \documentclass[aspectratio=169,11pt]{beamer}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{listings}
-\usepackage{hyperref}
+\usepackage{lmodern,listings,booktabs,array,tikz}
+\usetikzlibrary{positioning,arrows.meta}
 \definecolor{void}{HTML}{101214}
+\definecolor{panel}{HTML}{1B2026}
 \definecolor{paper}{HTML}{F0F0E8}
 \definecolor{acid}{HTML}{C7FF48}
-\definecolor{alarm}{HTML}{FF756B}
 \definecolor{muted}{HTML}{A7ADB3}
 \setbeamercolor{background canvas}{bg=void}
 \setbeamercolor{normal text}{fg=paper}
 \setbeamercolor{frametitle}{fg=paper}
 \setbeamercolor{structure}{fg=acid}
-\setbeamerfont{frametitle}{size=\Large,series=\bfseries}
+\setbeamercolor{codepanel}{fg=paper,bg=panel}
+\setbeamerfont{frametitle}{size=\fontsize{18}{21}\selectfont,series=\bfseries}
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{footline}{\hfill{\color{muted}\scriptsize Yossi Eliaz\hspace{1em}\insertframenumber\hspace{1em}}\vspace{3mm}}
-\setbeamersize{text margin left=10mm,text margin right=10mm}
-\setlength{\parskip}{6pt}
-\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{acid},commentstyle=\color{muted},stringstyle=\color{acid},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false}
-\newcommand{\kicker}[1]{{\color{acid}\ttfamily\small #1}\par}
-\newcommand{\bigline}[1]{{\fontsize{26}{30}\selectfont\bfseries #1\par}}
-\newcommand{\subline}[1]{\par{\color{muted}\normalsize #1}\par}
-\newcommand{\evidence}{\vfill{\color{muted}\scriptsize\evidencescope}}
-\input{slides/evidence.tex}
+\setbeamersize{text margin left=9mm,text margin right=9mm}
+\setbeamertemplate{footline}{\hspace{9mm}{\color{muted}\tiny YOSSI ELIAZ / AI AGENT SECURITY SUMMIT / OCT 21, 2026}\hfill{\color{muted}\tiny\insertframenumber}\hspace{9mm}\vspace{3mm}}
+\setlength{\parskip}{3pt}
+\lstset{basicstyle=\ttfamily\fontsize{9.6}{11.6}\selectfont,keywordstyle=\color{acid},commentstyle=\color{muted},stringstyle=\color{acid},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,aboveskip=5pt,belowskip=3pt}
+\newcommand{\kicker}[1]{{\color{acid}\ttfamily\fontsize{7.5}{9}\selectfont #1}\par}
+\newcommand{\takeaway}[1]{\vfill{\color{acid}\rule{8mm}{0.7pt}}\par{\fontsize{11.8}{14}\selectfont #1}\par}
+\newcommand{\scope}[1]{{\color{muted}\fontsize{6.2}{7.2}\selectfont #1}\par}
 \title{Your Agent Escaped Without Escaping the Sandbox}
 \author{Yossi Eliaz}
 \date{October 21, 2026}
 \begin{document}
-
-\begin{frame}[plain]
-\kicker{NYC / AI AGENT SECURITY SUMMIT}
-\vspace{4mm}
-{\fontsize{28}{32}\selectfont\bfseries Your Agent Escaped\\Without Escaping\\the Sandbox\par}
-\vspace{6mm}
-{\large Yossi Eliaz\par}
-{\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
+\begin{frame}[t,fragile,plain]
+\kicker{AI AGENT SECURITY SUMMIT / NEW YORK / OCT 21, 2026}
 \vspace{2mm}
-\subline{October 21, 2026}
-\note{00:00 to 00:30. I am Yossi Eliaz. The title is the claim. The agent stays inside the sandbox. Namespaces and cgroups do what they were built to do. A real breach still happens. Four cases. Each uses an interface we gave the worker so it could finish the job.}
+\vspace{2mm}
+{\fontsize{28}{31}\selectfont\bfseries Your Agent Escaped\\ Without Escaping\\ the Sandbox\par}
+\vspace{5mm}
+{\fontsize{12}{15}\selectfont Yossi Eliaz, PhD\\ Principal Engineer and Head of DevRel, Incredibuild\par}
+\takeaway{Four authority failures. One release decision.}
+% Source: https://zenity.io/resources/events/ai-agent-security-summit-2026
+% Source: https://github.com/zozo123/nyc-talk/tree/main/factory
+\note{You ask a coding agent to fix authorization. Its checker reports PASS. The checker file has exactly the same hash as before. The unauthenticated admin case still returns two hundred.\\ \\ I am Yossi Eliaz. I will show how that happens, alongside three other failures that use capabilities we deliberately give a worker. Every demonstration uses synthetic fixtures. The worker scripts are deterministic, so we can inspect the mechanism without debating what a model intended.}
 \end{frame}
 
-\begin{frame}[fragile]{Four interfaces we gave the worker}
+\begin{frame}[t,fragile]
+\frametitle{The worker can act. Who can authorize?}
+\kicker{THREAT MODEL}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{WORKER-CONTROLLED}
 \begin{lstlisting}
-credential   LAB_TOKEN=fixture-runner
-files        bind /shared  (writable)
-publish      POST <allowed-host>/...
-done         checker.py + expected.json
+task code
+writable workspace
+tool requests
+proposed results
 \end{lstlisting}
-\subline{Inherited credentials. Dangerous mounts. Allowed endpoint. Verifier tampering.}
-\note{00:30 to 01:15. A working coding agent needs a credential, files, one publish path, and a signal that the work is done. Those are the four abstract cases. The process never leaves the box. These four interfaces still move data, files, and merge decisions.}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{CONTROLLER-OWNED}
+\begin{lstlisting}
+task-scoped grants
+expected results
+approval key + run
+publication store
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{The worker must not acquire the authority that judges its own output.}
+\vspace{1mm}\scope{Trusted kernel + controller; deterministic fixtures; no model attack-success claim.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/INVARIANTS.md
+% Source: https://github.com/containers/bubblewrap#sandbox-security
+\note{Here is the threat model. Treat the worker as an arbitrary task program. It can edit its code and writable files, invoke its tools, and ask for its output to be published. We trust the controller and the operating-system boundary. We do not give the worker the controller's key or storage.\\ \\ In the isolated runs, Linux user, PID, and mount namespaces really are different. Network access is disabled where the experiment requires it. The question is what authority remains through the interfaces we intentionally leave open.\\ \\ I will use four concrete interfaces: a credential, a shared mount, an upload operation, and the inputs to a checker. For each fix, the legitimate task must still work.}
 \end{frame}
 
-\begin{frame}[fragile]{Inherited credentials}
+\begin{frame}[t,fragile]
+\frametitle{1. The inherited token reaches another project.}
+\kicker{INHERITED CREDENTIALS}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{RUNNER TOKEN}
 \begin{lstlisting}
-Authorization: Bearer fixture-runner
 GET /projects/other/private
-200  {"fixture":"SYNTHETIC-PRIVATE-FIXTURE"}
+Authorization: Bearer fixture-runner
 
-Authorization: Bearer fixture-task
-GET /projects/other/private     403
-GET /input/parser-fix           200
+200
+SYNTHETIC-PRIVATE-FIXTURE
 \end{lstlisting}
-\subline{Short-lived credential projection. Scope is this task.}
-\evidence
-\note{01:15 to 03:20. We started the worker with the runner token already in the environment. The GET with that token returned 200 and the private fixture. We replaced it with a task-scoped token. Other project 403. Task input 200. Expired and wrong-audience tokens 403. Do not copy the runner secret into the worker.}
-\end{frame}
-
-\begin{frame}[fragile]{Dangerous mounts}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{TASK TOKEN}
 \begin{lstlisting}
-Path("/shared/next-job.json").write_text('{"queue":"attacker"}')
+GET /projects/other/private
+403
 
-writable bind   WRITE_SUCCEEDED   host file changed
-read-only bind  WRITE_DENIED      host file unchanged
-
-Path("/output/patch.txt").write_text("legitimate patch output")
-# succeeds in both cases
+GET /input/parser-fix
+200
 \end{lstlisting}
-\subline{Capability-scoped filesystems: /input ro, /output rw.}
-\evidence
-\note{03:20 to 05:00. We mounted another job directory writable. The write is a normal open. The host file changes. Read-only bind denies the same write. Output still works. If you snapshot this disk and fork it, the next agent inherits the same files.}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Project a short-lived task grant. The service must enforce its scope.}
+\vspace{1mm}\scope{Recorded: credentials.before / after / positive / expired / wrong-audience}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\note{The task needs one input. We start the worker with a synthetic runner token inherited through its environment. That token is broader than the task. The worker asks the service for another project's private fixture. The service returns two hundred and the fixture bytes.\\ \\ The process has not escaped. The service has accepted a credential we placed inside it.\\ \\ Now use the task token. The same request returns four-oh-three. The authorized task input still returns two hundred. The service also rejects an expired token and a token for the wrong audience.\\ \\ The important control is enforced scope. A short expiry reduces the exposure window, but a broad token can still do damage before it expires. Project only the grant this task needs, and validate that grant at the resource. These token strings and the private data on this slide are fixtures, not live credentials.}
 \end{frame}
 
-\begin{frame}[fragile]{Exfiltration through an allowed endpoint}
+\begin{frame}[t,fragile]
+\frametitle{2. The mount grants a write into the next job.}
+\kicker{DANGEROUS MOUNTS}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{SHARED DIRECTORY: WRITABLE}
+\begin{lstlisting}
+open("/shared/next-job.json",
+     "w").write(payload)
+
+WRITE_SUCCEEDED
+host fixture changed
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{SHARED DIRECTORY: READ-ONLY}
+\begin{lstlisting}
+same write
+
+WRITE_DENIED
+host fixture unchanged
+/output/patch.txt still works
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Give the task a narrow input view and a separate writable output.}
+\vspace{1mm}\scope{Recorded with real bind mounts: mount.before / after / positive}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+% Source: https://github.com/containers/bubblewrap#sandbox-security
+\note{The second interface is a shared directory. In the first configuration it is writable. The worker performs an ordinary file write, and the next-job fixture on the host changes. The mount is doing exactly what we configured it to do.\\ \\ We repeat the same operation with a read-only bind. The write is denied and the host fixture remains unchanged. A separate output mount still accepts the legitimate patch.\\ \\ That positive control matters. We did not fix the system by making the agent unable to work.\\ \\ For a system that forks snapshots or reuses workspaces, ask which writable state crosses into the next task. That is an architectural implication of sharing those bytes; we did not measure a snapshot attack here. In this experiment, the demonstrated boundary is the bind mount.}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{3. The allowed service accepts the wrong upload.}
+\kicker{EXFILTRATION THROUGH AN ALLOWED ENDPOINT}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{WORKER CHOOSES PATH + BODY}
 \begin{lstlisting}
 POST /accounts/other/uploads
-{"data":"SYNTHETIC-PRIVATE-FIXTURE"}
-201
+{"data":"PRIVATE-FIXTURE"}
 
-request = {"operation":"publish_report","task":"parser-fix"}
-# extra keys -> DENIED, no delivery
-# broker POST /accounts/team/reports
-#        {"task":"parser-fix","status":"completed"}
+201 STORED
+receiving service has the bytes
 \end{lstlisting}
-\subline{Process isolation: worker cannot reach the service. Broker owns the POST.}
-\evidence
-\note{05:00 to 07:00. We allowed the report host. The worker posted the private fixture to another account on that host. 201. The worker does not choose URL, recipient, or body. Extra keys denied. Direct route gone. Team report still arrives.}
-\end{frame}
-
-\begin{frame}[fragile]{Verifier tampering}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{BROKER OWNS THE OPERATION}
 \begin{lstlisting}
-# checker.py  hash unchanged
-expected = json.loads(Path("expected.json").read_text())
+{"operation":"publish_report",
+ "task":"parser-fix"}
 
-# worker-written expected.json
-{"input": "admin:none", "output": 200}
-
-python3 handler.py admin:none
-200     # shipped
-401     # required
-CI      PASS
+extra fields -> DENIED
+fixed team report -> ACCEPTED
 \end{lstlisting}
-\subline{The worker edited the cases. The checker file did not change.}
-\evidence
-\note{07:00 to 09:45. Ticket: unauthenticated /admin returns 401. checker.py is read-only. It loads expected.json from the workspace. Worker writes admin:none -> 200. Checker prints PASS. Independent case still requires 401. Shipped handler prints 200. A second machine that reads the same expected.json also prints PASS. Ignore a worker PASS file; that is the detector.}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Remove the direct route; mediate destination, operation, and payload.}
+\vspace{1mm}\scope{Loopback upload fixture; isolated direct-route probe; receiver-side delivery checks.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\note{Here the task needs to publish a completion report. Our synthetic upload service supports a team report path and another account's upload path. Both live on the same service. The worker sends the private fixture to the other path. The service returns created, and we inspect its receiving-side delivery record to confirm the bytes arrived.\\ \\ A hostname decision cannot express which account should receive which data. This fixture models that distinction; it is not a test of an enterprise firewall or a SaaS vendor.\\ \\ In the corrected configuration the worker has no direct route to the service. It can request one operation from a broker. The broker constructs the destination and a fixed body itself. Recipient, payload, and URL overrides are rejected. The legitimate report still arrives.\\ \\ Both parts matter: the broker must constrain the operation, and the worker must not bypass it. This deliberately narrow reporting interface does not prove that every free-form output channel is free of exfiltration.}
 \end{frame}
 
-\begin{frame}[fragile]{Close each one}
+\begin{frame}[t,fragile]
+\frametitle{4. The checker is read-only. Its answer key is not.}
+\kicker{VERIFIER TAMPERING}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{UNCHANGED CHECKER}
 \begin{lstlisting}
-token = mint(scope=task, ttl=1h)          # credential projection
-mount /input ro; mount /output rw         # scoped filesystem
-unshare-net; broker.publish(team_report)  # process isolation
-frozen = freeze(handler.py)
-judge(frozen, controller_cases)
-publish(frozen)                           # live swap -> DENIED
-\end{lstlisting}
-\subline{History: rewritten log => different chain head. The compare decides merge.}
-\evidence
-\note{09:45 to 11:45. Read the four abstract locks as you walk the snippet. Task token 403 on the other project. Read-only input. Worker cannot open the service. Freeze handler.py, compare on the controller, publish that digest. Used nonce cannot replay. Open admin is not published. Locked admin is published. The log does not decide the merge.}
-\end{frame}
+expected = json.loads(
+  Path("expected.json")
+  .read_text())
 
-\begin{frame}[fragile]{Four boundaries}
+compare(handler, expected)
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{WORKER-EDITED ANSWER KEY}
 \begin{lstlisting}
-credential  = ?     # what else can it read?
-mounts      = ?     # writable? forked tomorrow?
-POST        = ?     # who sets path and body?
-compare     = ?     # can the worker edit cases or PASS?
+input:  admin:none
+output: 401 -> 200
+
+checker.py write: DENIED
+checker.py hash: UNCHANGED
 \end{lstlisting}
-\subline{403, EROFS, DENIED, reject must come from outside the worker.}
-\note{11:45 to 13:15. On your host, fill in the four question marks. After you add the refusing component, run the legitimate ticket again and confirm it still completes.}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Protecting a checker file does not protect the inputs that define success.}
+\vspace{1mm}\scope{Isolated factory: honest key fails; answer-key edit succeeds; unchanged checker passes.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\note{Now the fourth interface: the meaning of done. The policy says the unauthenticated admin case must return four-oh-one. The candidate is an intentionally broken handler that always returns two hundred. It is a small status-code model, invoked as a Python program, not a deployed web server.\\ \\ We put the checker on a read-only mount. With the honest answer key, it reports FAIL. The worker attempts to overwrite the checker and the operating system denies the write.\\ \\ But the checker reads expected dot json from the workspace. The worker changes that file to expect two hundred. The checker now reports PASS. Its SHA-256 is unchanged. The broken handler's bytes are unchanged too.\\ \\ The failure is in what the checker trusts. Hashing its source does not bind the specification it loads. A separate machine would not repair this dependency if we copied the same worker-controlled answer key into it. The isolation experiment is recorded; the second-machine statement is the consequence of that dependency, not a separate measured trial.}
 \end{frame}
 
-\begin{frame}[plain]
-\kicker{RECORDED RESULTS ON GITHUB}
+\begin{frame}[t,fragile]
+\frametitle{Keep the candidate fixed. Change who owns the cases.}
+\kicker{CONTROLLED COMPARISON}
+\vspace{2mm}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Candidate & \color{acid}\bfseries Expected results & \color{acid}\bfseries Observed decision \\ \midrule
+Always 200 & Honest workspace key & FAIL \\
+Same bytes & Worker changes key & PASS \\
+Same bytes & Controller-owned cases & REJECT \\
+Correct handler & Controller-owned cases & ACCEPT \\
+\end{tabular}}
+\takeaway{The controller rejects the bad bytes and still accepts the repaired task.}
+\vspace{1mm}\scope{Five fixed cases: anonymous, admin, ordinary user, public route, expired credential.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+\note{This comparison is the evidence. Follow the first three rows: the candidate does not change. With the honest workspace key, the weak checker fails it. After the worker changes the key, the same checker passes it. With controller-owned expectations, those same candidate bytes are rejected.\\ \\ Then the positive control: the corrected handler is accepted. We test five cases. An anonymous admin request is four-oh-one. An administrator receives two hundred. An ordinary user receives four-oh-three. The public route returns two hundred. An expired credential receives four-oh-one.\\ \\ The always-two-hundred candidate fails three of those expectations. The corrected candidate meets all five.\\ \\ This is a deterministic reproduction of a known trust-boundary failure. It does not tell us how often a language model discovers the trick, and five cases do not establish universal application security. What it establishes is narrower and useful: moving the answer key outside worker control changes the decision while we hold the bad artifact fixed. That is the experiment to repeat against your own acceptance pipeline.}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Make the release decision outside the worker.}
+\kicker{REFERENCE ACCEPTANCE PROTOCOL}
+\vspace{2mm}
+\vspace{3mm}
+\begin{tikzpicture}[>=Stealth]
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n0) at (0.0,0) {FREEZE};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n0] {copy artifact bytes};
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n1) at (2.84,0) {EXECUTE};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n1] {read-only candidate};
+\draw[->,color=acid] (n0.east) -- (n1.west);
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n2) at (5.68,0) {COMPARE};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n2] {controller cases};
+\draw[->,color=acid] (n1.east) -- (n2.west);
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n3) at (8.52,0) {AUTHORIZE};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n3] {bind run + policy};
+\draw[->,color=acid] (n2.east) -- (n3.west);
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n4) at (11.36,0) {PUBLISH};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n4] {exact approved bytes};
+\draw[->,color=acid] (n3.east) -- (n4.west);
+\end{tikzpicture}
+\vspace{4mm}
+\begin{lstlisting}
+approval = MAC(artifact, verifier, cases, policy,
+               environment, task, run, nonce, expiry)
+\end{lstlisting}
+\takeaway{An approval is a scoped capability for one exact artifact and one decision context.}
+\vspace{1mm}\scope{MAC is an internal shared-key model. Publication is an atomic local SQLite record of bytes.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% Source: https://slsa.dev/spec/v1.2/verifying-artifacts
+\note{The repair has a sequence. Copy the candidate into a narrow frozen representation. Execute those bytes with a read-only candidate mount. The controller compares observed outputs against expectations the worker cannot rewrite.\\ \\ Only that controller can issue the approval. The approval binds the artifact manifest, verifier, expected results, policy, environment description, task, run, a fresh nonce, and an expiry. Publication rechecks that context and stores the exact approved bytes.\\ \\ In this repository, publication is a local SQLite transaction. It is a runnable model of the release boundary, not a claim that we integrated with a production deployment system. Consuming the nonce and storing the bytes happen together.\\ \\ The trust assumption remains important: the worker cannot access the controller key, database, or comparison code. A local Python subprocess with isolated-import flags is not an operating-system sandbox. That is why the local protocol tests and the Linux isolation experiments are separate evidence classes. A hash chain supports integrity checking; it does not decide whether the application behavior meets policy.}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Challenge the gate before you trust the green check.}
+\kicker{NEGATIVE TESTS + A POSITIVE CONTROL}
+\vspace{2mm}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Attempt & \color{acid}\bfseries Required outcome & \color{acid}\bfseries Control \\ \midrule
+Bad candidate & REJECT & Good candidate accepted \\
+Fresh approval, different bytes & DENIED & Original bytes still publish \\
+Consumed approval & DENIED & One publication only \\
+Timeout / malformed output & NO APPROVAL & No fabricated verdict \\
+\end{tabular}}
+\takeaway{Test substitution before consuming the nonce, or the wrong defense may hide the bug.}
+\vspace{1mm}\scope{Protocol tests cover changed context, expiry, replay, immutable bytes, and concurrent publication.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/tests/test_factory.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+\note{Now attack the approval protocol itself. Take a fresh, unused approval for the good candidate and offer different bytes. The gate must deny it. Immediately offer the original good bytes with that same approval. They must still publish. Only then test replay.\\ \\ That ordering prevents a misleading test: if you consume the nonce first, a substitution test can pass because the nonce is already used, even when artifact binding is broken. We corrected that ordering in this repository.\\ \\ We also hardened our frozen representation and made publication store bytes instead of only a success marker. The appendix records the baseline flaw as controller API misuse. We have not demonstrated a worker crossing the OS boundary to reach those objects.\\ \\ Finally, distinguish rejection from missing evidence. A timed-out or malformed execution produces no approval. That is a fail-closed outcome, but it is not proof that the candidate met the policy. Keep that distinction in the dashboard and in the release logic.}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{More agents do not create an independent judge.}
+\kicker{MULTI-AGENT IMPLICATION / NOT A MEASURED TRIAL}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{SHARED AUTHORITY}
+\begin{lstlisting}
+builder -> expected.json
+reviewer -> expected.json
+judge   -> expected.json
+
+three roles, one writable key
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{SEPARATE AUTHORITY}
+\begin{lstlisting}
+workers -> proposals
+controller -> policy
+isolated runs -> observations
+
+one controlled publication gate
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Independence follows write authority and trusted dependencies, not agent count.}
+\vspace{1mm}\scope{Architectural inference from the answer-key experiment. No multi-agent benchmark is claimed.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/INVARIANTS.md
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+\note{This matters when one worker becomes a software factory. You may have a builder, a reviewer, and a judge. They may run different models or use different prompts. But if all three read a writable answer key produced by the builder, you have replicated the dependency.\\ \\ Trace who can write the specification, fixtures, dependencies, evidence, and final approval. A second role or a second machine is not automatically a second authority boundary.\\ \\ You can still let many workers explore, generate competing patches, and propose tests. Keep those proposals distinct from the criteria authorized to promote a release. The final publication path should accept only an approval bound to the selected artifact and decision context.\\ \\ That is an architectural inference from the dependency we just measured. We are not presenting a multi-agent benchmark or claiming that changing model temperature is a security control.}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Four tests to run on your own deployment.}
+\kicker{TAKE-HOME CHECKLIST}
+\vspace{2mm}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Boundary & \color{acid}\bfseries Try the unauthorized action & \color{acid}\bfseries Keep this working \\ \midrule
+Credential & Read a different project & Task input \\
+Filesystem & Write outside task output & Legitimate patch \\
+Egress & Change recipient or body & Authorized report \\
+Acceptance & Change cases or swap bytes & Verified artifact \\
+\end{tabular}}
+\takeaway{For every denial, require a positive control that still completes the task.}
+\vspace{1mm}\scope{Scope credentials; narrow mounts; enforce broker-only egress; bind independent acceptance to bytes.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/RUNBOOK.md
+\note{These are the four tests I would take back to a deployment review.\\ \\ Use the worker's credential to ask for another project's data. The resource should deny it while the real task input remains available.\\ \\ Attempt a write outside the task's output area. Confirm the shared input stays unchanged and the legitimate patch still appears.\\ \\ Try to change the recipient or body of the permitted report. Verify both that the broker refuses the request and that the worker cannot bypass the broker. Inspect the receiving system rather than trusting a worker log.\\ \\ Finally, change an input that determines success. Then try to substitute bytes under a fresh approval. The acceptance decision must use criteria outside worker write authority, and publication must bind to the bytes that were evaluated.\\ \\ Each denial should come from a component the worker cannot rewrite. Each test needs a positive control. Otherwise a completely broken system can look perfectly secure because nothing ever completes. The repository contains the fixtures, raw observations, source hashes, and reproduction commands so you can inspect exactly what each test means.}
+\end{frame}
+
+\begin{frame}[t,fragile,plain]
+\kicker{KEEP EXECUTION AND ACCEPTANCE AS SEPARATE AUTHORITIES}
+\vspace{2mm}
+\vspace{4mm}
+{\fontsize{20}{24}\selectfont\bfseries The worker may propose the artifact.\\ It must not define why that artifact\\ is eligible for release.\par}
 \vspace{5mm}
-\bigline{Who gave this process\\the authority?}
-\vspace{7mm}
-{\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
-\note{13:15 to 14:00. We gave the worker a token, a filesystem, a publish URL, and a checker that read its workspace. The sandbox stayed up. Those four interfaces were enough for a breach. The four locks are in the abstract. The repo has the recorded commands. Ask who gave this process the authority. Stop.}
-\end{frame}
-
-\begin{frame}[fragile]{Appendix / Commands}
+{\color{acid}\ttfamily\large github.com/zozo123/nyc-talk\par}
 \begin{lstlisting}
-make factory     # freeze, judge, gate
-make demo        # Linux isolation lab
-make deck        # this PDF
+make test
+make demo
+make factory-isolated
 \end{lstlisting}
-\subline{\evidencecount.}
-\note{Appendix only. Factory is verifier and /admin. Lab is credentials, mounts, publish. Isolated lab fails closed.}
+\takeaway{Source. Evidence. Counterexamples. Positive controls.}
+% Source: https://github.com/zozo123/nyc-talk
+\note{The four failures used interfaces we intentionally gave the worker: a token, a mount, a permitted service, and an answer key. The useful question is not only whether the process can leave its sandbox. It is which decisions the process can cause while it remains inside.\\ \\ Let the worker propose code, tests, and explanations. Keep the authority that defines acceptance outside its write boundary, and bind the release to the exact artifact that authority evaluated.\\ \\ The source and recorded evidence are at github dot com, zozo one two three, nyc dash talk. Thank you.}
 \end{frame}
 
-\begin{frame}{Appendix / Limits}
-Synthetic fixtures. Deterministic worker scripts.
-
-Five /admin cases cover this policy.
-
-Twenty-nine lab checks are recorded assertions, not twenty-nine CVEs.
-
-\note{Appendix only. No vendor zero-day claim. No model success rate. History head is held by the controller.}
+\begin{frame}[t,fragile]
+\frametitle{Appendix / What the evidence actually establishes}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Evidence class & \color{acid}\bfseries Execution & \color{acid}\bfseries Limit \\ \midrule
+Isolation lab & Linux namespaces + mounts & 29 assertions, not 29 vulnerabilities \\
+Checker experiment & Read-only checker + mutable key & Deterministic scripts; five-case model \\
+Protocol regressions & Local controller tests & No OS isolation claim \\
+Multi-agent / snapshots & Architectural implications & Not measured attack trials \\
+\end{tabular}}
+\takeaway{No vendor zero-day, customer incident, model success rate, or general sandbox certification.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+\note{Use this slide to answer scope questions. The documented baseline API flaw is ours. Kernel compromise, malicious controllers, timing channels and full application correctness are outside the experiments. The lab uses loopback HTTP for credentials and upload; the admin policy is a CLI status-code model.}
 \end{frame}
 
-\begin{frame}{Appendix / Links}
-\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}
-\subline{Script, slides, recorded results}
-\href{https://zenity.io/resources/events/ai-agent-security-summit-nyc}{AI Agent Security Summit, NYC}
-\note{Appendix only. Do not present in the 15 minutes.}
+\begin{frame}[t,fragile]
+\frametitle{Appendix / The five policy cases}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Input & \color{acid}\bfseries Expected & \color{acid}\bfseries Always-200 candidate \\ \midrule
+admin:none & 401 & 200: mismatch \\
+admin:admin & 200 & 200: match \\
+admin:user & 403 & 200: mismatch \\
+public:none & 200 & 200: match \\
+admin:expired & 401 & 200: mismatch \\
+\end{tabular}}
+\takeaway{CLI fixture: python3 handler.py admin:none. These are modeled status codes.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\note{Three of the five outputs differ for the broken candidate. These tests establish only the five stated criteria. The corrected handler covers them; the experiment does not prove authentication correctness for an actual service.}
 \end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Appendix / We audited our own reference gate.}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{PINNED BASELINE: 4b06c51}
+\begin{lstlisting}
+frozen.files["handler.py"] = BAD
+frozen.digest stays unchanged
+
+gate says PUBLISHED
+manifest no longer matches bytes
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{CORRECTED PROTOCOL}
+\begin{lstlisting}
+immutable byte entries
+derived manifest + digest
+fresh substitution test
+atomic nonce + byte publication
+concurrent replay regression
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Internal API integrity flaw. No demonstrated worker-to-controller exploit path.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/baseline/core.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/tests/test_factory.py
+\note{At the pinned baseline, a caller with controller Python-object access could mutate files without updating the stored digest. The original publish function logged a marker, not candidate bytes. We reproduce those facts and do not describe them as a proven production exploit. The fix makes the bytes immutable, derives digests, and records exact bytes transactionally.}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Appendix / Reproduce without cloud credentials.}
+\begin{lstlisting}
+make test                 # controller protocol regressions
+make factory              # local fixture logic
+make demo                 # Linux namespace / mount lab
+make factory-isolated     # read-only checker / answer key
+make record-all            # refresh evidence after edits
+make snapshot              # compile the Beamer PDF
+\end{lstlisting}
+\takeaway{Linux + bubblewrap for isolated runs. Python standard library for experiments. TeX Live for the deck.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/Makefile
+% Source: https://github.com/zozo123/nyc-talk/blob/main/.github/workflows/verify.yml
+\note{A failure to create a namespace is an infrastructure failure, not a successful defense. CI runs the isolated experiments on Ubuntu. The stage presentation uses the saved PDF and recorded transcript; it does not require venue Wi-Fi or cloud provisioning. make record-all intentionally runs isolated experiments and must succeed before refreshing evidence.}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Appendix / Tamper evidence is not a verdict.}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{HISTORY CHECK}
+\begin{lstlisting}
+head = H(previous || event)
+
+rewrite events
+recompute chain
+compare to controller anchor
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{ACCEPTANCE CHECK}
+\begin{lstlisting}
+frozen candidate
+controller-owned policy
+independent comparison
+scoped approval
+exact-byte publication
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{The chain detects a rewrite only against an independently retained trusted anchor.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://slsa.dev/spec/v1.2/verifying-artifacts
+\note{An attacker who can rewrite the log and its trusted anchor can recompute a consistent chain. The lab checks disagreement with a controller-held head; it does not deploy a transparency service. Neither a chain nor a signature establishes that the application satisfies its task. Those mechanisms authenticate evidence and decisions under explicit trust assumptions.}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Appendix / Prior work and source map}
+{\color{acid}\fontsize{8.8}{10}\selectfont Primary experiments}\par
+{\fontsize{9.5}{12}\selectfont github.com/zozo123/nyc-talk}\par\vspace{0mm}
+{\color{acid}\fontsize{8.8}{10}\selectfont Sandbox policy is caller-defined}\par
+{\fontsize{9.5}{12}\selectfont github.com/containers/bubblewrap}\par\vspace{0mm}
+{\color{acid}\fontsize{8.8}{10}\selectfont Provenance verification + artifact binding}\par
+{\fontsize{9.5}{12}\selectfont slsa.dev/spec/v1.2/verifying-artifacts}\par\vspace{0mm}
+{\color{acid}\fontsize{8.8}{10}\selectfont Reward hacking in programming tasks}\par
+{\fontsize{9.5}{12}\selectfont Anthropic, Nov 21, 2025: emergent misalignment}\par\vspace{0mm}
+{\color{acid}\fontsize{8.8}{10}\selectfont Event / date}\par
+{\fontsize{9.5}{12}\selectfont Zenity AI Agent Security Summit 2026: Oct 21, NYC}\par\vspace{0mm}
+\takeaway{A reproducible boundary demonstration, with explicit limits.}
+% Source: https://github.com/zozo123/nyc-talk
+% Source: https://github.com/containers/bubblewrap#sandbox-security
+% Source: https://slsa.dev/spec/v1.2/verifying-artifacts
+% Source: https://www.anthropic.com/research/emergent-misalignment-reward-hacking
+% Source: https://zenity.io/resources/events/ai-agent-security-summit-2026
+\note{The Anthropic work is related motivation, not evidence that our deterministic scripts represent any deployed model. The SLSA reference motivates artifact and trusted-identity binding; this repository does not claim SLSA certification. Bubblewrap documents that security depends on its supplied policy. The event page verifies the NYC date; it does not independently confirm this speaker slot length.}
+\end{frame}
+
 \end{document}

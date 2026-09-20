@@ -1,12 +1,12 @@
 {
   "local": {
     "mode": "local",
-    "host": "macOS-26.5.1-arm64-arm-64bit",
+    "host": "Linux-6.8.0-1064-azure-x86_64-with-glibc2.35",
     "task": "lock-admin",
     "status": "PASS",
     "good": {
       "config": "reference-intended",
-      "artifact": "aa8ce096bdb14b5690595c7336139ba2708941940fb073d99a7f4dfafb569bd6",
+      "artifact": "bf2a3a3791fd4f71eeb57da4a1841da918149c655a5d478bc9babc4df85acc05",
       "outputs": [
         {
           "status": "ok",
@@ -47,7 +47,7 @@
     },
     "bad": {
       "config": "reference-intended",
-      "artifact": "0d8f270afdeb725dc02017fd7439887ae3f7544a7d350fb54a3df644d3565dca",
+      "artifact": "d14afeb642bce2d713440d19cc6015114a51a10339fee84335c2e0c2fdea4848",
       "outputs": [
         {
           "status": "ok",
@@ -127,7 +127,7 @@
       {
         "check": "intended.good",
         "status": "PASS",
-        "detail": "Frozen locked-admin handler is accepted and published from the frozen object.",
+        "detail": "Frozen locked-admin fixture is accepted; exact bytes are stored in the publication database.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -151,7 +151,7 @@
       {
         "check": "intended.swap",
         "status": "PASS",
-        "detail": "Approval for frozen good bytes does not authorize a different digest.",
+        "detail": "Fresh, unused approval rejects substituted bytes, then still publishes the intended bytes.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -163,7 +163,7 @@
       {
         "check": "intended.replay",
         "status": "PASS",
-        "detail": "Consumed approval cannot be replayed. Restart would still see the nonce file.",
+        "detail": "Consumed approval cannot publish twice; nonce and published bytes commit in one SQLite transaction.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -187,7 +187,7 @@
       {
         "check": "weakened.deps",
         "status": "PASS",
-        "detail": "Detector: protected checker file still PASSed via worker expected.json.",
+        "detail": "Detector: unchanged checker still PASSed via worker expected.json (local logic run).",
         "classification": {
           "execution_status": "completed",
           "observed_result": "boundary_violation",
@@ -200,55 +200,16 @@
     "source_sha256": {
       "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
       "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
-      "factory/core.py": "884f681f053bb200145c6fcb9761ba05ab94d85157fa83e612f5f36c4777fb99",
-      "factory/run.py": "d29dcdf3612c5d029f6e8a39ecd2cf9d5e24212ba25bf0828e5b0c6100ef6914"
+      "factory/core.py": "cf198c881093f1e2c590494d352ce25eba33d7ab475e59abe4b27baeefcca22c",
+      "factory/isolated.py": "0d599e566def58bc9d150f259f4e9fb9b6c36b4117012ed07eb1bfb101272977",
+      "factory/run.py": "d44a1ad803066fd8aeaa8f362ab1ceea920bbba3ad004a9dc709c6b60d0032ae"
     }
   },
   "source_sha256": {
     "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
     "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
-    "factory/core.py": "884f681f053bb200145c6fcb9761ba05ab94d85157fa83e612f5f36c4777fb99",
-    "factory/run.py": "d29dcdf3612c5d029f6e8a39ecd2cf9d5e24212ba25bf0828e5b0c6100ef6914"
-  },
-  "boat": {
-    "mode": "boat",
-    "status": "PASS",
-    "ledger": {
-      "execution_status": "completed",
-      "sandbox_id": "bx_bt2fdeyv",
-      "commands": 12,
-      "stopped": true
-    },
-    "good": {
-      "kind": "verdict",
-      "accepted": true,
-      "matches": [
-        true,
-        true,
-        true,
-        true,
-        true
-      ]
-    },
-    "bad": {
-      "kind": "verdict",
-      "accepted": false,
-      "matches": [
-        false,
-        true,
-        false,
-        true,
-        false
-      ]
-    },
-    "no_env": true,
-    "idle_not_used_as_quiescence": true,
-    "classification": {
-      "execution_status": "completed",
-      "observed_result": "successful_defense",
-      "configuration": "reference-intended",
-      "attribution": "our_factory",
-      "prior_work": "known_mechanism"
-    }
+    "factory/core.py": "cf198c881093f1e2c590494d352ce25eba33d7ab475e59abe4b27baeefcca22c",
+    "factory/isolated.py": "0d599e566def58bc9d150f259f4e9fb9b6c36b4117012ed07eb1bfb101272977",
+    "factory/run.py": "d44a1ad803066fd8aeaa8f362ab1ceea920bbba3ad004a9dc709c6b60d0032ae"
   }
 }

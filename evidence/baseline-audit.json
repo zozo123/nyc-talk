@@ -1,0 +1,9 @@
+{
+  "baseline_commit": "4b06c519cff2ffcc69a8471f4f861a03f08f93a0",
+  "archived_core_sha256": "884f681f053bb200145c6fcb9761ba05ab94d85157fa83e612f5f36c4777fb99",
+  "digest_field_unchanged": true,
+  "candidate_matches_manifest": false,
+  "gate_result": "PUBLISHED",
+  "reachability": "Controller API misuse; no demonstrated worker-to-controller exploit path",
+  "publication_scope": "The archived gate records a marker, not deployed bytes"
+}

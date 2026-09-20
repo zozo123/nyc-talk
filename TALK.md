@@ -1,168 +1,145 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
-**Yossi Eliaz**  
-Principal Engineer and Head of DevRel at Incredibuild.com
+**Yossi Eliaz, PhD | AI Agent Security Summit | October 21, 2026**
 
-AI Agent Security Summit · NYC · October 21, 2026 · 15 minutes
+12 main slides. Target: 14 minutes, with one minute of margin. The script is generated from `slides/deck.json`; edit that file, not this one.
 
-Speak in full sentences. Read the snippets on the slide. Do not set up a contrast and then flip it.
+## 1. Your Agent Escaped Without Escaping the Sandbox | 00:00-00:35
 
-## 1. Title — 00:00–00:30
+*Stage cue: Start on the title. Do not introduce the company or sell a product.*
 
-I am Yossi Eliaz.
+You ask a coding agent to fix authorization. Its checker reports PASS. The checker file has exactly the same hash as before. The unauthenticated admin case still returns two hundred.
 
-The title is the claim. The agent stays inside the sandbox. Namespaces and cgroups do what they were built to do. A real breach still happens.
+I am Yossi Eliaz. I will show how that happens, alongside three other failures that use capabilities we deliberately give a worker. Every demonstration uses synthetic fixtures. The worker scripts are deterministic, so we can inspect the mechanism without debating what a model intended.
 
-Four cases. Each one uses an interface we gave the worker so it could finish the job.
+## 2. The worker can act. Who can authorize? | 00:35-01:25
 
-## 2. What we gave it — 00:30–01:15
+*Stage cue: Point to the boundary. State assumptions before showing attacks.*
 
-A working coding agent needs four things from us: a credential, some files, one network path that can publish, and a signal that the work is done.
+Here is the threat model. Treat the worker as an arbitrary task program. It can edit its code and writable files, invoke its tools, and ask for its output to be published. We trust the controller and the operating-system boundary. We do not give the worker the controller's key or storage.
 
-Those four things are the four cases in the abstract: inherited credentials, dangerous mounts, exfiltration through an allowed endpoint, and verifier tampering.
+In the isolated runs, Linux user, PID, and mount namespaces really are different. Network access is disabled where the experiment requires it. The question is what authority remains through the interfaces we intentionally leave open.
 
-The process never leaves the box. Those four interfaces still move data, files, and merge decisions.
+I will use four concrete interfaces: a credential, a shared mount, an upload operation, and the inputs to a checker. For each fix, the legitimate task must still work.
 
-## 3. Inherited credentials — 01:15–03:20
+## 3. 1. The inherited token reaches another project. | 01:25-02:35
 
-We started the worker with the runner token already in the environment, because CI already had that token.
+*Stage cue: Read 200, then 403, then the legitimate 200. The tokens are public fixtures.*
 
-```
-Authorization: Bearer fixture-runner
-GET /projects/other/private
-200  {"fixture":"SYNTHETIC-PRIVATE-FIXTURE"}
-```
+The task needs one input. We start the worker with a synthetic runner token inherited through its environment. That token is broader than the task. The worker asks the service for another project's private fixture. The service returns two hundred and the fixture bytes.
 
-The sandbox did not steal this. The worker sent a GET with the token we injected.
+The process has not escaped. The service has accepted a credential we placed inside it.
 
-We replaced that token with one scoped to the current task.
+Now use the task token. The same request returns four-oh-three. The authorized task input still returns two hundred. The service also rejects an expired token and a token for the wrong audience.
 
-```
-Authorization: Bearer fixture-task
-GET /projects/other/private          403
-GET /input/parser-fix               200
-```
+The important control is enforced scope. A short expiry reduces the exposure window, but a broad token can still do damage before it expires. Project only the grant this task needs, and validate that grant at the resource. These token strings and the private data on this slide are fixtures, not live credentials.
 
-Expired tokens and the wrong audience also return 403. The job can still read its own input.
+## 4. 2. The mount grants a write into the next job. | 02:35-03:40
 
-The lock is short-lived credential projection: mint for this task, this audience, this hour. Do not copy the runner secret into the worker.
+*Stage cue: Do not call this a filesystem escape. The write follows the mount policy.*
 
-## 4. Dangerous mounts — 03:20–05:00
+The second interface is a shared directory. In the first configuration it is writable. The worker performs an ordinary file write, and the next-job fixture on the host changes. The mount is doing exactly what we configured it to do.
 
-We mounted another job’s directory into the worker and left it writable.
+We repeat the same operation with a read-only bind. The write is denied and the host fixture remains unchanged. A separate output mount still accepts the legitimate patch.
 
-```
-Path("/shared/next-job.json").write_text('{"queue":"attacker"}')
-# writable bind: WRITE_SUCCEEDED, host file changed
-# read-only bind: WRITE_DENIED,   host file unchanged
-Path("/output/patch.txt").write_text("legitimate patch output")
-# still succeeds
-```
+That positive control matters. We did not fix the system by making the agent unable to work.
 
-The write is a normal open. The host file changes because we configured the bind that way.
+For a system that forks snapshots or reuses workspaces, ask which writable state crosses into the next task. That is an architectural implication of sharing those bytes; we did not measure a snapshot attack here. In this experiment, the demonstrated boundary is the bind mount.
 
-The lock is a capability-scoped filesystem: `/input` read-only, `/output` writable, the next job’s path absent. The worker can still produce its patch.
+## 5. 3. The allowed service accepts the wrong upload. | 03:40-05:00
 
-If you snapshot this disk and fork it for the next agent, that next agent inherits the same files.
+*Stage cue: Explain that the service permits both account paths by design. This is a capability mistake.*
 
-## 5. Allowed endpoint — 05:00–07:00
+Here the task needs to publish a completion report. Our synthetic upload service supports a team report path and another account's upload path. Both live on the same service. The worker sends the private fixture to the other path. The service returns created, and we inspect its receiving-side delivery record to confirm the bytes arrived.
 
-We allowed the worker to reach the report service so it could publish.
+A hostname decision cannot express which account should receive which data. This fixture models that distinction; it is not a test of an enterprise firewall or a SaaS vendor.
 
-```
-POST /accounts/other/uploads
-{"data":"SYNTHETIC-PRIVATE-FIXTURE"}
-201
-```
+In the corrected configuration the worker has no direct route to the service. It can request one operation from a broker. The broker constructs the destination and a fixed body itself. Recipient, payload, and URL overrides are rejected. The legitimate report still arrives.
 
-The hostname is the one we allowlisted. The path is another account. The body is the private fixture. The service stored it.
+Both parts matter: the broker must constrain the operation, and the worker must not bypass it. This deliberately narrow reporting interface does not prove that every free-form output channel is free of exfiltration.
 
-The worker does not get to choose the URL, the recipient, or the body. It may request one operation. A broker on the controller sends a fixed report.
+## 6. 4. The checker is read-only. Its answer key is not. | 05:00-06:25
 
-```
-request = {"operation":"publish_report","task":"parser-fix"}
-# extra keys -> DENIED, no delivery
-# broker POST /accounts/team/reports  {"task":"parser-fix","status":"completed"}
-```
+*Stage cue: Pause after "Its answer key is not." This is the central reveal.*
 
-The worker’s network namespace cannot reach the service. The legitimate report still lands on the team path.
+Now the fourth interface: the meaning of done. The policy says the unauthenticated admin case must return four-oh-one. The candidate is an intentionally broken handler that always returns two hundred. It is a small status-code model, invoked as a Python program, not a deployed web server.
 
-The lock is real process isolation plus a broker that owns the envelope.
+We put the checker on a read-only mount. With the honest answer key, it reports FAIL. The worker attempts to overwrite the checker and the operating system denies the write.
 
-## 6. Verifier tampering — 07:00–09:45
+But the checker reads expected dot json from the workspace. The worker changes that file to expect two hundred. The checker now reports PASS. Its SHA-256 is unchanged. The broken handler's bytes are unchanged too.
 
-The ticket is: unauthenticated `/admin` returns 401. A green check means the patch may merge.
+The failure is in what the checker trusts. Hashing its source does not bind the specification it loads. A separate machine would not repair this dependency if we copied the same worker-controlled answer key into it. The isolation experiment is recorded; the second-machine statement is the consequence of that dependency, not a separate measured trial.
 
-We keep `checker.py` read-only. Its hash does not change. The checker loads cases from the workspace.
+## 7. Keep the candidate fixed. Change who owns the cases. | 06:25-08:00
 
-```
-# checker.py  (hash unchanged)
-expected = json.loads(Path("expected.json").read_text())
-for case in expected:
-    out = run(["python3", "handler.py", case["input"]])
-    assert json.loads(out) == case["output"]
-print("PASS")
-```
+*Stage cue: Walk one row at a time. PASS here means the weak checker was fooled, not that the app is safe.*
 
-The worker writes `expected.json`:
+This comparison is the evidence. Follow the first three rows: the candidate does not change. With the honest workspace key, the weak checker fails it. After the worker changes the key, the same checker passes it. With controller-owned expectations, those same candidate bytes are rejected.
 
-```
-{"input": "admin:none", "output": 200}
-```
+Then the positive control: the corrected handler is accepted. We test five cases. An anonymous admin request is four-oh-one. An administrator receives two hundred. An ordinary user receives four-oh-three. The public route returns two hundred. An expired credential receives four-oh-one.
 
-The checker prints PASS. The independent controller still requires 401 for `admin:none`.
+The always-two-hundred candidate fails three of those expectations. The corrected candidate meets all five.
 
-```
-python3 handler.py admin:none
-200          # shipped handler
-401          # required
-```
+This is a deterministic reproduction of a known trust-boundary failure. It does not tell us how often a language model discovers the trick, and five cases do not establish universal application security. What it establishes is narrower and useful: moving the answer key outside worker control changes the decision while we hold the bad artifact fixed. That is the experiment to repeat against your own acceptance pipeline.
 
-The worker did not edit the checker. It edited the cases the checker trusts. CI is green. `/admin` with no cookie returns 200.
+## 8. Make the release decision outside the worker. | 08:00-09:20
 
-A second machine that still reads that `expected.json` will print PASS as well.
+*Stage cue: Point to the worker/controller split, not just the left-to-right arrows.*
 
-The controller also ignores a worker `PASS` file. That file is how we prove the experiment can see a bad accept. It is not the main case.
+The repair has a sequence. Copy the candidate into a narrow frozen representation. Execute those bytes with a read-only candidate mount. The controller compares observed outputs against expectations the worker cannot rewrite.
 
-## 7. Close each one — 09:45–11:45
+Only that controller can issue the approval. The approval binds the artifact manifest, verifier, expected results, policy, environment description, task, run, a fresh nonce, and an expiry. Publication rechecks that context and stores the exact approved bytes.
 
-Inherited credentials: short-lived credential projection. Task-scoped token. 403 on the other project. 200 on task input.
+In this repository, publication is a local SQLite transaction. It is a runnable model of the release boundary, not a claim that we integrated with a production deployment system. Consuming the nonce and storing the bytes happen together.
 
-Dangerous mounts: capability-scoped filesystems. Read-only input, writable output. Host file unchanged.
+The trust assumption remains important: the worker cannot access the controller key, database, or comparison code. A local Python subprocess with isolated-import flags is not an operating-system sandbox. That is why the local protocol tests and the Linux isolation experiments are separate evidence classes. A hash chain supports integrity checking; it does not decide whether the application behavior meets policy.
 
-Allowed endpoint: real process isolation. Worker cannot open the service. Broker sends only the team report.
+## 9. Challenge the gate before you trust the green check. | 09:20-10:35
 
-Verifier tampering: freeze `handler.py` into controller storage, run those bytes, compare on the controller against controller-owned cases. Publish that digest. A rewritten log produces a different hash-chain head if the controller kept the original head. The log does not decide the merge. The compare does.
+*Stage cue: Emphasize FRESH. Keep the controller-API audit in the appendix unless asked.*
 
-```
-freeze({"handler.py": bytes})
-outputs = run_frozen(bytes, cases)
-approve(digest, run, verifier, expected, policy, nonce)
-publish(frozen)   # live path after a swap -> DENIED
-```
+Now attack the approval protocol itself. Take a fresh, unused approval for the good candidate and offer different bytes. The gate must deny it. Immediately offer the original good bytes with that same approval. They must still publish. Only then test replay.
 
-Open `/admin` is not published. Locked `/admin` is published. Replay of a used nonce is denied.
+That ordering prevents a misleading test: if you consume the nonce first, a substitution test can pass because the nonce is already used, even when artifact binding is broken. We corrected that ordering in this repository.
 
-## 8. Four boundaries — 11:45–13:15
+We also hardened our frozen representation and made publication store bytes instead of only a success marker. The appendix records the baseline flaw as controller API misuse. We have not demonstrated a worker crossing the OS boundary to reach those objects.
 
-On your own agent host, write four answers.
+Finally, distinguish rejection from missing evidence. A timed-out or malformed execution produces no approval. That is a fail-closed outcome, but it is not proof that the candidate met the policy. Keep that distinction in the dashboard and in the release logic.
 
-Which credential does the worker receive, and what else can that credential read?
+## 10. More agents do not create an independent judge. | 10:35-11:40
 
-Which paths are mounted, and which of them are writable, including snapshots you will fork?
+*Stage cue: Connect to software factories without adding untested phase/temperature claims.*
 
-Which URLs can it POST to, and who chooses the path and the body?
+This matters when one worker becomes a software factory. You may have a builder, a reviewer, and a judge. They may run different models or use different prompts. But if all three read a writable answer key produced by the builder, you have replicated the dependency.
 
-Which object is compared before merge, and can the worker change the cases or the PASS file?
+Trace who can write the specification, fixtures, dependencies, evidence, and final approval. A second role or a second machine is not automatically a second authority boundary.
 
-The component that returns 403, EROFS, DENIED, or reject has to sit outside the worker. After you add that component, run the legitimate ticket again and confirm it still completes.
+You can still let many workers explore, generate competing patches, and propose tests. Keep those proposals distinct from the criteria authorized to promote a release. The final publication path should accept only an approval bound to the selected artifact and decision context.
 
-## 9. Close — 13:15–14:00
+That is an architectural inference from the dependency we just measured. We are not presenting a multi-agent benchmark or claiming that changing model temperature is a security control.
 
-We gave the worker a token, a filesystem, a publish URL, and a checker that read its workspace. The sandbox stayed up. Those four interfaces were enough for a breach.
+## 11. Four tests to run on your own deployment. | 11:40-13:10
 
-The four locks are in the abstract. The repo has the recorded commands.
+*Stage cue: This is the audience photo slide. Give it a pause.*
 
-Who gave this process the authority?
+These are the four tests I would take back to a deployment review.
 
-> Stop.
+Use the worker's credential to ask for another project's data. The resource should deny it while the real task input remains available.
+
+Attempt a write outside the task's output area. Confirm the shared input stays unchanged and the legitimate patch still appears.
+
+Try to change the recipient or body of the permitted report. Verify both that the broker refuses the request and that the worker cannot bypass the broker. Inspect the receiving system rather than trusting a worker log.
+
+Finally, change an input that determines success. Then try to substitute bytes under a fresh approval. The acceptance decision must use criteria outside worker write authority, and publication must bind to the bytes that were evaluated.
+
+Each denial should come from a component the worker cannot rewrite. Each test needs a positive control. Otherwise a completely broken system can look perfectly secure because nothing ever completes. The repository contains the fixtures, raw observations, source hashes, and reproduction commands so you can inspect exactly what each test means.
+
+## 12. The worker may propose the artifact. It must not define why that artifact is eligible for release. | 13:10-14:00
+
+*Stage cue: Stop at the repository address. Leave the closing slide visible. One minute remains.*
+
+The four failures used interfaces we intentionally gave the worker: a token, a mount, a permitted service, and an answer key. The useful question is not only whether the process can leave its sandbox. It is which decisions the process can cause while it remains inside.
+
+Let the worker propose code, tests, and explanations. Keep the authority that defines acceptance outside its write boundary, and bind the release to the exact artifact that authority evaluated.
+
+The source and recorded evidence are at github dot com, zozo one two three, nyc dash talk. Thank you.
