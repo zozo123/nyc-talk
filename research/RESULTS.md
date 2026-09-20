@@ -1,31 +1,11 @@
-# Results
+# Result summary
 
-Pinned factory: `factory/` on this branch. Educational lab remains `lab/` at `fc34e2f`.
+**Real Linux lab:** 29 completed assertions, no skipped integration groups, in the retained CI record. The original `lab/run.py` is unchanged. Cases use synthetic fixtures and actual namespaces, mounts and host-loopback HTTP.
 
-## Local (`make factory`)
+**Local factory:** six completed checks. The incorrect candidate false-passes both deliberately weak configurations. Fixed controller criteria reject it. The correct candidate publishes. An unconsumed approval rejects different bytes, still publishes the original bytes, and rejects subsequent replay.
 
-| Check | Result | Classification |
-|---|---|---|
-| Intended: locked `/admin` frozen, accepted, published | PASS | successful defense, our factory |
-| Intended: open `/admin` rejected, not published | PASS | successful defense, our factory |
-| Intended: approval does not authorize swapped digest | PASS | successful defense, our factory |
-| Intended: consumed nonce cannot replay | PASS | successful defense, our factory |
-| Weakened: worker PASS file accepted the bug | PASS | **deliberate** boundary violation (detector) |
-| Weakened: protected checker + worker `expected.json` → PASS | PASS | **deliberate** boundary violation (detector) |
+**Regression suite:** 26 tests covering exact-byte publication, malformed approvals/results, fresh swap, same-key cross-run mismatch, verifier/environment/policy mismatch, object and stored-byte changes, single-use consumption, concurrent publication and missing evidence.
 
-Independent judge on the bug: `admin:none` and `admin:expired` must be 401; `admin:user` must be 403. The open handler returns 200 for all five.
+The local before/after audit is in `AUDIT.md`. Changes to controller memory in those robustness probes are outside the worker threat model. The local candidate executor is not a sandbox.
 
-## Boat accept-VM (`make factory-boat`)
-
-`noEnv: true`. Fresh VM executed frozen bytes. Controller compared. Idle was not used as quiescence.
-
-| Candidate | Verdict |
-|---|---|
-| Locked `/admin` | accept, five matches |
-| Open `/admin` | reject (no-cookie and expired fail) |
-
-Sandbox stopped after the run. Infrastructure: completed, not a crash-as-defense.
-
-## What we will not claim
-
-Not a Boat product vulnerability. Not novelty for in-sandbox graders (known). Not model ASR. Not 29 lab assertions as 29 bugs.
+The exact source commit, fresh experiment outputs, test results and compiled slides are retained together by CI. Do not describe infrastructure errors as successful defenses. No live model or current cloud-VM run is part of this revision. Boat remains optional and was not rerun.

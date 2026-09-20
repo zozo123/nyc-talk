@@ -42,6 +42,7 @@ ACCEPT_ENV = {
     "checker_in_vm": False,
     "expected_results_in_vm": False,
     "api_credential": "none",
+    "isolation": "local-fixture-processes-only",
 }
 
 
@@ -68,9 +69,9 @@ def intended(store: Path, candidate: bytes) -> dict:
             launch=LAUNCH, env_manifest=ACCEPT_ENV,
         )
         if verdict["accepted"]:
-            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
             swapped = freeze({SUBJECT: BAD.encode() if candidate != BAD.encode() else GOOD.encode()})
             swap = gate.replay_or_swap(approval, swapped, LAUNCH, ACCEPT_ENV)
+            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
             replay = gate.replay_or_swap(approval, frozen, LAUNCH, ACCEPT_ENV)
         else:
             published = "NOT_PUBLISHED"
@@ -107,7 +108,7 @@ def weakened_report(candidate: bytes) -> dict:
 
 
 def weakened_deps(candidate: bytes) -> dict:
-    """Protected checker file. Worker-controlled expected.json in the same cwd."""
+    """Unchanged checker file. Worker-controlled expected.json in the same cwd."""
     result = execute_weak_checker(candidate, WORKER_EXPECTED)
     independent = judge(execute_frozen(candidate))
     return {
@@ -117,7 +118,8 @@ def weakened_deps(candidate: bytes) -> dict:
         "checker_exit": result["exit"],
         "worker_expected_sha256": result["expected_sha256"],
         "independent_verdict": independent,
-        "checker_file_changed": False,
+        "checker_file_changed": result["checker_sha256"] != result["checker_after_sha256"],
+        "checker_after_sha256": result["checker_after_sha256"],
     }
 
 
@@ -154,14 +156,14 @@ def run_local(store: Path) -> dict:
     check(
         "intended.swap",
         good.get("swap_after_freeze") == "DENIED",
-        "Approval for frozen good bytes does not authorize a different digest.",
+        "An unconsumed approval rejects a different digest; the original still publishes.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
     check(
         "intended.replay",
         good.get("replay") == "DENIED",
-        "Consumed approval cannot be replayed. Restart would still see the nonce file.",
+        "Consumed approval cannot be replayed; publication bytes and nonce commit together.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
@@ -179,7 +181,7 @@ def run_local(store: Path) -> dict:
         deps["checker_stdout"] == "PASS"
         and deps["checker_file_changed"] is False
         and deps["independent_verdict"].get("accepted") is False,
-        "Detector: protected checker file still PASSed via worker expected.json.",
+        "Detector: measured unchanged checker still PASSed via worker expected.json.",
         classify("completed", "boundary_violation", "deliberately-weakened-untrusted-deps",
                  "our_factory", "known_reproduction"),
     )
