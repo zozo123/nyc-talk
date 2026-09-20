@@ -6,8 +6,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "slides/talk.tex").read_text()
 frames = re.findall(r"\\begin\{frame\}(.*?)\\end\{frame\}", source, re.S)
-output = ["# Speaker notes", "", "One job, four independent experiments, then a successful restricted run.",
-          "The workers are deterministic scripts. No claim of model-driven exploitation.", ""]
+output = ["# Speaker notes", "",
+          "One factory path: freeze, execute, judge, gate.",
+          "The finding is a protected checker that still reads worker-controlled expected results.",
+          "Three surrounding grants are independent synthetic checks, not one exploit chain.",
+          "Workers are deterministic scripts. No model-driven exploitation claim.", ""]
 for number, frame in enumerate(frames, 1):
     notes = re.findall(r"\\note\{([^{}]*)\}", frame, re.S)
     if len(notes) != 1:

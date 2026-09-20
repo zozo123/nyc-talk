@@ -5,73 +5,52 @@
 
 NYC · AI Agent Security Summit · October 21, 2026
 
-**15-minute lightning talk.** Twelve main slides, three appendix slides. The manuscript targets 14 minutes with one minute of margin. Recorded demonstrations are shown directly on slides.
+**15-minute lightning talk.** Nine main slides, three appendix. Manuscript targets 14 minutes.
 
-[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Spoken script](TALK.md) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Q&A](QUESTIONS.md) · [Recorded results](evidence/transcript.txt)
+[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Spoken script](TALK.md) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Q&A](QUESTIONS.md)
 
-**Verified:** all 29 checks passed in the [recorded Linux isolation run](https://github.com/zozo123/nyc-talk/actions/runs/35461381644), including real namespace, mount and network checks. The same CI run compiled the deck. Recorded lab source hashes match this repository.
+## What this talk is
 
-## The story
+An agent can stay inside its sandbox and still cause a real release of the wrong work. The interesting boundary is not the VM. It is **what makes a candidate eligible for release**, and how much of that decision the worker can influence.
 
-One task: **fix a parser and publish its report**.
+The spine is a **reference software factory** in `factory/`:
 
-The talk opens on a green check and a parser that still fails its original case. It holds the explanation until act four. Between those moments, each experiment shows how a convenient grant lets the worker affect something beyond its task. The ending returns to the same input and shows the repaired system completing the job.
+1. Dev VM produces a candidate.
+2. Controller **freezes** chosen paths into immutable storage and hashes a manifest.
+3. A fresh accept VM executes **those bytes** as untrusted code.
+4. Controller compares against **controller-owned** expected results.
+5. A gate binds artifact, run, verifier bundle, expected results, policy and nonce, then publishes **the frozen object**.
 
-Four independent experiments reveal excess authority:
+The finding we spend time on: **the checker file was protected; `expected.json` was not.** The worker matched the bug. PASS. Independent criteria still failed.
 
-1. **Identity:** an inherited runner credential reads another project.
-2. **Files:** a writable bind mount changes the next job's host fixture.
-3. **Data release:** an allowed upload service receives private data in the wrong account.
-4. **Acceptance:** a rewritten checker reports success while the parser stays broken.
+A worker `PASS` file the controller believes is a **deliberate weakened variant** (the experiment can detect failure). It is not an unexpected discovery.
 
-Each experiment tests the repair and a legitimate operation. The final run fixes the parser, checks its frozen bytes independently, obtains a publication decision and sends the permitted report.
-
-**The question: who gave this process the authority?**
+Three other grants — inherited identity, writable mounts, allowed exfil — are independent synthetic checks in `lab/`. They are the surrounding map, not one exploit chain.
 
 ## Run it
 
-Python 3.10+ standard library. For actual isolation, use a disposable Linux host with bubblewrap and working unprivileged user namespaces.
-
 ```sh
-make demo       # strict namespace/mount/network experiments
-make reference  # policy logic only; integration checks explicitly skipped
-make deck       # verify recorded source hashes, export notes, compile PDF
-python3 tools/present.py credentials  # show one recorded act
+make factory        # local freeze / judge / gate; no cloud
+make demo           # Linux + bubblewrap isolation lab
+make deck           # verify recorded hashes, export notes, compile PDF
 ```
 
-Install bubblewrap through your Linux distribution. The deck needs TeX Live with Beamer, listings and Latin Modern. Example on Ubuntu:
+Optional Boat accept-VM (`BOAT_API_KEY`, `noEnv`, short TTL):
 
 ```sh
-sudo apt-get install bubblewrap texlive-latex-recommended texlive-pictures lmodern
+make factory-boat
 ```
 
-A missing isolation capability causes **failure**, never automatic fallback. Fresh temporary fixtures are removed after each run. No real credentials, external targets or model API are used. Reference mode executes only this repo's deterministic fixtures and provides no sandbox.
+`make deck` does not provision machines.
 
-## What's here
+Python 3.10+ standard library. Isolation lab needs bubblewrap on disposable Linux. Deck needs TeX Live with Beamer.
 
-| File | Purpose |
-|---|---|
-| [slides/talk.tex](slides/talk.tex) | 15 editable Beamer slides: 12 main + 3 appendix |
-| [lab/run.py](lab/run.py) | Four experiments, positive controls and final task |
-| [evidence/results.json](evidence/results.json) | Recorded mode, source hashes, checks and subprocess output |
-| [evidence/transcript.txt](evidence/transcript.txt) | Offline demo fallback |
-| [TALK.md](TALK.md) | Final 15-minute manuscript with per-slide timeboxes |
-| [RUNBOOK.md](RUNBOOK.md) | 15-minute delivery, rehearsal checkpoints and overrun cuts |
-| [QUESTIONS.md](QUESTIONS.md) | Answers to security objections and scope questions |
-| [tools/present.py](tools/present.py) | Display one recorded act without revealing the next |
-| [tools/evidence.py](tools/evidence.py) | Refuses stale evidence before building the deck |
-| [.github/workflows/verify.yml](.github/workflows/verify.yml) | Linux integration and deck build |
+## What the evidence is not
 
-The PDF labels its evidence mode. The source digest in the record must match the lab. Use `make record` after an isolated run to refresh the record, then `make snapshot` to refresh the checked-in PDF.
+Not a named-product zero-day. Not a customer incident. Not a model attack-success rate. Not kernel-escape resistance. Five parser cases prove those five cases. The old lab’s 29 checks remain educational isolation demonstrations; they are not 29 vulnerabilities.
 
-The lab uses deterministic worker scripts, a local fixture service and controller-held trust anchors. It demonstrates specific authority failures. It does not measure live-model prompt-injection susceptibility, cgroup enforcement, kernel exploit resistance or all possible data channels. The history anchor is ephemeral. Five parser cases establish the demonstrated defect and fix, not complete correctness.
-
-## Accepted Sessionize abstract
+## Accepted abstract
 
 > Every namespace and cgroup can work exactly as designed and an agent can still cause a real breach. This talk demonstrates four non-escape escapes: inherited credentials, dangerous mounts, exfiltration through an allowed endpoint, and verifier tampering. Then we close each one at the layer that can actually enforce it: real process isolation, capability-scoped filesystems, short-lived credential projection, and tamper-evident execution history. You leave with four boundaries you can check against your own agent deployment.
 
-Title, abstract, tagline and accepted status supplied by the speaker from Sessionize. The technical treatment distinguishes process isolation, authorization, independent verification and tamper detection.
-
-## Scheduling
-
-The speaker confirmed a **15-minute lightning talk**. That instruction supersedes the earlier hour-long calendar-block assumption. The deck and script target 14 minutes with one minute of margin. Do not reserve an additional Q&A segment inside the 15 minutes. The previously reported public feed listed Oct 21, 15:45–16:45, Room 1; that block does not define this talk's duration.
+The session is 15 minutes. History **detects** rewrites. The gate **enforces** acceptance. Those are different jobs.

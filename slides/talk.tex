@@ -2,6 +2,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{listings}
+\usepackage{hyperref}
 \definecolor{void}{HTML}{101214}
 \definecolor{paper}{HTML}{F0F0E8}
 \definecolor{acid}{HTML}{C7FF48}
@@ -36,134 +37,93 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{00:00 to 00:30. Start with the small request: fix a parser and publish the report. Ask whether the audience would accept the green check. Move directly to the contradiction.}
+\note{00:00 to 00:40. Small job: fix a parser, publish the report. The sandbox does not break. Ask what made the work eligible for release, and how much of that decision the agent could influence. Escaped means exceeded the task through granted interfaces.}
 \end{frame}
 
-\begin{frame}[fragile]{The check is green. The parser is still broken.}
+\begin{frame}{What makes it eligible for release?}
+\bigline{The VM held.\\The green check did not.}
+\vspace{3mm}
+\subline{Dev produces. Controller freezes. Accept VM executes frozen bytes.}
+\subline{Controller compares. Gate publishes those bytes, or nothing.}
+\evidence
+\note{00:40 to 02:00. Walk the factory: untrusted dev VM, controller collection into immutable storage, fresh accept VM that only runs frozen candidate bytes, controller-owned expected results, gate, publish from the frozen object. A second VM is not independence if judgment still reads worker inputs. Five cases prove five cases.}
+\end{frame}
+
+\begin{frame}[fragile]{We protected the checker. The worker still decided.}
 \begin{lstlisting}
+checker.py            hash unchanged
+expected.json         worker-written
 task check            PASS
 
-external case "1,,3"   REJECT expected
-actual parser output  [1, 3]
+independent case "1,,3"   REJECT required
+buggy parser              [1, 3]
 \end{lstlisting}
-\subline{Would you accept the patch?}
+\subline{The checker imported its truth from the workspace.}
 \evidence
-\note{00:30 to 01:30. Read the empty-field input. The expected rejection conflicts with the actual list and the green check. Withhold the mechanism until slide 7. The result is synthetic. Escaped here means exceeding the intended task through granted interfaces.}
+\note{02:00 to 05:00. This is the finding. Checker file hash unchanged. Worker wrote expected.json to match the bug. Protected executable, worker-controlled criteria. Independent judge still fails empty fields. A PASS file the controller believes is a deliberate detector, not a surprise. Not a kernel escape.}
 \end{frame}
 
-\begin{frame}{One job. Four grants.}
-\bigline{Fix the parser.\\Publish the task report.}
-\vspace{3mm}
-\textcolor{acid}{Identity}\hspace{4mm}
-\textcolor{acid}{Files}\hspace{4mm}
-\textcolor{acid}{Data release}\hspace{4mm}
-\textcolor{acid}{Acceptance}
-\subline{Independent synthetic experiments. Worker code is untrusted.}
-\subline{Linux namespaces separate workers. Controller and host remain trusted.}
-\note{01:30 to 02:30. Explain the four convenient grants. These are independent deterministic experiments with synthetic data. We test enforcement after the action is chosen. Do not present this as a customer incident or a model-susceptibility measurement.}
-\end{frame}
-
-\begin{frame}[fragile]{01 / It can read another project's data}
-\begin{lstlisting}
-request: GET /projects/other/private
-
-runner credential     200 + synthetic fixture
-task credential       403
-task input            200
-expired credential    403
-\end{lstlisting}
-\subline{The service enforces task scope, audience and expiry.}
-\evidence
-\note{02:30 to 04:00. Read the same forbidden request before and after task-scoped credential projection. Show the successful task input as the positive control. The service checks scope, audience and expiry. The launcher supplies an explicit environment and closes extra descriptors. A short lifetime does not narrow a broad grant.}
-\end{frame}
-
-\begin{frame}[fragile]{02 / It can change another job's state}
-\begin{lstlisting}
-worker writes /shared/next-job.json
-
-writable bind   host fixture changes
-read-only bind  write denied; fixture unchanged
-/output         patch remains writable
-\end{lstlisting}
-\subline{\mountscope}
-\note{04:00 to 05:30. The controller observes the host fixture change under a writable bind. It resets the fixture and removes prior output before rerunning with a read-only bind. The host file stays unchanged and a fresh output is created. Read-only still permits reading. The mount policy belongs to the host.}
-\end{frame}
-
-\begin{frame}[fragile]{03 / It can send data to another account}
-\begin{lstlisting}
-same service, different recipient
-
-team/reports    intended destination
-other/uploads  receives synthetic private data
-\end{lstlisting}
-\textcolor{acid}{Repair:} broker fixes recipient and body.\\
-Direct fixture-service route is unavailable.
-\subline{Extra fields denied. The permitted report still arrives.}
-\evidence
-\note{05:30 to 07:30. Both synthetic account paths accept uploads. We observe receipt under the other account. The repair uses an external broker, one exact operation and controller-owned contents. A separate network namespace blocks the direct host-loopback route. Arbitrary report prose would remain a data channel. No terminal switch.}
-\end{frame}
-
-\begin{frame}[fragile]{04 / It can change what we call success}
-\begin{lstlisting}[language=Python]
-# Worker rewrites the workspace checker:
-print("PASS")
-raise SystemExit(0)
-\end{lstlisting}
-\subline{Now the opening makes sense: the worker rewrote the checker.}
-\evidence
-\note{07:30 to 08:30. Reveal the checker replacement. Return to slide 2: the parser stayed broken because the worker changed the checker. The measured result is PASS and exit zero with unchanged buggy bytes. A controller trusting that result would accept broken work. Pause on the two lines.}
-\end{frame}
-
-\begin{frame}{An independent decision}
-\begin{tabular}{@{}lll@{}}
-\color{acid}Input & \color{acid}Buggy parser & \color{acid}Fixed parser\\[8pt]
-\texttt{1,2,3} & Accept & Accept\\[8pt]
-\texttt{1,,3} & \textcolor{alarm}{Accept} & Reject\\[8pt]
-Empty input & \textcolor{alarm}{Accept} & Reject\\[8pt]
-\texttt{-2, 3} & Accept & Accept\\[8pt]
-\texttt{x} & Reject & Reject
-\end{tabular}\par
-\evidence
-\note{08:30 to 10:00. The producer exits, then the controller freezes candidate bytes. Each case executes in a separate worker. Expected results and comparison stay with the controller. The original parser fails two cases and the fixed parser passes five. This finite suite establishes the demonstrated repair.}
-\end{frame}
-
-\begin{frame}{Which bytes passed?}
+\begin{frame}{Verified bytes are not released bytes}
 \begin{tabular}{@{}ll@{}}
-Artifact swapped after verification & \textcolor{alarm}{Denied}\\[9pt]
-Approval reused & \textcolor{alarm}{Denied}\\[9pt]
-Verified artifact, current run & \textcolor{acid}{Accepted}\\[9pt]
-History rewritten and rehashed & \textcolor{acid}{Detected}
+Publish from the live path after a swap & \textcolor{alarm}{Wrong artifact}\\[8pt]
+Hash the path, then hash it again & \textcolor{alarm}{Not a freeze}\\[8pt]
+Evaluate and publish the frozen object & \textcolor{acid}{Same digest}\\[8pt]
+Approval reused or applied to other bytes & \textcolor{acid}{Denied}
 \end{tabular}\par
 \vspace{3mm}
-\subline{The controller holds the approval key and original history head.}
+\subline{Collect, store, digest, evaluate that object, publish that object.}
 \evidence
-\note{10:00 to 11:30. Approval binds artifact bytes, run, verifier, policy and single-use nonce. The gate enforces acceptance. A controller-held original chain head reveals the history rewrite. The anchor lives in memory. Tamper detection cannot make a bad verification decision correct. This is a lab publication decision, not an external deployment.}
+\note{05:00 to 06:30. Honest comparison can still release the wrong file if publication reads the live path. Two hashes of a mutable path are not a freeze. Freeze is collect, store, digest, evaluate that object, publish that object. Stale approval and replay denied. Nonces persist across controller restart.}
 \end{frame}
 
-\begin{frame}{Back to the original job}
-\begin{enumerate}
-\item Worker receives input and writes the fixed parser.
-\item External verifier checks the frozen artifact.
-\item Gate accepts exactly those bytes.
-\item Broker publishes the fixed task report.
-\end{enumerate}
-\vspace{3mm}
-\subline{\texttt{1,,3} now returns \texttt{REJECT}. The report reaches the team.}
+\begin{frame}[fragile]{Three other grants. Same pattern.}
+\begin{lstlisting}
+identity   broad token reads another project; task token 403
+files      writable bind changes the next job; read-only holds
+release    allowed upload, wrong account; broker fixes both
+\end{lstlisting}
+\subline{Independent synthetic checks. Not one exploit chain.}
 \evidence
-\note{11:30 to 12:30. The final deterministic worker receives read-only source input, writable task output and a separate network namespace. It emits the fixed parser. The controller verifies frozen bytes and obtains gate acceptance before reporting. Return to the opening input and say that it now rejects.}
+\note{06:30 to 08:30. Surrounding map from the accepted abstract. Identity, files, data release. Each unwanted action, repair, and legitimate operation. Namespaces held. The grant did the damage. Do not turn this into a four-step attack story.}
+\end{frame}
+
+\begin{frame}{Where judgment lives}
+\begin{tabular}{@{}ll@{}}
+\color{acid}Piece & \color{acid}Owner\\[8pt]
+Candidate execution & Fresh accept VM, frozen bytes only\\[8pt]
+Expected results and compare & Controller\\[8pt]
+Harness PASS / reports / URLs & Log only, never approval\\[8pt]
+Timeout or malformed output & No approval\\[8pt]
+Publication & Frozen object after a valid accept
+\end{tabular}\par
+\evidence
+\note{08:30 to 11:00. Move every decision input off the worker. Accept VM gets no credential that can rewrite the checker. Incomplete evidence is no approval, not a defense. Gate binds artifact, run, verifier bundle, expected results, policy, environment, decision, nonce. History detects rewrite. History does not authorize.}
+\end{frame}
+
+\begin{frame}{The job, with judgment moved}
+\begin{enumerate}
+\item Worker writes a candidate. Controller freezes it.
+\item Accept VM runs those bytes. Controller compares.
+\item Gate accepts the good digest. Swap and replay die.
+\item Worker reports and expected.json do not ship the bug.
+\end{enumerate}
+\vspace{2mm}
+\subline{\texttt{1,,3} returns \texttt{REJECT}. The permitted report goes out.}
+\evidence
+\note{11:00 to 12:20. Good parser published. Buggy parser rejected. PASS file ignored. Worker expected.json ignored. Swap after freeze denied. Return to the opening input: it now rejects. The useful job completes.}
 \end{frame}
 
 \begin{frame}{Four boundaries to check}
 \begin{tabular}{@{}ll@{}}
-\color{acid}Question & \color{acid}Enforcing owner\\[9pt]
-Whose identity? & Service grant\\[9pt]
-Which files? & Host mount policy\\[9pt]
-Which recipient and contents? & Broker and network policy\\[9pt]
-Who can approve these bytes? & External verifier and gate
+\color{acid}Question & \color{acid}Must refuse outside the worker\\[8pt]
+Whose identity? & Service grant\\[8pt]
+Which files, including the next job? & Host and snapshot policy\\[8pt]
+Which recipient and contents? & Broker and network policy\\[8pt]
+Who can approve these bytes? & Controller compare and gate
 \end{tabular}\par
-\vspace{3mm}
-\subline{Process isolation separates the worker from these enforcing components.}
-\note{12:30 to 13:30. Name the four boundaries in act order. Identify an enforcing component outside worker control and test the legitimate operation afterward. Process isolation separates the worker from those enforcing components.}
+\vspace{2mm}
+\subline{Then confirm the legitimate operation still works.}
+\note{12:20 to 13:20. Four questions in act order. Include snapshots, templates, expected results, collection path, and harness green checks under files and approval. Name the refusing component. Test the happy path afterward.}
 \end{frame}
 
 \begin{frame}[plain]
@@ -173,42 +133,38 @@ Who can approve these bytes? & External verifier and gate
 \vspace{7mm}
 {\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
 \subline{Yossi Eliaz}
-\note{13:30 to 14:00. Deliver the closing from TALK.md, ask who gave the process the authority, then stop. Keep one minute of margin. The repository remains visible. There is no scheduled Q&A segment within the 15-minute talk.}
+\note{13:20 to 14:00. We built this workflow. The sandbox held. The decision still depended on the worker until judgment moved off its evidence. Ask who gave the process the authority. Stop. Keep one minute of margin. No extra section.}
 \end{frame}
 
 \begin{frame}[fragile]{Appendix / Reproduction}
 \begin{lstlisting}
-make demo       # Linux + bubblewrap; strict
-make reference  # policy checks; explicit skips
-make deck       # evidence check + PDF build
+make factory     # controller freeze, judge, gate
+make demo        # educational Linux isolation lab
+make deck        # evidence check + PDF
 python3 tools/present.py credentials
 \end{lstlisting}
-\subline{\evidencecount. Source digests and subprocess observations are recorded.}
-\note{Appendix only. The 15-minute talk uses recorded excerpts on slides, with no terminal switching. Use tools/present.py for a later walkthrough. Isolated mode requires a suitable Linux host and fails rather than silently using reference mode. Recorded evidence must match the lab source.}
+\subline{\evidencecount.}
+\note{Appendix only. Factory is the reference acceptance path. Lab remains educational isolation demos. Isolated lab needs a suitable Linux host and fails closed. Factory local run needs no cloud. Boat is optional and uses noEnv.}
 \end{frame}
 
-\begin{frame}{Appendix / Limits of the evidence}
-Deterministic scripts exercise chosen actions.
+\begin{frame}{Appendix / Limits}
+Reference factory plus synthetic lab. Deterministic scripts.
 
-Namespace and mount checks require the isolated run.
+Five cases prove five cases, not parser correctness.
 
-Five parser cases establish one demonstrated repair.
+No named-product zero-day, customer incident, or model success-rate.
 
-Controller code, keys and decisions remain trusted.
-
-\subline{No cgroup, kernel-exploit, covert-channel or universal security claim.}
-\note{Appendix only. The lab tests the named fixtures and controls. It does not measure model susceptibility, cgroups, kernel-escape resistance or all data channels. The controller remains trusted, the anchor is ephemeral and parser coverage is finite.}
+\subline{Timeouts and crashes are no approval, not a successful defense.}
+\note{Appendix only. Not a kernel, cgroup, or covert-channel claim. History anchor is a controller file. Writable-checker and PASS-file variants are deliberate detectors. Prior art covers in-sandbox graders; the miss is trusting worker-controlled inputs after protecting the checker file.}
 \end{frame}
 
 \begin{frame}{Appendix / Primary references}
-\href{https://man7.org/linux/man-pages/man7/environ.7.html}{Linux environ(7)}
-\subline{Environment inheritance}
-\href{https://docs.docker.com/engine/storage/bind-mounts/}{Docker bind mounts}
-\subline{Host filesystem effects and read-only mounts}
-\href{https://www.rfc-editor.org/rfc/rfc9700.html}{RFC 9700}
-\subline{Access-token privilege restriction}
-\href{https://slsa.dev/spec/v1.2/verifying-artifacts}{SLSA artifact verification}
-\subline{Trusted provenance and artifact identity}
-\note{Appendix only. These primary references support the mechanisms. The synthetic lab claims neither OAuth nor SLSA conformance. QUESTIONS.md contains further technical answers.}
+\href{https://docs.pytest.org/en/stable/how-to/plugins.html}{pytest plugins}
+\subline{Loading worker-influenced plugins is documented behavior}
+\href{https://www.anthropic.com/research/emergent-misalignment-reward-hacking}{Anthropic reward hacking}
+\subline{Process-exit graders are known; not our novelty claim}
+\href{https://slsa.dev/spec/v1.2/verifying-artifacts}{SLSA verifying artifacts}
+\subline{Authenticity is not artifact identity}
+\note{Appendix only. Pytest plugin loading is not a pytest vulnerability. The question is whether our factory treats that execution as independent acceptance. SLSA: check the artifact identity, not only that a statement is authentic.}
 \end{frame}
 \end{document}

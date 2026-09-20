@@ -17,6 +17,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
       - name: Run actual namespace and mount experiments
         run: python3 lab/run.py --mode isolated --output build/evidence
+      - name: Run factory freeze/judge/gate (no cloud)
+        run: python3 -m factory.run --output build/factory
       - name: Compile deck against checked-in evidence
         run: make deck
       - uses: actions/upload-artifact@v4

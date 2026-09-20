@@ -1,69 +1,43 @@
 # Questions after the talk
 
-These are speaker answers, not additional experimental claims. The examples and limits below refer to the committed lab.
+Answers, not extra experimental claims.
 
-## Isn't this least privilege?
+## Isn’t this just least privilege?
 
-Yes. The contribution is an executable way to inspect where authority enters an agent deployment. Each demonstration pairs an unwanted action with a repair and a positive control. The audience can apply that pattern to its own worker, filesystem, service and acceptance interfaces.
+Yes. The contribution is an executable path from candidate to release, and a check for worker-controlled inputs on that path.
 
-## What makes this about agents if there is no LLM in the demo?
+## Why no LLM in the demo?
 
-An agent can generate code and requests that exercise these grants. We hold the chosen action fixed to test whether the surrounding system permits it. That isolates enforcement from the probability that a model chooses a particular action. The lab measures no model's prompt-injection susceptibility.
+We hold the action fixed and test enforcement. That is a different question from whether a model would choose the action.
 
-## Would a microVM fix these failures?
+## Would a microVM fix it?
 
-A different execution boundary can change the host attack surface. It still needs a policy for the credentials, files and service operations deliberately supplied to the guest. A valid broad token retains its service permissions. A writable checker still needs independent acceptance criteria. This lab uses Linux namespaces and makes no comparative runtime-security measurement.
+It changes the host attack surface. It does not move expected results or publication off the worker. A second VM that still imports `expected.json` from the workspace is not independent.
 
-## Can a short-lived token still leak data?
+## Isn’t a read-only checker enough?
 
-Yes. An unwanted read can occur before expiry. The demonstrated repair restricts the resource scope and checks audience and expiry at the service. The fixture uses opaque token strings backed by an in-memory grant table. It is not an OAuth implementation or a claim of OAuth conformance.
+Only if every input to the verdict is controller-owned: expected results, imports, collection path, launch config. Protecting the entrypoint while it reads worker files is the demonstrated miss.
 
-## Does the service really accept uploads to another account?
+## Did you find a zero-day in Boat / a vendor?
 
-Our loopback fixture deliberately accepts both account paths. It represents a service where the worker has an available upload capability for another recipient. We verify receipt of synthetic data under that account. We make no claim that an arbitrary real service permits cross-account writes without authorization.
+No. Boat, when used, is an accept-VM substrate with `noEnv`. The defect we discuss is in **our** factory’s trust in worker-shaped evidence. The PASS-file and writable-checker variants are deliberate detectors.
 
-## Why not just allowlist the team URL?
+## Isn’t in-sandbox grading already known?
 
-That addresses the demonstrated recipient change if every route enforces the rule correctly. Contents still need a policy: an arbitrary allowed body can carry sensitive bytes. Our narrow operation fixes the recipient and constructs the body from controller-owned fields. The worker's direct route to the fixture is also unavailable.
+Yes. Process-exit reward hacking is documented. We do not claim that as novelty. The talk is that **after** we stopped the worker editing the checker file, the decision still depended on worker-controlled expected results and on whether we published the frozen object.
 
-## What about a useful report that contains agent-written text?
+## Why five test cases?
 
-That is a richer release decision than this fixture implements. Decide which data the worker may read and which recipients may receive its output. A fixed schema alone cannot make an arbitrary string safe. The talk claims a repair for one controller-built report, not general data-loss prevention.
-
-## Isn't making the checker read-only enough?
-
-Only if the full acceptance path has the intended trust properties. Inspect the checker, its dependencies, configuration, expected values and the final comparison. Our verifier keeps expected results in the controller, executes candidate bytes in a separate worker, and compares the output externally. A protected entrypoint that imports worker-controlled logic would need further analysis.
-
-## Can the candidate just recognize the five test inputs?
-
-Yes. Five visible cases establish this finite acceptance test. They do not prove complete correctness. A production verifier needs a specification and evaluation strategy appropriate to the task. The demonstration separates who owns the check from how strong the check is.
-
-## Could the producer keep changing files during verification?
-
-The deterministic producer exits before the controller reads its bytes and creates a private snapshot. Production systems must also account for descendants, other writers, links and races in artifact collection. This fixture does not establish robust snapshotting for every adversarial filesystem behavior.
-
-## Does the gate actually deploy anything?
-
-No. It returns a publication decision. The controller authenticates the artifact digest, current run, verifier source digest, policy, acceptance result and a single-use nonce. A production consumer would have to preserve the binding when publishing or deploying the artifact. Our final fixture invokes the broker only after acceptance.
-
-## Who verifies the verifier?
-
-The controller, verifier and host are trusted in this threat model. Their implementation and updates need their own review and protection. The experiment tests the separation between a worker's proposed output and the authority that accepts it. It does not remove the trusted computing base.
-
-## Does a hash chain make the history trustworthy?
-
-A writer can rewrite an entire chain and recompute its links. Our controller keeps the original head outside the worker, which exposes the changed chain. The anchor is in memory. Durable retention, crash recovery, event completeness and external transparency are outside this demonstration.
+They establish this finite policy. A candidate can overfit them. Strength of the spec is separate from who owns the spec.
 
 ## What is the difference between the gate and the history?
 
-The gate refuses an artifact that lacks a valid approval for the current bytes and run. The retained history reference reveals a rewrite. A faithful record can still contain a bad decision, so tamper detection does not replace independent verification.
+The gate refuses bytes that lack a valid approval for this artifact, run, verifier, expected results and policy. History detects a rewritten log. A faithful log can still record a bad decision.
 
-## What should I do first on Monday?
+## Timeouts as a defense?
 
-Choose one agent job. Inventory its inherited identity, mount set, possible recipients and acceptance path. Pick one unwanted action at each interface, name the component that should refuse it, and test the legitimate operation immediately afterward. Start with a disposable environment and synthetic fixtures, as this lab does.
+No. Timeout, malformed output and crashes produce **no approval**. That is refuse-to-ship, not evidence the boundary held.
 
-## What remains untested here?
+## What should I do Monday?
 
-Live-model behavior, kernel escape resistance, cgroup limits, seccomp coverage, alternate descriptor channels, broad network noninterference, verifier resource exhaustion, complete parser correctness, durable evidence retention and a production deployment consumer. The evidence supports the specific committed fixtures and observations.
-
-Primary mechanism references are linked in [the manuscript](TALK.md) and on slide 15. The recorded observations and their lab source digests are in [evidence/results.json](evidence/results.json).
+Pick one agent job. Write the four questions. For acceptance, list every file the checker opens. Confirm publication reads the frozen digest, not the live workspace.

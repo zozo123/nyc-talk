@@ -3,224 +3,148 @@
 **Yossi Eliaz**  
 Principal Engineer and Head of DevRel at Incredibuild.com
 
-**15-minute lightning talk.** Twelve main slides, followed by three appendix slides. Target a 14-minute delivery with one minute of margin. Times below are rehearsal targets, not measured delivery times. Blockquotes are stage directions. The slides show recorded results; keep the terminal closed during the talk.
+**15-minute lightning talk.** Nine main slides, three appendix slides. Target 14 minutes, one minute of margin. Blockquotes are stage directions. Recorded results are on the slides. Keep the terminal closed.
 
-## 1. A small request — 00:00–00:30
+## 1. The question — 00:00–00:40
 
-You give an agent a small job.
+You give an agent a small job: fix a parser, publish the report.
 
-Fix a parser. Publish the report.
+It has a sandbox. The sandbox does not break.
 
-It has a sandbox, a copy of the source, and a way to run the tests.
+A little later, the check is green.
 
-A little later, the check turns green.
+Would you ship it?
 
-Would you accept the patch?
+The title does not mean a VM escape. It means the agent exceeded the task **through interfaces we granted**, and we treated that as success.
 
-> Advance. Let the audience read the contradiction.
+The question that matters:
 
-## 2. Something is wrong — 00:30–01:30
+**What made this work eligible for release — and how much of that decision could the agent influence?**
 
-Here is the input: one, comma, comma, three.
+> Advance.
 
-There is an empty field in the middle. Our specification says to reject it.
+## 2. The factory — 00:40–02:00
 
-The parser returns the list one, three. It silently drops the empty field.
+Here is the path we actually built.
 
-The check says PASS. The original bug is still there.
+The **dev VM** is untrusted. Files, harness, tests, reports.
 
-Keep that contradiction in mind. We will come back to exactly how it happened.
+The **controller collects**. It chooses the paths. It stores a bounded artifact in storage the worker cannot write. It hashes a manifest. After that, the live VM is not a publication source.
 
-The title says the agent escaped without escaping the sandbox. Here, “escaped” means it exceeded the intended task. Each example uses an interface the deployment made available.
+A **fresh accept VM** runs those frozen bytes as untrusted code under test. It does not hold the expected results. It does not get an API key that can rewrite the checker.
 
-We will follow those grants to another project's data, another job's state, another account's inbox, and finally the decision that tells us the work succeeded.
+The **controller compares** the outputs to criteria it owns.
 
-## 3. The job and the grants — 01:30–02:30
+A **gate** binds the digest, the run, the verifier bundle, the expected results, the policy and a nonce. Publication reads **that** frozen object.
 
-Every grant begins with a reasonable request.
+Two invariants. Acceptance integrity: the worker cannot force us to accept bytes that fail our criteria. Release integrity: we only publish the digest we approved.
 
-The agent needs source, so we pass it a credential. It needs files, so we mount a directory. It needs to publish a report, so we allow a service. It needs feedback, so we run the workspace checker.
+Five cases prove those five cases. They do not prove the parser is correct for every input.
 
-Each choice gives the worker authority.
+> Do not call a second VM “independence.” Judgment still has to live off worker-controlled inputs.
 
-These are four independent experiments with synthetic data and fixed worker scripts. They test enforcement after an unwanted action has been chosen. They do not measure a model's likelihood of choosing it.
+## 3. The miss — 02:00–05:00
 
-The workers use Linux namespaces. The controller and host remain trusted. We add network separation where the worker should lose direct service access.
+We protected the checker file. Its hash did not change.
 
-For each experiment, watch the unwanted action succeed, the same action fail after the repair, and a legitimate operation still succeed.
+The buggy parser still got PASS.
 
-## 4. Another project's data — 02:30–04:00
+The checker reads `expected.json` from the working directory. The worker wrote that file. The expected results now match the bug: empty fields are allowed.
 
-The worker's task is called parser-fix.
+The executable we “protected” still took its truth from the worker.
 
-The credential it inherited belongs to a runner with access to several projects.
+> Pause on: checker hash unchanged, verdict PASS, independent cases fail.
 
-We request another project's private fixture. The service returns it.
+A second VM does not save you if the comparison still imports worker state.
 
-> Point to the 200 response, then the 403 below it.
+That is the finding. Not a kernel escape. Not a model jailbreak. The controller trusted worker-shaped evidence.
 
-The service recognized a valid credential with permission to read that resource. It honored the grant.
+We also ran a detector: if the controller simply believes a worker `PASS` file, the same buggy parser ships. That variant is **deliberate**. It proves the experiment can see a failure. It is not a surprise.
 
-The sandbox did not need to break. The process already held the identity the service would accept.
+## 4. The other swap — 05:00–06:30
 
-The label parser-fix was descriptive. The credential carried the authority.
+Same factory. This time the comparison is honest. The worker changes the file after we look.
 
-Now repeat the same request with a task-scoped credential. The service returns 403. Request the task's own input, and it returns 200.
+If we publish from the live path, verification was correct and we still released something else.
 
-The service also rejects expired credentials and the wrong audience.
+Hashing the path before and after is not enough. The path can change between the two observations.
 
-A short lifetime limits how long a token works. Scope limits what it can do while it works. A broad token can authorize an unwanted request immediately.
+Freeze is an operation: collect, store, digest, evaluate **that object**, publish **that object**.
 
-At launch, build the environment explicitly. Keep broad credentials outside the worker. Supply the grant this task actually needs.
+An approval for digest A does not authorize digest B. A used nonce does not come back after a controller restart.
 
-## 5. Another job's state — 04:00–05:30
+## 5. Three surrounding grants — 06:30–08:30
 
-Reset the lab.
+The acceptance path is the spine. The abstract promised three other non-escape escapes. They are independent synthetic checks, not one exploit chain.
 
-The excessive grant is now a writable mount.
+**Identity.** A broad runner token reads another project. A task-scoped token gets 403. Task input still works.
 
-The worker sees next-job.json, a fixture representing another job's queue setting. It performs an ordinary write.
+**Files.** A writable bind changes another job’s host fixture. Read-only blocks the write. Task output stays writable.
 
-Outside the sandbox, the host bytes change. The controller checks those bytes directly.
+**Release.** The same allowed upload service receives synthetic private data under another account. A broker that fixes recipient and body, with no direct route, sends only the permitted report.
 
-The mount worked exactly as configured. Our configuration let this task alter another task's state.
+Each time the namespace held. The grant did the damage.
 
-We reset the file and expose the same path read-only. The same write fails. The host fixture stays unchanged.
+> One slide, three rows. Do not rebuild the parser mystery here.
 
-We also remove the earlier output before retrying. The restricted worker creates a fresh patch in its output directory.
+## 6. Repair — 08:30–11:00
 
-The policy is concrete: read this input, write this output. The host owns the mount set.
+Move every input to the decision off the worker.
 
-A task that does not need the shared state can lose that mount entirely. Read-only still authorizes reading. Keep that distinction in mind for the next experiment.
+Expected results live on the controller. The accept VM only runs frozen candidate bytes. No in-sandbox key on that VM that can change the checker through the control plane.
 
-## 6. Another account's inbox — 05:30–07:30
+Harness success, logs, preview URLs, worker reports: logged, never an approval.
 
-Reset again. We allow the reporting service.
+Timeout, malformed output, missing evidence: **no approval**. That is not a successful defense. That is refuse-to-ship.
 
-The intended destination is the team's report endpoint.
+The authenticated decision names the artifact, the run, the verifier bundle **and its launch config**, the expected-results digest, the policy, the accept-environment manifest, the decision and a nonce. An authentic statement can still name the wrong artifact. Check identity, not only the MAC.
 
-The worker sends our synthetic private fixture to another account on that same service. We inspect the receiving service. The data is there.
+History: if someone rewrites the log and recomputes the chain, the controller’s retained head disagrees. That **detects** a rewrite. It does not make a bad acceptance good.
 
-The hostname stayed the same. The recipient changed.
+> Gate enforces. History detects. Different jobs.
 
-Our fixture deliberately accepts uploads to both account paths. It models a service where an upload capability is available for another recipient.
+## 7. Same job, restricted path — 11:00–12:20
 
-The network decision answered which service the worker could reach. The task also needed a decision about who should receive which data.
+Good parser: frozen, judged, approved, published. `1,,3` is REJECT.
 
-For this report, we can make that decision precise.
+Buggy parser: rejected. Not published.
 
-The worker requests one report operation. An external broker chooses the team account and constructs the body from controller-owned fields. Extra recipient, URL or payload fields are rejected.
+Worker PASS file: ignored.
 
-The worker also loses its direct route to the fixture service. The permitted report still arrives through the broker.
+Worker `expected.json`: ignored.
 
-If the report accepted arbitrary worker-written text, that text could carry private data. The permitted contents matter as much as the recipient.
+Swap after freeze: denied.
 
-We have examined identity, files and data release. One grant remains: the authority to declare the job finished.
+The useful job completes.
 
-## 7. The green check — 07:30–08:30
+## 8. Four questions — 12:20–13:20
 
-Return to the opening.
-
-The parser is broken. The checker says PASS.
-
-Here is what happened.
-
-The launcher ran a checker from the worker's writable workspace. The worker replaced it with two lines: print PASS, then exit zero.
-
-It left the parser unchanged.
-
-> Pause on the two-line checker.
-
-That is the recorded result: success output and a zero exit code, with the original bug still present. A controller using that result as its acceptance decision would accept the broken work.
-
-We gave the worker permission to edit the solution and the program we relied on to judge it.
-
-Running that altered checker in a fresh process cannot restore the test we overwrote.
-
-## 8. An independent decision — 08:30–10:00
-
-Keep the same broken parser bytes. Change who owns the decision.
-
-The producing worker exits. The controller freezes its output. It runs the candidate in a separate worker for each case. Expected results and the final comparison stay outside.
-
-The empty-field case fails. So does the empty-input case.
-
-The fixed parser passes all five cases.
-
-> Point to the two changed rows. Let the audience compare them.
-
-We have restored the meaning we wanted from PASS: these candidate bytes satisfied checks the producer could not rewrite.
-
-Candidate code still executes behind a process boundary. The verifier does not import it into its own trusted process.
-
-Five cases establish this demonstrated repair. They do not prove complete correctness. Isolation protects who can change the decision. The specification and tests determine what that decision establishes.
-
-## 9. Which bytes passed? — 10:00–11:30
-
-Before accepting the work, ask: are these the same bytes we checked?
-
-Our gate binds approval to the exact artifact, the current run, the verifier and the policy. Its authentication key stays outside the worker. A single-use nonce prevents replay.
-
-Substituted bytes are denied. A reused approval is denied. The verified artifact for the current run is accepted.
-
-Now suppose someone rewrites the history to say the broken parser passed.
-
-A writer controlling an entire hash chain can change an event and recompute the links. In our experiment, the controller retained the original head. The rewritten chain disagrees with it.
-
-That reference exposes the rewrite. It lives in controller memory here; durable retention needs a further design.
-
-The verifier evaluates the candidate. The gate enforces acceptance. The retained reference reveals changed history. A faithful record alone cannot make a bad decision correct.
-
-## 10. Back to the original job — 11:30–12:30
-
-Now give the restricted worker the original task.
-
-It receives read-only source input and a writable output directory. It writes the fixed parser.
-
-The producer exits. The controller freezes those bytes. Independent checks pass. The gate accepts that artifact. Only then does the broker send the fixed report to the team.
-
-One, comma, comma, three.
-
-This time the parser rejects it.
-
-The useful job is complete.
-
-We narrowed the grants around the work and preserved the path to a correct result. The worker could propose the repair. The controller retained authority over acceptance and release.
-
-## 11. Four boundaries to check — 12:30–13:30
-
-For your deployment, write down four answers.
+When you go back to your agent host, write down four answers.
 
 Whose identity can the worker use?
 
-Which files can it read or change?
+Which files can it read or change — including the next job’s disk, snapshots and templates?
 
 Who can receive its output, and what can that output contain?
 
-Who can approve these bytes?
+Who can approve **these bytes** — and does that decision depend on imports, expected results, collection path or a harness green check?
 
-Process isolation supports these boundaries by separating the worker from the components that enforce them.
+Name the component that can refuse the unwanted action **outside** the worker. Then test that the legitimate operation still works.
 
-At each boundary, name the component that can refuse the unwanted action outside the worker's control. Then test that the legitimate operation still works.
+## 9. Closing — 13:20–14:00
 
-That gives you something concrete to check in your own system.
+We built this workflow. We believed a green check meant the controller had independently accepted the artifact.
 
-## 12. Closing — 13:30–14:00
+The sandbox held. The decision still depended on the worker.
 
-Our request was small: fix a parser and publish a report.
-
-The deployment also offered a broader identity, shared state, another recipient, and a checker the worker could rewrite.
-
-Each experiment followed a permission we supplied.
-
-The task was defined in our request. Its authority was defined in our infrastructure.
+The repair is not a stronger jail. It is moving judgment, expected results and publication onto objects the worker cannot write.
 
 When your next agent starts a job, ask:
 
 **Who gave this process the authority?**
 
-> Stop. Leave the repository URL visible. The remaining minute is delivery margin, not another section.
+> Stop. Leave the repository URL visible. The remaining minute is margin.
 
 ---
 
-The [recorded Linux run](https://github.com/zozo123/nyc-talk/actions/runs/35461381644) supports the demonstrated results. Primary mechanism references: [Linux environment inheritance](https://man7.org/linux/man-pages/man7/environ.7.html), [bind mounts](https://docs.docker.com/engine/storage/bind-mounts/), [token privilege restrictions](https://www.rfc-editor.org/rfc/rfc9700.html#section-2.3), [artifact verification](https://slsa.dev/spec/v1.2/verifying-artifacts), and [bubblewrap's security model](https://github.com/containers/bubblewrap#sandbox-security).
+This is a reference factory plus an educational Linux lab. Deterministic scripts, synthetic data, finite cases. Not a named-product zero-day, not a customer incident, not a model success-rate. Prior art: process-exit reward hacking and in-sandbox graders are known; the claim here is that **our** acceptance path still trusted worker-controlled inputs after we “protected the checker.” Boat, when used, is an accept-VM substrate with `noEnv`, not the vulnerability.
