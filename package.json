@@ -1,0 +1,8 @@
+{
+  "name": "nyc-agent-security-talk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Editable counterpart to the evidence-backed Beamer presentation",
+  "scripts": {"deck": "node tools/build_deck.js"},
+  "dependencies": {"pptxgenjs": "4.0.0"}
+}

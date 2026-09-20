@@ -1,0 +1,5 @@
+baseline_mutable_frozen_payload_digest_unchanged: True
+baseline_mutable_frozen_payload_gate: PUBLISHED
+baseline_actual_payload_judged: {'kind': 'verdict', 'accepted': False, 'matches': [False, True, False, True, False]}
+fresh_unused_approval_wrong_digest: DENIED
+same_approval_correct_digest: PUBLISHED

@@ -1,39 +1,93 @@
-name: Verify talk experiments
+name: Verify and build the final talk
 on:
   push:
+    paths-ignore:
+      - 'slides/talk.pdf'
+      - 'slides/talk.pptx'
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  linux-boundaries:
+  verify:
+    if: "!contains(github.event.head_commit.message, '[generated-talk]')"
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Capture the exact source for cold reproduction
+      - name: Capture the exact source commit
         run: |
-          mkdir -p build/release
-          git archive --format=tar HEAD > build/release/source.tar
-          git rev-parse HEAD > build/release/COMMIT.txt
-          sha256sum build/release/source.tar > build/release/SHA256SUMS
-      - name: Install isolated lab runtime
+          mkdir -p build/source
+          git archive --format=tar HEAD > build/source/source.tar
+          git rev-parse HEAD > build/source/COMMIT.txt
+          sha256sum build/source/source.tar > build/source/SHA256SUMS
+      - name: Install isolated Linux runtime and Beamer
         run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
-      - name: Run actual namespace and mount experiments
-        run: python3 lab/run.py --mode isolated --output build/evidence
-      - name: Run factory freeze/judge/gate (no cloud)
-        run: python3 -m factory.run --output build/factory
-      - name: Compile deck against checked-in evidence
-        run: make deck
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install the pinned PowerPoint generator
+        run: |
+          if test -f package-lock.json; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund
+          fi
+      - name: Run regression tests
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 -m unittest discover -s tests -v 2>&1 | tee evidence/regression-transcript.txt
+      - name: Reproduce actual Linux namespace and mount observations
+        run: make record
+      - name: Reproduce reference protocol and real HTTP observations
+        run: make record-factory record-http
+      - name: Validate evidence and build both presentation formats
+        run: make snapshot
+      - name: Package source, fresh records, notes and stage files
+        run: |
+          python3 tools/package.py
+          mkdir -p build/updates
+          cp --parents slides/talk.pdf slides/talk.pptx slides/talk.tex slides/evidence.tex slides/snippets/*.txt TALK.md SPEAKER_NOTES.md package-lock.json evidence/results.json evidence/transcript.txt evidence/factory-results.json evidence/factory-transcript.txt evidence/http-results.json evidence/http-transcript.txt evidence/regression-transcript.txt build/updates/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: isolated-lab-evidence
+          name: verified-talk
           path: |
+            build/release
+            build/updates
+            build/source
             build/evidence
             build/factory
-            build/release
-            slides/talk.pdf
+            build/http
           if-no-files-found: error
+  publish-generated:
+    # Only trusted main pushes publish generated output. PR jobs stay read-only.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-talk
+          path: artifact
+      - name: Commit only verified generated artifacts and records
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          cp -a artifact/updates/. .
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add slides/talk.pdf slides/talk.pptx slides/talk.tex slides/evidence.tex slides/snippets/ TALK.md SPEAKER_NOTES.md package-lock.json evidence/results.json evidence/transcript.txt evidence/factory-results.json evidence/factory-transcript.txt evidence/http-results.json evidence/http-transcript.txt evidence/regression-transcript.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Publish verified stage files and fresh records [generated-talk]'
+          git push origin HEAD:main

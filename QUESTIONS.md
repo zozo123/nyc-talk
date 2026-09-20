@@ -1,43 +1,65 @@
-# Questions after the talk
+# Skeptical Q&A
 
-Keep it light. Then the facts.
+## Is this a sandbox escape?
 
-## Isn’t this just least privilege?
+No kernel escape is demonstrated. The title refers to task-policy violations through authority exposed to the worker: service credentials, writable mounts, a reachable recipient and a worker-influenced acceptance dependency. The Linux boundaries do what the chosen configuration allows. The acceptance example is a separate local fixture, not a proof that arbitrary hostile code is contained.
 
-Yes. The contribution is an executable path from candidate to release, and a check for worker-controlled inputs on that path.
+## Is there an original vendor vulnerability here?
 
-## Why no LLM in the demo?
+No. The credential, mount, endpoint and verifier examples are controlled configurations in our code. Test tampering and artifact binding have prior art. The contribution is a reproducible boundary-testing method with explicit controls and an inspectable release path. The reference-API defect found during review belongs to this repository; no remote exploit route or commercial impact was established.
 
-We hold the action fixed and test enforcement. That is a different question from whether a model would choose the action.
+## Did a real model discover or execute these attacks?
 
-## Would a microVM fix it?
+No model attack-success rate was measured. Deterministic adversarial worker actions isolate the enforcement mechanism. A model experiment would need separately pinned model/version, prompts, tool policy, sampling configuration, repeated trials, denominators and failure classifications. Do not use these assertion totals as that experiment.
 
-It changes the host attack surface. It does not move expected results or publication off the worker. A second VM that still imports `expected.json` from the workspace is not independent.
+## Did HTTP really return 200, or did a program just print 200?
 
-## Isn’t a read-only checker enough?
+Both layers are explicit. The original handler was a command-line status model. The final `factory/http_demo.py` serves that same committed handler through a loopback HTTP wrapper and requests it with urllib. It then requests the actual released good file. HTTP responses are real. Credentials and authorization states are synthetic fixtures, not a production authentication stack.
 
-Only if every input to the verdict is controller-owned: expected results, imports, collection path, launch config. Protecting the entrypoint while it reads worker files is the demonstrated miss.
+## Was checker.py actually immutable?
 
-## Did you find a zero-day in Boat / a vendor?
+The claim is narrower: no edit was needed. Its file bytes are measured before and after each execution and remain equal in the dependency attack. A separate regression deliberately edits the file to confirm that the hash is read from disk. We do not claim OS-enforced immutability of the checker in the local fixture. Even a read-only checker would still need trustworthy authoritative dependencies.
 
-No. Boat, when used, is an accept-VM substrate with `noEnv`. The defect we discuss is in **our** factory’s trust in worker-shaped evidence. The PASS-file and writable-checker variants are deliberate detectors.
+## Why isn't a second VM enough?
 
-## Isn’t in-sandbox grading already known?
+A second machine that evaluates the candidate against worker-chosen expected results would retain that trust error. Independence requires controller ownership of the criteria, dependencies and comparison, plus real separation from candidate execution. A fresh directory or the absence of a copied expectations file is not protection from code sharing controller privileges.
 
-Yes. Process-exit reward hacking is documented. We do not claim that as novelty. The talk is that **after** we stopped the worker editing the checker file, the decision still depended on worker-controlled expected results and on whether we published the frozen object.
+## Can the worker still propose tests?
 
-## Why five test cases? Why `/admin`?
+Yes. Proposed tests are candidate material. They can inform review and be run as extra checks. They should not silently replace the authoritative release criteria. Changes to those criteria need an independently authorized review path. Treat imports, plugins, configurations, data files and launch context as part of the verifier's relevant dependencies.
 
-They establish this finite policy: unauthenticated admin is 401. A candidate can overfit them. Strength of the spec is separate from who owns the spec. The payload is a merge-gated security property, not a parser quiz. It is still synthetic.
+## Does a short-lived credential solve the problem?
 
-## What is the difference between the gate and the history?
+Lifetime limits time, not resource scope. The fixture tests task resource restrictions, audience and expiry separately. Real deployments need equivalent enforcement at their service or credential broker. No commercial identity provider or credential minting system was evaluated here.
 
-The gate refuses bytes that lack a valid approval for this artifact, run, verifier, expected results and policy. History detects a rewritten log. A faithful log can still record a bad decision.
+## Does the broker solve data loss in general?
 
-## Timeouts as a defense?
+No. It closes one deliberate channel by removing the direct route and fixing operation, recipient and body. A free-text or arbitrary-file report can carry secrets and needs its own disclosure policy. Other routes, covert channels and timing channels are outside this experiment. The namespace observation specifically concerns reachability of the host-loopback fixture service.
 
-No. Timeout, malformed output and crashes produce **no approval**. That is refuse-to-ship, not evidence the boundary held.
+## What does the approval authenticate?
 
-## What should I do Monday?
+The reference uses an HMAC with a controller-held ephemeral key. It binds task/run, artifact-manifest digest, verifier-source bundle and launch description, expected results, policy, environment-manifest description, decision and nonce. This is not a public digital signature, hardware attestation or proof that every described environment property was enforced. The local manifest explicitly says it is not OS/network isolated. Production needs a trustworthy executor and provenance of its actual environment.
 
-Pick one agent job. Write the four questions. For acceptance, list every file the checker opens. Confirm publication reads the frozen digest, not the live workspace.
+## How do you know digest binding, rather than replay protection, rejected the swap?
+
+Order. First use an unused approval with the wrong artifact: DENIED. Then use that same approval with the correct artifact: PUBLISHED. Finally reuse it: DENIED. A swap tested only after successful publication would confound digest binding and nonce consumption. The final tests correct that weakness in the original demonstration.
+
+## What was wrong with your own Frozen object?
+
+The baseline allowed controller-side code to mutate its payload while leaving its digest label unchanged. The old gate trusted that label and logged a publication without releasing a file. The probe required access to that trusted-side object; no sandbox-to-controller path was shown. The final implementation revalidates objects, rehashes the store and writes and tests actual released bytes. See the archived baseline probe and Appendix C.
+
+## Is the gate production-ready?
+
+No. It is a readable single-controller reference. Concurrent atomic nonce consumption, crash recovery, durable key management, access control and strong candidate isolation are deployment requirements. Ephemeral keys make old approvals invalid after restart. Unit tests establish specific behavior, not a proof of a concurrent protocol. Local fixture execution must not be used as an arbitrary-code service.
+
+## Can the history itself be forged?
+
+A hash chain detects the demonstrated rewrite only against an unchanged trusted head. A worker that controls both the log and its purported anchor can replace both. Authentic history can faithfully record a poor decision. Release must be enforced separately; logs are not an approval authority.
+
+## What would falsify the advertised result?
+
+A forbidden operation succeeding after the stated restriction, legitimate work failing under it, changed checker bytes in the dependency-only example, mismatched verified/authorized/released manifests, or an unused approval failing to distinguish the correct and swapped artifacts. Missing or malformed observations mean no evidence, not a successful defense.
+
+## What should an engineer do tomorrow?
+
+Choose one real task. Write one forbidden and one required operation for each of the four interfaces. Run them in the actual deployment, inspect the external effect and trace one accepted artifact to its released bytes. Record who owns each decision-changing input. Keep the reproducible result, source pin and scope next to the configuration rather than relying on the worker's completion message.
