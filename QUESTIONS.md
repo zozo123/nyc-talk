@@ -66,4 +66,4 @@ Choose one agent job. Inventory its inherited identity, mount set, possible reci
 
 Live-model behavior, kernel escape resistance, cgroup limits, seccomp coverage, alternate descriptor channels, broad network noninterference, verifier resource exhaustion, complete parser correctness, durable evidence retention and a production deployment consumer. The evidence supports the specific committed fixtures and observations.
 
-Primary mechanism references are linked in [the manuscript](TALK.md) and on slide 20. The recorded observations and their lab source digests are in [evidence/results.json](evidence/results.json).
+Primary mechanism references are linked in [the manuscript](TALK.md) and on slide 15. The recorded observations and their lab source digests are in [evidence/results.json](evidence/results.json).

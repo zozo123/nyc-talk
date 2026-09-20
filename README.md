@@ -5,6 +5,8 @@
 
 NYC · AI Agent Security Summit · October 21, 2026
 
+**15-minute lightning talk.** Twelve main slides, three appendix slides. The manuscript targets 14 minutes with one minute of margin. Recorded demonstrations are shown directly on slides.
+
 [Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Spoken script](TALK.md) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Q&A](QUESTIONS.md) · [Recorded results](evidence/transcript.txt)
 
 **Verified:** all 29 checks passed in the [recorded Linux isolation run](https://github.com/zozo123/nyc-talk/actions/runs/35461381644), including real namespace, mount and network checks. The same CI run compiled the deck. Recorded lab source hashes match this repository.
@@ -49,12 +51,12 @@ A missing isolation capability causes **failure**, never automatic fallback. Fre
 
 | File | Purpose |
 |---|---|
-| [slides/talk.tex](slides/talk.tex) | 20 editable Beamer slides: 17 main + 3 appendix |
+| [slides/talk.tex](slides/talk.tex) | 15 editable Beamer slides: 12 main + 3 appendix |
 | [lab/run.py](lab/run.py) | Four experiments, positive controls and final task |
 | [evidence/results.json](evidence/results.json) | Recorded mode, source hashes, checks and subprocess output |
 | [evidence/transcript.txt](evidence/transcript.txt) | Offline demo fallback |
-| [TALK.md](TALK.md) | Full spoken manuscript with stage cues |
-| [RUNBOOK.md](RUNBOOK.md) | 45-minute rehearsal plan, 25/15-minute cuts and demo fallback |
+| [TALK.md](TALK.md) | Final 15-minute manuscript with per-slide timeboxes |
+| [RUNBOOK.md](RUNBOOK.md) | 15-minute delivery, rehearsal checkpoints and overrun cuts |
 | [QUESTIONS.md](QUESTIONS.md) | Answers to security objections and scope questions |
 | [tools/present.py](tools/present.py) | Display one recorded act without revealing the next |
 | [tools/evidence.py](tools/evidence.py) | Refuses stale evidence before building the deck |
@@ -72,4 +74,4 @@ Title, abstract, tagline and accepted status supplied by the speaker from Sessio
 
 ## Scheduling
 
-The speaker reports **Oct 21, 15:45–16:45, Room 1** in the public feed. That is a 60-minute calendar block, not confirmation of speaking time. **Zenity still needs to confirm speaking and Q&A allocations.** No organizer message has been sent. The runbook prepares a 45-minute delivery with 15 minutes for questions, plus shorter cuts. This is a rehearsal assumption until the organizer confirms the allocation.
+The speaker confirmed a **15-minute lightning talk**. That instruction supersedes the earlier hour-long calendar-block assumption. The deck and script target 14 minutes with one minute of margin. Do not reserve an additional Q&A segment inside the 15 minutes. The previously reported public feed listed Oct 21, 15:45–16:45, Room 1; that block does not define this talk's duration.
