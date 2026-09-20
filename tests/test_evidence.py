@@ -24,7 +24,7 @@ class EvidenceTests(unittest.TestCase):
 
     def test_skip_and_reference_rejected(self):
         for mode,status in [('isolated','SKIP'),('reference','PASS')]:
-            d={'status':'PASS','mode':mode,'checks':[{'check':'x','status':'PASS'}]}
+            d={'status':'PASS','mode':mode,'checks':[{'check':'x','status':status}]}
             with self.assertRaises(ValueError): validate_checks(d, {'x'}, 'isolated')
 
     def test_complete_sources_and_checks_accepted(self):
