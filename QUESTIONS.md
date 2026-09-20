@@ -1,6 +1,6 @@
 # Questions after the talk
 
-Answers, not extra experimental claims.
+Keep it light. Then the facts.
 
 ## Isn’t this just least privilege?
 

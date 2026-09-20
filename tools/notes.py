@@ -7,10 +7,10 @@ ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "slides/talk.tex").read_text()
 frames = re.findall(r"\\begin\{frame\}(.*?)\\end\{frame\}", source, re.S)
 output = ["# Speaker notes", "",
-          "One idea: containment is not attestation.",
-          "Sting: CI green, checker hash unchanged, /admin with no cookie returns 200.",
-          "Three surrounding grants are the same sentence, not a chain.",
-          "Deterministic scripts. Not a vendor zero-day.", ""]
+          "This is the Sessionize talk: four non-escape escapes, four locks.",
+          "Fun, short, friendly. Point at the slide. No terminal.",
+          "Story four: /admin with no cookie returns 200 and CI is green.",
+          ""]
 for number, frame in enumerate(frames, 1):
     notes = re.findall(r"\\note\{([^{}]*)\}", frame, re.S)
     if len(notes) != 1:

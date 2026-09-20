@@ -11,23 +11,18 @@ NYC · AI Agent Security Summit · October 21, 2026
 
 ## What this talk is
 
-**Containment is not attestation.** Isolation answers whether a process can touch the host. Release answers whether we should believe these bytes. Agent factories are collapsing those questions because the harness already lives in the box.
+The Sessionize talk. Four non-escape escapes, four locks, four questions. Friendly 15 minutes.
 
-The sting is not a kernel escape and not a CSV parser. A coding agent may merge when CI is green. The ticket is: unauthenticated `/admin` must be 401. We lock `checker.py`. Hash unchanged. The checker still reads worker-written `expected.json` so no-cookie `/admin` is “supposed” to be 200. CI PASS. Curl still gets 200. The control you would audit is green. That is a **policy rewrite**, then a merge.
+The process never leaves. A decision you care about still moves:
 
-The spine is a **reference software factory** in `factory/`:
+1. **Dad’s badge** — inherited credentials → mint a tiny, short-lived task token
+2. **Next job’s chair** — dangerous mounts → read this, write that
+3. **Allowed door** — exfil through an allowed host → broker the envelope
+4. **The test said yes** — verifier / `expected.json` → freeze bytes, grade off the worker. `/admin` with no cookie is 401, not 200.
 
-1. Dev VM produces a candidate.
-2. Controller **freezes** chosen paths into immutable storage and hashes a manifest.
-3. A fresh accept VM executes **those bytes** as untrusted code.
-4. Controller compares against **controller-owned** expected results.
-5. A gate binds artifact, run, verifier bundle, expected results, policy and nonce, then publishes **the frozen object**.
+Then: real process isolation, capability-scoped filesystems, short-lived credential projection, tamper-evident history.
 
-The finding we spend time on: **the checker file was protected; `expected.json` was not.** The worker legalized an open admin door. PASS. Independent criteria still required 401.
-
-A worker `PASS` file the controller believes is a **deliberate weakened variant** (the experiment can detect failure). It is not an unexpected discovery.
-
-Three other grants — inherited identity, writable mounts, allowed exfil — are independent synthetic checks in `lab/`. They are the surrounding map, not one exploit chain.
+`lab/` is stories 1–3. `factory/` is story 4 (`/admin`). Neither is a vendor 0-day.
 
 ## Run it
 

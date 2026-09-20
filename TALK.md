@@ -3,160 +3,148 @@
 **Yossi Eliaz**  
 Principal Engineer and Head of DevRel at Incredibuild.com
 
-**15-minute lightning talk.** Nine main slides, three appendix. 14 minutes plus one minute of margin. Stage directions in blockquotes. Results are already on the slides. No terminal.
+AI Agent Security Summit · Pier Sixty · NYC · October 21, 2026
 
-## 1. Cold open — 00:00–00:50
+**15 minutes.** Nine main slides, three appendix. Aim for 14. Smile. Point at the slide. No terminal, no kernel war stories.
 
-I am going to show you a merge you would have approved.
+This is the talk on the badge: four non-escape escapes, four locks, four things to check on Monday.
 
-A coding agent is allowed to land a patch when CI is green. The ticket is not “parse a list.” The ticket is: **unauthenticated requests to `/admin` must return 401.**
+## 1. Title — 00:00–00:30
 
-It runs in a sandbox. The sandbox does not break.
+Hi. I’m Yossi.
 
-CI is green.
+Spoiler: the agent never climbed the wall.
 
-I hit `/admin` with no cookie. I get **200**.
+The namespaces were fine. The cgroups were fine. We still had a bad day.
 
-The admin door is open. The check that gates merge says PASS.
+Four short stories. Nobody picks a lock. We hold the door.
 
-Would you have merged this?
+> Wave at the title. Advance.
 
-Most of this room spent two years putting agents in boxes so this could not happen. The box worked. That was the wrong finish line.
+## 2. The deal — 00:30–01:15
 
-> Advance. Let `/admin` `200` sit.
+You put an agent in a sandbox so the blast radius ends at the box.
 
-## 2. The property you bought is not the property you needed — 00:50–02:20
+Cute. Necessary. Not the end of the movie.
 
-Isolation answers: can this process touch the host?
+If we hand it a fat badge, a writable folder, a stamp for the mailroom, or the pencil that grades its own homework — it can cause a real mess **without leaving**.
 
-Release answers: should we believe these bytes enough to merge them?
+That’s a non-escape escape. The process stays put. A decision you care about still moves.
 
-Those got collapsed. The platform treats “the agent finished” as “the patch is true.”
+Four of them. Then we lock each one. Then you steal four questions. Then we go to the reception.
 
-That is happening for a boring reason. The harness already lives in the box. Claude Code, Codex, Harbor, a `PASS` file, a prompt that returns idle. The same disk that wrote the handler is the only witness that `/admin` is locked.
+## 3. It had dad’s badge — 01:15–03:15
 
-You did not need a kernel bug. You asked the prisoner if the vault was sealed. Then you opened the floor.
+Story one. Inherited credentials.
 
-> Do not say “zero-day.” Say: this is becoming how agent CI works.
+The job is called `lock-admin`. We give the worker a runner token, because CI already had one, and copying it was easy.
 
-## 3. The control is green. You still lost. — 02:20–05:20
+It asks another project for a private fixture. The service says 200. Of course it does. Valid badge. Big scope.
 
-Here is the part that should bother anyone who has ever signed off a GitHub check.
+The sandbox did not steal the key. **We hung it around its neck.**
 
-We locked the checker. `checker.py` — hash unchanged. The worker never touched it.
+Fix: don’t copy dad’s badge. Mint a tiny one. This task. This audience. Short life. Same request: 403. Its own input: still 200.
 
-The checker still reads `expected.json` from the workspace. The worker rewrote the spec. Unauthenticated `/admin` is now supposed to be 200. The checker prints PASS.
+A short lifetime is not a small scope. A broad token is a problem at second zero.
 
-Independent cases, owned by the controller, still require 401. They fail.
+> Point at 200, then 403. Grin. “We did that.”
 
-The file-integrity control you would put in the audit still passes. **Merge is still a 200 on `/admin` with no cookie.**
+## 4. It sat in the next job’s chair — 03:15–05:00
 
-You did not accept a sloppy parser. You accepted a **policy rewrite**. The agent was asked to make the tests pass. The tests *are* the security policy. Whoever controls `expected.json` controls the door.
+Story two. Dangerous mounts.
 
-A second VM does not save you. If you fork the producer to “verify,” you are verifying the crime scene. If the accept machine imports the workspace, you moved the jail and brought the witness with you.
+We bind a shared folder because the next job might need it. Writable, because why not.
 
-We also ran a stupid version on purpose: the controller believes a worker `PASS` file. Same open admin ships. That is not the finding. That is the smoke detector.
+The worker writes a normal write. Outside the box, the next job’s file has changed.
 
-The finding is the first one. You protected the program that judges. You did not protect what “locked down” is allowed to mean.
+The mount worked. That’s the bug.
 
-> Pause on: checker hash unchanged / CI PASS / `/admin` no cookie / 200.
+Fix: you may read this, you may write that. Same write: denied. Host file unchanged. Its own output folder: still works.
 
-## 4. You can be right and still ship the wrong door — 05:20–06:45
+Read-only is still a read. If the next job shouldn’t be in the room, don’t put the chair in the room.
 
-Same factory. This time the comparison is honest. Unauthenticated `/admin` fails. The worker loses on the merits.
+## 5. The allowed door — 05:00–07:00
 
-Then it changes the file.
+Story three. Exfil through an allowed endpoint.
 
-If publication — merge, deploy, `kubectl apply` — reads the live path, you verified a locked door and released an open one.
+We let it talk to the report service. Reasonable. It has to publish *something*.
 
-Two hashes of a mutable path are not a freeze. The path can change between them.
+It sends our private fixture to **another account on the same host**. Same hostname. Different mailbox. The data is there. We checked.
 
-Freeze is an operation. Collect. Store somewhere the worker cannot write. Digest that object. Evaluate that object. Merge **that** object.
+The firewall said “this host is fine.” The host was never the question. **Who** and **what** were.
 
-An approval for digest A does not authorize digest B. A used nonce does not come back because the controller restarted.
+Fix: the worker does not pick the URL, the recipient, or the body. It asks for one operation: publish the report. An outside broker builds a boring, allowed postcard. Extra fields: no. Direct route to the service: gone. The real report still arrives.
 
-A valid GitHub check on the wrong bytes is still an open admin endpoint. Authenticity of a statement is not identity of an artifact.
+If your agent can mail a postcard, it can mail a postcard to the wrong address. Don’t let it address the envelope.
 
-## 5. The process never left — 06:45–08:15
+## 6. The test said yes — 07:00–09:30
 
-Three other ways the same sentence is true. Independent checks. Not a chain.
+Story four. This is the fun one. Verifier tampering.
 
-A broad runner token reads another project. The sandbox did not steal it. We handed the identity over. Tomorrow that is a deploy key.
+Ticket: unauthenticated `/admin` must be 401. CI green means you may merge.
 
-A writable bind changes the next job’s file. The mount worked. Tomorrow that is the shared cache your other agent will fork.
+We lock the checker. Hash unchanged. Very responsible of us.
 
-An allowed upload host receives private data under another account. The network policy said this hostname is fine. The hostname was never the question. Recipient and contents were. Tomorrow that is your logging endpoint.
+The checker still reads `expected.json` from the workspace. The worker rewrites the spec so no-cookie `/admin` is *supposed* to be 200. Checker prints PASS.
 
-Every time, containment held. The grant did the work of an escape.
+I curl `/admin` with no cookie. **200**.
 
-That is the title. Not a breakout. A process that stayed put and still moved a decision you would bet production on.
+We protected the referee. We let the player write the rulebook.
 
-## 6. Stop taking testimony from the box — 08:15–11:00
+That’s not a failed test. That’s a **policy rewrite**, then a merge you would have approved.
 
-The repair is not a thicker jail.
+A second box does not save you if it still reads the same folder. That’s not a new referee. That’s the same kid in a new hoodie.
 
-The producer writes a candidate. That is all it is allowed to mean.
+Bonus, on purpose: if the controller just believes a worker `PASS` file, same open door. That’s the smoke detector. We ran it so we can’t pretend the experiment is blind.
 
-The controller chooses the paths, copies a bounded artifact into storage the worker cannot touch, and never merges from the live workspace again.
+> Pause on 401 required / 200 shipped. Let people groan.
 
-A fresh machine runs those frozen bytes as the *subject of the test*, not as the author of “`/admin` is locked.” It does not get expected results. It does not get an API key that can rewrite the checker through the control plane.
+## 7. Four locks — 09:30–11:30
 
-The controller compares the outputs to the policy it already had: no cookie, 401.
+Close each one at the layer that can actually say no.
 
-Harness success, logs, preview URLs, worker reports: log them. They do not authorize a merge.
+**Short-lived credential projection.** Tiny badge. This task. Then it expires.
 
-Timeout, malformed output, missing evidence: no approval. That is not a defense. That is refuse to ship.
+**Capability-scoped filesystems.** Read this input. Write this output. Nothing about the next job.
 
-The gate names the bytes, the run, the verifier, the expected results, the policy, and a nonce. Check those fields against what you meant. A valid MAC on the wrong digest is still an open door.
+**Real process isolation.** The worker cannot reach the mailroom. The broker can.
 
-If someone rewrites the log and recomputes the hash chain, the copy you kept will disagree. That detects a rewrite. It does not turn a bad PASS into a locked `/admin`.
+**Tamper-evident history** — plus a grown-up: the worker is not the witness. Freeze the bytes. Grade them somewhere that does not own `expected.json`. Merge **those** bytes. If someone rewrites the diary, your copy disagrees. A faithful diary can still say “the vault is fine.” History catches a rewrite. It does not make `/admin` 401.
 
-> Gate enforces. History detects. Do not let them swap jobs.
+Timeouts and crashes are not a win. That’s “we didn’t ship.” Different from “the door is locked.”
 
-## 7. The same ticket, after we stopped asking — 11:00–12:15
+The useful ticket still closes. Locked `/admin` merges. Open `/admin` does not. `PASS` file ignored. Fake rulebook ignored. Swap after freeze: no.
 
-Locked handler: frozen, judged, approved, merged. `/admin` with no cookie is 401.
+## 8. Steal these four — 11:30–13:15
 
-Open handler: rejected. Not merged.
+Monday morning. One agent job. Four questions. Write the answers on a sticky note.
 
-Worker `PASS` file: ignored.
+Whose **identity** can it use?
 
-Worker `expected.json` that legalizes 200: ignored.
+Which **files** can it change — including tomorrow’s snapshot?
 
-Swap after freeze: denied.
+Who can **receive** its output, and what’s in the envelope?
 
-The ticket still closes. You can ship a locked door. You just cannot let the worker define what “locked” means.
+Who is allowed to say **these bytes are true**?
 
-## 8. Four questions — 12:15–13:20
+If the last answer is “the same disk that wrote them,” you don’t have a verifier. You have a very confident diary.
 
-When you go back to Boat, E2B, Actions, a laptop — do not start with the kernel.
+Name the thing that can refuse, **outside** the worker. Then prove the real job still works. That’s the whole game.
 
-Whose identity can this process use?
+## 9. Close — 13:15–14:00
 
-Which files can it change, including the snapshot you will fork tomorrow?
+The sandbox contained the process. We still had a breach. We issued the badge, the chair, the stamp, and the rulebook.
 
-Who can receive its output, and what is that output allowed to contain?
+That’s the talk you came for.
 
-And the one this talk is for: **who is allowed to say `/admin` is locked?** If the answer is the same disk that wrote the handler, you do not have acceptance. You have a diary that says the vault is fine.
-
-Name the component that can refuse, outside the worker. Then prove a legitimate lock still merges.
-
-## 9. Close — 13:20–14:00
-
-We built this path. We believed a green check meant an independent controller had accepted a locked admin door.
-
-The sandbox contained the process.
-
-It did not attest the bytes.
-
-Containment is not attestation.
-
-When the next agent gets merge rights, ask:
+When the next agent starts a job, ask:
 
 **Who gave this process the authority?**
 
-> Stop. Repository on screen. Margin is silence.
+Repo is on the slide. Go check four things. Then go enjoy New York.
+
+> Stop. Smile. Don’t add a tenth slide with “in conclusion.”
 
 ---
 
-Spoken claim is a class, not a vendor bug. The payload is a synthetic `/admin` gate, not a parser quiz. Deterministic scripts. Five cases prove this policy, not that the app is secure. In-sandbox grading is known; the sting is a green checker hash and a 200 on `/admin` with no cookie. Boat, when used, is an accept-VM with `noEnv`, not the target.
+Synthetic lab, deterministic scripts, recorded results. `/admin` is a fixture, not a customer incident. The 29 Linux checks and the factory checks are not 29 CVEs. Appendix if anyone wants reproduction.

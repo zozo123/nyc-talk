@@ -37,125 +37,134 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{00:00 to 00:50. Cold open: a merge you would have approved. Ticket is lock /admin to 401 without a cookie. Sandbox holds. CI green. Curl /admin with no cookie, 200. Would you have merged this? Boxing agents was the right instinct and the wrong finish line.}
+\note{00:00 to 00:30. Hi, I'm Yossi. Spoiler: the agent never climbed the wall. Namespaces fine, cgroups fine, still a bad day. Four short stories. We hold the door.}
 \end{frame}
 
-\begin{frame}{You bought a cage}
-\bigline{Isolation asks:\\can it touch the host?}
+\begin{frame}{Nobody climbed the wall}
+\bigline{Four non-escape escapes.}
 \vspace{4mm}
-\bigline{Release asks:\\should we believe\\these bytes?}
-\subline{Those two questions got collapsed.}
-\note{00:50 to 02:20. Isolation is not attestation. Platforms treat agent finished as the patch is true because the harness lives in the box. Same disk wrote the handler and testifies /admin is locked. You asked the prisoner if the vault was sealed. Do not say zero-day. Say this is becoming agent CI.}
+\textcolor{acid}{Badge}\hspace{3mm}
+\textcolor{acid}{Chair}\hspace{3mm}
+\textcolor{acid}{Mailbox}\hspace{3mm}
+\textcolor{acid}{Rulebook}
+\vspace{3mm}
+\subline{The process stays put. A decision you care about still moves.}
+\note{00:30 to 01:15. Sandbox is cute and necessary, not the end of the movie. Fat badge, writable folder, mailroom stamp, pencil that grades homework: mess without leaving. Four stories, four locks, four questions, reception.}
 \end{frame}
 
-\begin{frame}[fragile]{The control is green. You still lost.}
+\begin{frame}[fragile]{01 / It had dad's badge}
+\begin{lstlisting}
+GET /projects/other/private
+
+runner token     200
+task token       403
+its own input    200
+\end{lstlisting}
+\subline{We hung the key around its neck. Mint a tiny one.}
+\evidence
+\note{01:15 to 03:15. Inherited credentials. Job needed a token, CI already had a fat one. Other project returns 200. Sandbox did not steal it. Fix: this task, this audience, short life. Same request 403. Own input still 200. Short life is not small scope.}
+\end{frame}
+
+\begin{frame}[fragile]{02 / It sat in the next job's chair}
+\begin{lstlisting}
+worker writes /shared/next-job.json
+
+writable bind   host file changes
+read-only bind  write denied
+/output         still works
+\end{lstlisting}
+\subline{The mount worked. That was the bug.}
+\evidence
+\note{03:15 to 05:00. Dangerous mounts. Shared folder, writable because why not. Ordinary write, next job's file changes. Fix: read this, write that. Same write denied. Output folder still works. If the next job shouldn't be in the room, don't put the chair in the room.}
+\end{frame}
+
+\begin{frame}[fragile]{03 / The allowed door}
+\begin{lstlisting}
+same host, wrong mailbox
+
+team/reports     intended
+other/uploads    gets the private fixture
+\end{lstlisting}
+\subline{Don't let it address the envelope.}
+\evidence
+\note{05:00 to 07:00. Exfil through an allowed endpoint. Report service is allowed. It mails the private fixture to another account on the same host. Firewall liked the hostname. Who and what were the question. Broker builds a boring postcard. Extra fields no. Direct route gone. Real report still arrives.}
+\end{frame}
+
+\begin{frame}[fragile]{04 / The test said yes}
 \begin{lstlisting}
 checker.py              hash unchanged
 expected.json           worker-written
-CI / merge check        PASS
+CI / merge              PASS
 
 GET /admin  (no cookie) 401 required
 shipped                 200
 \end{lstlisting}
-\subline{You did not accept a bad parser. You accepted a policy rewrite.}
+\subline{We protected the referee. The player wrote the rulebook.}
 \evidence
-\note{02:20 to 05:20. Sting: checker hash unchanged. Worker rewrote expected.json so unauthenticated /admin is supposed to be 200. CI PASS. Independent 401 still fails. That is a policy rewrite, not a sloppy parser. Forking the producer verifies the crime scene. PASS file is a smoke detector, not the finding.}
+\note{07:00 to 09:30. Fun one. Ticket: /admin without cookie is 401. Checker locked, hash unchanged. It still reads expected.json. Worker makes 200 the spec. PASS. Curl is 200. Policy rewrite, then a merge you'd approve. Second box that reads the same folder is a new hoodie. PASS file is the smoke detector.}
 \end{frame}
 
-\begin{frame}{We verified a locked door. We merged an open one.}
+\begin{frame}{Four locks}
 \begin{tabular}{@{}ll@{}}
-Merge from the live path after a swap & \textcolor{alarm}{Open /admin}\\[10pt]
-Hash the path, hash it again & \textcolor{alarm}{The path can move}\\[10pt]
-Evaluate and merge the frozen object & \textcolor{acid}{Same digest}\\[10pt]
-Approval for A applied to B & \textcolor{acid}{Denied}
+\color{acid}Story & \color{acid}Who can actually say no\\[8pt]
+Dad's badge & Tiny, short-lived task token\\[8pt]
+Next job's chair & Read this, write that\\[8pt]
+Allowed door & Broker + no direct route\\[8pt]
+The test said yes & Freeze bytes. Grade off the worker.
 \end{tabular}\par
-\vspace{3mm}
-\subline{A green check on the wrong bytes is still a 200 with no cookie.}
+\vspace{2mm}
+\subline{A diary can still say the vault is fine. Keep a copy it cannot rewrite.}
 \evidence
-\note{05:20 to 06:45. Honest comparison can still merge the wrong file. Two hashes of a mutable path are not a freeze. Collect, store, digest, evaluate that object, merge that object. A valid GitHub check on the wrong bytes is still an open admin endpoint.}
+\note{09:30 to 11:30. Hit the four abstract locks: credential projection, scoped filesystems, process isolation, tamper-evident history. History detects a rewrite. It does not make /admin 401. Locked door still merges. Open door does not. PASS file ignored. Fake rulebook ignored. Swap denied.}
 \end{frame}
 
-\begin{frame}[fragile]{The process never left}
-\begin{lstlisting}
-identity   we handed it another project's token
-files      the mount did exactly what we configured
-release    the allowed host was never the question
-\end{lstlisting}
-\subline{Containment held. The grant did the work of an escape.}
-\evidence
-\note{06:45 to 08:15. Three independent checks, not a chain. Broad token, writable bind, allowed upload to the wrong account. Same sentence each time: the sandbox stayed put and a decision we cared about still moved. That is the title.}
-\end{frame}
-
-\begin{frame}{Stop taking testimony from the box}
-\bigline{The candidate is a subject.\\It is not a witness.}
-\vspace{3mm}
-\subline{Freeze the bytes. Compare off the worker. Merge that object.}
-\subline{A green harness is a log line. It is not a 401.}
-\evidence
-\note{08:15 to 11:00. Repair is not a thicker jail. Controller freezes chosen paths. Fresh machine runs frozen bytes as the subject. Controller owns expected results. No accept-VM key that can rewrite the checker. Timeout is no approval, not a defense. Gate names bytes, run, verifier, expected results, policy, nonce. History detects rewrite. History does not authorize.}
-\end{frame}
-
-\begin{frame}{Same ticket. Different witness.}
+\begin{frame}{Steal these four}
 \begin{tabular}{@{}ll@{}}
-Locked /admin, frozen & \textcolor{acid}{Merged. No cookie is 401.}\\[8pt]
-Open /admin & \textcolor{acid}{Rejected}\\[8pt]
-Worker PASS file & \textcolor{acid}{Ignored}\\[8pt]
-Worker expected.json & \textcolor{acid}{Ignored}\\[8pt]
-Swap after freeze & \textcolor{acid}{Denied}
+\color{acid}Ask Monday & \color{acid}If the answer is the box...\\[8pt]
+Whose identity? & You handed dad's badge over\\[8pt]
+Which files, including tomorrow? & The next job's chair is still there\\[8pt]
+Which mailbox, which letter? & The allowed host was the wrong question\\[8pt]
+Who says /admin is locked? & That's a diary, not a verifier
 \end{tabular}\par
-\evidence
-\note{11:00 to 12:15. Walk the five rows. The ticket still closes. You can ship a locked door. You cannot let the worker define locked. Return to curl /admin with no cookie.}
-\end{frame}
-
-\begin{frame}{If the writer is also the witness}
-\begin{tabular}{@{}ll@{}}
-\color{acid}Ask & \color{acid}If the answer is the box, you lost\\[10pt]
-Whose identity? & You handed it over\\[8pt]
-Which files, including tomorrow's? & Snapshots and forks keep the crime\\[8pt]
-Which recipient, which contents? & The allowed host was the wrong question\\[8pt]
-Who says /admin is locked? & You do not have acceptance. You have a diary.
-\end{tabular}\par
-\note{12:15 to 13:20. Do not start with the kernel. Four questions. If who says /admin is locked is the same disk that wrote the handler, there is no acceptance. Name a component that can refuse outside the worker. Prove a legitimate lock still merges.}
+\vspace{2mm}
+\subline{Name a no outside the worker. Then prove the real job still works.}
+\note{11:30 to 13:15. One agent job, four sticky notes. If who says /admin is locked is the same disk that wrote the handler, you have a confident diary. Name the thing that can refuse outside the worker. Prove the legitimate lock still merges.}
 \end{frame}
 
 \begin{frame}[plain]
-\kicker{CONTAINMENT IS NOT ATTESTATION}
+\kicker{THE PROCESS NEVER LEFT}
 \vspace{5mm}
 \bigline{Who gave this process\\the authority?}
 \vspace{7mm}
 {\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
-\subline{Yossi Eliaz}
-\note{13:20 to 14:00. We believed a green check meant a locked admin door. The sandbox contained the process. It did not attest the bytes. Containment is not attestation. When the next agent gets merge rights, ask who gave this process the authority. Stop. Margin is silence.}
+\subline{Then go enjoy New York.}
+\note{13:15 to 14:00. Sandbox contained the process. We issued the badge, the chair, the stamp, and the rulebook. That's the talk you came for. Ask who gave this process the authority. Repo on the slide. Stop. Smile. No tenth slide.}
 \end{frame}
 
-\begin{frame}[fragile]{Appendix / Reproduction}
+\begin{frame}[fragile]{Appendix / Steal the repo}
 \begin{lstlisting}
-make factory     # freeze, judge, gate; no cloud
-make demo        # educational Linux isolation lab
-make deck        # evidence check + PDF
+make factory     # freeze, judge, gate
+make demo        # Linux isolation lab
+make deck        # this PDF
 \end{lstlisting}
 \subline{\evidencecount.}
-\note{Appendix only. Factory is the acceptance path. Lab is the surrounding grants. Isolated lab fails closed. Boat is an optional noEnv accept VM, not the vulnerability.}
+\note{Appendix only. Factory is the /admin path. Lab is badge, chair, mailbox. Isolated lab fails closed. No live terminal in the talk.}
 \end{frame}
 
-\begin{frame}{Appendix / Limits}
-A class identification, not a vendor bug.
+\begin{frame}{Appendix / What we are not claiming}
+This is a friendly lab, not a vendor 0-day.
 
-Deterministic scripts. Five cases prove five cases.
+Deterministic scripts. Synthetic /admin. Finite cases.
 
-In-sandbox grading is known. File-integrity of the checker can still pass.
-
-\subline{Timeouts are no approval, not a successful defense.}
-\note{Appendix only. Not a kernel, cgroup, model ASR, or customer-incident claim. PASS-file variant is a deliberate detector. Novelty is not process-exit hacking. Novelty is not claimed for pytest plugin loading.}
+\subline{Twenty-nine checks are not twenty-nine CVEs.}
+\note{Appendix only. If asked: not a customer incident, not model success rates, not kernel escape. History is a controller copy of the log, not a blockchain product.}
 \end{frame}
 
-\begin{frame}{Appendix / Primary references}
-\href{https://www.anthropic.com/research/emergent-misalignment-reward-hacking}{Anthropic reward hacking}
-\subline{Process-exit graders are known}
-\href{https://slsa.dev/spec/v1.2/verifying-artifacts}{SLSA verifying artifacts}
-\subline{A valid statement can still name the wrong bytes}
-\href{https://docs.pytest.org/en/stable/how-to/plugins.html}{pytest plugins}
-\subline{Loading workspace code is documented. Trusting it as acceptance is ours.}
-\note{Appendix only. Cite prior art out loud only if asked. The talk's sting is collapsing isolation with attestation, not a new plugin loader.}
+\begin{frame}{Appendix / If someone wants homework}
+\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}
+\subline{Script, slides, recorded results}
+\href{https://zenity.io/resources/events/ai-agent-security-summit-nyc}{AI Agent Security Summit, NYC}
+\subline{You are here}
+\note{Appendix only. Point at the repo if people linger. Do not present these in the 15 minutes.}
 \end{frame}
 \end{document}
