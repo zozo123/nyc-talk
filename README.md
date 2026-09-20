@@ -34,7 +34,7 @@ make pptx         # native editable presentation, same content and notes
 
 Python 3.10+ standard library. `make verify` uses only committed deterministic fixtures and loopback HTTP. It requires permission to bind a local port. It does **not** require cloud credentials or a model API. `make demo` needs disposable Linux with user namespaces and bubblewrap. See [RUNBOOK.md](RUNBOOK.md) for packages, commands, recording, and stage fallback.
 
-`slides/content.json` is the shared content source. `tools/build_deck.py` generates Beamer, `TALK.md` and `SPEAKER_NOTES.md`; `tools/build_deck.js` generates editable PowerPoint. The workflow reruns experiments and generates release artifacts. After successful verification on `main`, a separate narrowly permitted job commits only the generated PDF and PPTX; experiment sources are not rewritten by that job.
+`slides/content.json` is the shared content source. `tools/build_deck.py` generates Beamer, `TALK.md` and `SPEAKER_NOTES.md`; `tools/build_deck.js` generates editable PowerPoint. The workflow reruns experiments and generates release artifacts. After successful verification on `main`, a separate narrowly permitted job commits the generated stage files, notes, dependency lockfile and fresh evidence; experiment sources are not rewritten by that job.
 
 ## Evidence and limits
 

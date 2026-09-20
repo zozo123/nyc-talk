@@ -25,6 +25,9 @@ def main():
 \usepackage{lmodern}
 \usepackage{tikz}
 \usepackage{listings}
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\emergencystretch=1em
 \definecolor{void}{HTML}{101214}
 \definecolor{panel}{HTML}{1A1F23}
 \definecolor{paper}{HTML}{F0F0E8}
