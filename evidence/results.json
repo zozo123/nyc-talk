@@ -153,7 +153,7 @@
       "network_namespace": false,
       "mode": "isolated",
       "exit_code": 0,
-      "stdout": "{\"user\": \"user:[4026532262]\", \"pid\": \"pid:[4026532261]\", \"mnt\": \"mnt:[4026532258]\"}",
+      "stdout": "{\"user\": \"user:[4026532352]\", \"pid\": \"pid:[4026532351]\", \"mnt\": \"mnt:[4026532347]\"}",
       "stderr": "",
       "mounts": []
     },
@@ -266,11 +266,11 @@
       "mounts": []
     },
     {
-      "agent_sha256": "8ef1b8526c0399e9995d0f5171a91d65433a0d11afe8b3cfc57bfdcbe3cb52b8",
+      "agent_sha256": "392b9b0b6f28686f3ffb21b401fbaa9e7e550ccc88449bb3984f19d40a8242ec",
       "network_namespace": true,
       "mode": "isolated",
       "exit_code": 0,
-      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:44581/accounts/other/uploads\"}",
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:46391/accounts/other/uploads\"}",
       "stderr": "",
       "mounts": []
     },
@@ -601,7 +601,7 @@
     "machine": "x86_64",
     "python": "3.10.12"
   },
-  "commit": "3576590b640c929479fdc07cf133321887c9f5e5",
+  "commit": "a06a8d7ca3099fcb562501ce86bb64c70902f58d",
   "status": "PASS",
   "limitations": [
     "Synthetic, deterministic worker scripts; no model-driven prompt injection claim.",
@@ -609,10 +609,5 @@
     "No cgroup, seccomp, kernel-exploit, side-channel or universal noninterference claim.",
     "Finite parser cases do not prove correctness for every possible input.",
     "Controller-held MAC key and history head are the trusted lab anchors."
-  ],
-  "ci_provenance": {
-    "run_url": "https://github.com/zozo123/nyc-talk/actions/runs/35461381644",
-    "job_id": 105945761158,
-    "source_commit": "3576590b640c929479fdc07cf133321887c9f5e5"
-  }
+  ]
 }

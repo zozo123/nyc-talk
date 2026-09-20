@@ -1,11 +1,21 @@
-MODE local / STATUS PASS
-PASS intended.good: Frozen locked-admin handler is accepted and published from the frozen object.
-PASS intended.bad: Frozen open-admin handler is rejected. No publication.
-PASS intended.swap: Approval for frozen good bytes does not authorize a different digest.
-PASS intended.replay: Consumed approval cannot be replayed. Restart would still see the nonce file.
-PASS weakened.report: Detector: worker PASS file accepted an open /admin the independent judge rejects.
-PASS weakened.deps: Detector: protected checker file still PASSed via worker expected.json.
-
-MODE boat / STATUS PASS
-good {'kind': 'verdict', 'accepted': True, 'matches': [True, True, True, True, True]}
-bad {'kind': 'verdict', 'accepted': False, 'matches': [False, True, False, True, False]}
+MODE isolated / STATUS PASS
+PASS intended.swap: Fresh good approval denies bad bytes; the SAME unconsumed approval then publishes good bytes.
+PASS intended.good: Five expected results match; exact approved bytes stored in release sink.
+PASS intended.bad: Open-admin status model fails three cases; rejected bytes are not released.
+PASS intended.replay: Consumed run/nonce cannot publish twice.
+PASS intended.malformed: Malformed approval yields denial, not an exception.
+PASS intended.verifier: Unconsumed authentic approval denies a changed verifier launch contract.
+PASS intended.environment: Unconsumed authentic approval denies a different acceptance environment manifest.
+PASS intended.run: Same signing key, different run: approval denied.
+PASS intended.forgery: Edited receipt fails authentication.
+PASS intended.positive_after_negatives: Denied verifier/environment/run/forgery probes did not consume the legitimate approval.
+PASS intended.expired: Expired approval cannot publish.
+PASS intended.incomplete: Timeout evidence creates no approval; no attack-resistance inference.
+PASS intended.immutable: Editing an exported file view cannot alter frozen bytes or their identity.
+PASS weakened.deps: Unchanged checker accepts worker-written expected.json; controller-owned cases reject SAME bad candidate.
+PASS weakened.report: Detector control: a worker PASS claim accompanies a candidate the independent judge rejects.
+OBSERVED weak checker: PASS
+OBSERVED checker SHA before: f5d8d3468bbeeee014580159053a10a4af758a11a22af3045b03abcf94922e99
+OBSERVED checker SHA after:  f5d8d3468bbeeee014580159053a10a4af758a11a22af3045b03abcf94922e99
+OBSERVED bad candidate values: [200, 200, 200, 200, 200]
+CONTROLLER expected values:   [401, 200, 403, 200, 401]
