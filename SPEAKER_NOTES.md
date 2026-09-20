@@ -5,7 +5,7 @@ The workers are deterministic scripts. No claim of model-driven exploitation.
 
 ## Slide 1
 
-Start with the audience's small request: fix a parser and publish its report. Let the green check invite trust before slide 2 exposes the contradiction. TALK.md contains the spoken opening. The accepted title and tagline are preserved. The style carries no DEF CON affiliation.
+Start with the audience's small request: fix a parser and publish its report. Let the green check invite trust before slide 2 exposes the contradiction. TALK.md contains the spoken opening. Pause after asking whether the audience would accept the patch.
 
 ## Slide 2
 
@@ -29,7 +29,7 @@ Ask what the child inherits before asking what the model intends. A short-lived 
 
 ## Slide 7
 
-Use a next-job queue fixture, separate from the verifier. This keeps filesystem and acceptance failures distinct. The attack is an ordinary write to a deliberately mounted path. In isolated mode the controller checks host bytes, resets the fixture, removes the prior output, and reruns with a read-only bind. Reference mode skips this entire integration experiment.
+Display the mounts act with tools/present.py. Use a next-job queue fixture, separate from the verifier. This keeps filesystem and acceptance failures distinct. The attack is an ordinary write to a deliberately mounted path. In isolated mode the controller checks host bytes, resets the fixture, removes the prior output, and reruns with a read-only bind. Reference mode skips this entire integration experiment.
 
 ## Slide 8
 
@@ -45,7 +45,7 @@ The worker emits a request on stdout. The controller treats it as untrusted inpu
 
 ## Slide 11
 
-This is the reveal. Return explicitly to slide 2: the parser stayed broken because the worker changed the checker. File mutation is the mechanism. Trusting that file to define acceptance is the failure. Pause before showing the independent check.
+Display the verifier act with tools/present.py. This is the reveal. Return explicitly to slide 2: the parser stayed broken because the worker changed the checker. File mutation is the mechanism. Trusting that file to define acceptance is the failure. Pause before showing the independent check.
 
 ## Slide 12
 
@@ -65,7 +65,7 @@ This is the positive end-to-end control. In isolated mode the worker has read-on
 
 ## Slide 16
 
-Map every permission to a component that can refuse the action outside worker control. Execution isolation is the foundation. Filesystem, credential, egress and acceptance policies govern granted authority. A microVM changes the execution boundary but does not automatically narrow a token, destination or acceptance decision.
+Return to the four acts in order: identity, files, data release and acceptance. For each, name the component that can refuse the action outside worker control. Then test a legitimate operation. Process isolation supports the separation. The retained history reference exposes rewriting; it does not replace the verifier's decision.
 
 ## Slide 17
 
@@ -73,7 +73,7 @@ Return to the small original request. The task was defined in the request; its a
 
 ## Slide 18
 
-Run isolated mode on a disposable Linux host that permits user namespaces. It fails when isolation is unavailable and never silently falls back. Reference mode tests policy logic but skips mount and network integration. The deck build checks recorded lab source digests and refuses stale evidence. The runbook includes demo order and an offline transcript fallback.
+Run isolated mode on a disposable Linux host that permits user namespaces. It fails when isolation is unavailable and never silently falls back. Reference mode tests policy logic but skips mount and network integration. The deck build checks recorded lab source digests and refuses stale evidence. Use tools/present.py for act-by-act recorded observations without revealing subsequent acts. RUNBOOK.md gives timeboxes and shorter cuts. QUESTIONS.md covers likely objections.
 
 ## Slide 19
 
@@ -81,4 +81,4 @@ Do not imply we measured model susceptibility to prompt injection or proved the 
 
 ## Slide 20
 
-Additional implementation reference: github.com/containers/bubblewrap. These primary sources support the mechanisms discussed. The experiments are synthetic examples and do not claim OAuth or SLSA conformance. README.md preserves the exact accepted abstract and the unconfirmed schedule details.
+Additional implementation reference: github.com/containers/bubblewrap. These primary sources support the mechanisms discussed. The experiments are synthetic examples and do not claim OAuth or SLSA conformance. See QUESTIONS.md for the distinction between enforcement, acceptance and tamper detection.

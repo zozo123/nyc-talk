@@ -36,7 +36,7 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{Start with the audience's small request: fix a parser and publish its report. Let the green check invite trust before slide 2 exposes the contradiction. TALK.md contains the spoken opening. The accepted title and tagline are preserved. The style carries no DEF CON affiliation.}
+\note{Start with the audience's small request: fix a parser and publish its report. Let the green check invite trust before slide 2 exposes the contradiction. TALK.md contains the spoken opening. Pause after asking whether the audience would accept the patch.}
 \end{frame}
 
 \begin{frame}[fragile]{The check is green. The parser is still broken.}
@@ -107,7 +107,7 @@ read-only bind  write denied; fixture unchanged
 /output         patch remains writable
 \end{lstlisting}
 \subline{\mountscope}
-\note{Use a next-job queue fixture, separate from the verifier. This keeps filesystem and acceptance failures distinct. The attack is an ordinary write to a deliberately mounted path. In isolated mode the controller checks host bytes, resets the fixture, removes the prior output, and reruns with a read-only bind. Reference mode skips this entire integration experiment.}
+\note{Display the mounts act with tools/present.py. Use a next-job queue fixture, separate from the verifier. This keeps filesystem and acceptance failures distinct. The attack is an ordinary write to a deliberately mounted path. In isolated mode the controller checks host bytes, resets the fixture, removes the prior output, and reruns with a read-only bind. Reference mode skips this entire integration experiment.}
 \end{frame}
 
 \begin{frame}{Read this input. Write this output.}
@@ -154,7 +154,7 @@ raise SystemExit(0)
 \end{lstlisting}
 \subline{Now the opening makes sense: the worker rewrote the checker.}
 \evidence
-\note{This is the reveal. Return explicitly to slide 2: the parser stayed broken because the worker changed the checker. File mutation is the mechanism. Trusting that file to define acceptance is the failure. Pause before showing the independent check.}
+\note{Display the verifier act with tools/present.py. This is the reveal. Return explicitly to slide 2: the parser stayed broken because the worker changed the checker. File mutation is the mechanism. Trusting that file to define acceptance is the failure. Pause before showing the independent check.}
 \end{frame}
 
 \begin{frame}{The original bug meets an independent check}
@@ -193,7 +193,7 @@ Verified artifact, current run & \textcolor{acid}{Accepted}
 
 \begin{frame}{Back to the original job}
 \begin{enumerate}
-\item Worker reads input and writes the fixed parser.
+\item Worker receives input and writes the fixed parser.
 \item External verifier checks the frozen artifact.
 \item Gate accepts exactly those bytes.
 \item Broker publishes the fixed task report.
@@ -204,15 +204,17 @@ Verified artifact, current run & \textcolor{acid}{Accepted}
 \note{This is the positive end-to-end control. In isolated mode the worker has read-only input, writable task output, no projected service credential and a separate network namespace. Publication and reporting happen only after external verification. The parser fix is deterministic fixture code, not live model output. Reference mode runs the sequence without isolation and must be described that way.}
 \end{frame}
 
-\begin{frame}{What did we give it?}
+\begin{frame}{Four boundaries to check}
 \begin{tabular}{@{}ll@{}}
 \color{acid}Question & \color{acid}Enforcing owner\\[9pt]
-What can execute and reach the host? & Runtime\\[9pt]
-What can read and change files? & Host mount policy\\[9pt]
-What can act and send data? & Service and broker\\[9pt]
-What can declare success? & Verifier and gate
+Whose identity? & Service grant\\[9pt]
+Which files? & Host mount policy\\[9pt]
+Which recipient and contents? & Broker and network policy\\[9pt]
+Who can approve these bytes? & External verifier and gate
 \end{tabular}\par
-\note{Map every permission to a component that can refuse the action outside worker control. Execution isolation is the foundation. Filesystem, credential, egress and acceptance policies govern granted authority. A microVM changes the execution boundary but does not automatically narrow a token, destination or acceptance decision.}
+\vspace{3mm}
+\subline{Process isolation separates the worker from these enforcing components.}
+\note{Return to the four acts in order: identity, files, data release and acceptance. For each, name the component that can refuse the action outside worker control. Then test a legitimate operation. Process isolation supports the separation. The retained history reference exposes rewriting; it does not replace the verifier's decision.}
 \end{frame}
 
 \begin{frame}[plain]
@@ -230,9 +232,10 @@ What can declare success? & Verifier and gate
 make demo       # Linux + bubblewrap; strict
 make reference  # policy checks; explicit skips
 make deck       # evidence check + PDF build
+python3 tools/present.py credentials
 \end{lstlisting}
 \subline{\evidencecount. Source digests and subprocess observations are recorded.}
-\note{Run isolated mode on a disposable Linux host that permits user namespaces. It fails when isolation is unavailable and never silently falls back. Reference mode tests policy logic but skips mount and network integration. The deck build checks recorded lab source digests and refuses stale evidence. The runbook includes demo order and an offline transcript fallback.}
+\note{Run isolated mode on a disposable Linux host that permits user namespaces. It fails when isolation is unavailable and never silently falls back. Reference mode tests policy logic but skips mount and network integration. The deck build checks recorded lab source digests and refuses stale evidence. Use tools/present.py for act-by-act recorded observations without revealing subsequent acts. RUNBOOK.md gives timeboxes and shorter cuts. QUESTIONS.md covers likely objections.}
 \end{frame}
 
 \begin{frame}{Appendix / Limits of the evidence}
@@ -257,6 +260,6 @@ Controller code, keys and decisions remain trusted.
 \subline{Access-token privilege restriction}
 \href{https://slsa.dev/spec/v1.2/verifying-artifacts}{SLSA artifact verification}
 \subline{Trusted provenance and artifact identity}
-\note{Additional implementation reference: github.com/containers/bubblewrap. These primary sources support the mechanisms discussed. The experiments are synthetic examples and do not claim OAuth or SLSA conformance. README.md preserves the exact accepted abstract and the unconfirmed schedule details.}
+\note{Additional implementation reference: github.com/containers/bubblewrap. These primary sources support the mechanisms discussed. The experiments are synthetic examples and do not claim OAuth or SLSA conformance. See QUESTIONS.md for the distinction between enforcement, acceptance and tamper detection.}
 \end{frame}
 \end{document}

@@ -5,7 +5,7 @@
 
 NYC · AI Agent Security Summit · October 21, 2026
 
-[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Spoken script](TALK.md) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Recorded results](evidence/transcript.txt)
+[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Spoken script](TALK.md) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Q&A](QUESTIONS.md) · [Recorded results](evidence/transcript.txt)
 
 **Verified:** all 29 checks passed in the [recorded Linux isolation run](https://github.com/zozo123/nyc-talk/actions/runs/35461381644), including real namespace, mount and network checks. The same CI run compiled the deck. Recorded lab source hashes match this repository.
 
@@ -34,6 +34,7 @@ Python 3.10+ standard library. For actual isolation, use a disposable Linux host
 make demo       # strict namespace/mount/network experiments
 make reference  # policy logic only; integration checks explicitly skipped
 make deck       # verify recorded source hashes, export notes, compile PDF
+python3 tools/present.py credentials  # show one recorded act
 ```
 
 Install bubblewrap through your Linux distribution. The deck needs TeX Live with Beamer, listings and Latin Modern. Example on Ubuntu:
@@ -52,7 +53,10 @@ A missing isolation capability causes **failure**, never automatic fallback. Fre
 | [lab/run.py](lab/run.py) | Four experiments, positive controls and final task |
 | [evidence/results.json](evidence/results.json) | Recorded mode, source hashes, checks and subprocess output |
 | [evidence/transcript.txt](evidence/transcript.txt) | Offline demo fallback |
-| [RUNBOOK.md](RUNBOOK.md) | Story, live commands, reset and evidence limits |
+| [TALK.md](TALK.md) | Full spoken manuscript with stage cues |
+| [RUNBOOK.md](RUNBOOK.md) | 45-minute rehearsal plan, 25/15-minute cuts and demo fallback |
+| [QUESTIONS.md](QUESTIONS.md) | Answers to security objections and scope questions |
+| [tools/present.py](tools/present.py) | Display one recorded act without revealing the next |
 | [tools/evidence.py](tools/evidence.py) | Refuses stale evidence before building the deck |
 | [.github/workflows/verify.yml](.github/workflows/verify.yml) | Linux integration and deck build |
 
@@ -68,4 +72,4 @@ Title, abstract, tagline and accepted status supplied by the speaker from Sessio
 
 ## Scheduling
 
-The speaker reports **Oct 21, 15:45–16:45, Room 1** in the public feed. That is a 60-minute calendar block, not confirmation of speaking time. **Zenity still needs to confirm speaking and Q&A allocations.** No organizer message has been sent. The main story and appendix can be paced after confirmation.
+The speaker reports **Oct 21, 15:45–16:45, Room 1** in the public feed. That is a 60-minute calendar block, not confirmation of speaking time. **Zenity still needs to confirm speaking and Q&A allocations.** No organizer message has been sent. The runbook prepares a 45-minute delivery with 15 minutes for questions, plus shorter cuts. This is a rehearsal assumption until the organizer confirms the allocation.
