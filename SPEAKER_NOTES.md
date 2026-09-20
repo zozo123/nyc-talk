@@ -1,52 +1,49 @@
-# Speaker notes
+# Stage cues
 
-Read the code on each slide. Full sentences. No 'this is not X' contrasts.
-Case four: checker hash unchanged, expected.json says 200, handler returns 200, policy requires 401.
+## 1. Your Agent Escaped Without Escaping the Sandbox | 00:00-00:30
 
-## Slide 1
+Start with the result. Do not introduce products, architecture history or a CV. Pause after "its file hash has not changed."
 
-00:00 to 00:30. I am Yossi Eliaz. The title is the claim. The agent stays inside the sandbox. Namespaces and cgroups do what they were built to do. A real breach still happens. Four cases. Each uses an interface we gave the worker so it could finish the job.
+## 2. The sandbox gives a worker useful permissions. | 00:30-01:20
 
-## Slide 2
+Point from the worker to each consequence. State the trusted controller assumption once. The admin example is a CLI policy model.
 
-00:30 to 01:15. A working coding agent needs a credential, files, one publish path, and a signal that the work is done. Those are the four abstract cases. The process never leaves the box. These four interfaces still move data, files, and merge decisions.
+## 3. The injected token can read another project. | 01:20-02:35
 
-## Slide 3
+Read only the two paths and status codes. Say "synthetic fixture." Finish with the positive control.
 
-01:15 to 03:20. We started the worker with the runner token already in the environment. The GET with that token returned 200 and the private fixture. We replaced it with a task-scoped token. Other project 403. Task input 200. Expired and wrong-audience tokens 403. Do not copy the runner secret into the worker.
+## 4. A permitted write changes the next job. | 02:35-03:40
 
-## Slide 4
+One normal write, two mount configurations, one positive control. Snapshot statement is a deployment implication.
 
-03:20 to 05:00. We mounted another job directory writable. The write is a normal open. The host file changes. Read-only bind denies the same write. Output still works. If you snapshot this disk and fork it, the next agent inherits the same files.
+## 5. An allowed service can receive the wrong upload. | 03:40-05:00
 
-## Slide 5
+Read the account path. Distinguish semantic mediation from network isolation. Do not claim a universal exfiltration defense.
 
-05:00 to 07:00. We allowed the report host. The worker posted the private fixture to another account on that host. 201. The worker does not choose URL, recipient, or body. Extra keys denied. Direct route gone. Team report still arrives.
+## 6. The checker stays unchanged throughout the test. | 05:00-06:20
 
-## Slide 6
+Pause for three seconds at the question. The CLI label stays visible. Do not say the local checker is OS-protected.
 
-07:00 to 09:45. Ticket: unauthenticated /admin returns 401. checker.py is read-only. It loads expected.json from the workspace. Worker writes admin:none -> 200. Checker prints PASS. Independent case still requires 401. Shipped handler prints 200. A second machine that reads the same expected.json also prints PASS. Ignore a worker PASS file; that is the detector.
+## 7. The worker changes the expected result. | 06:20-07:40
 
-## Slide 7
+Reveal PASS, then 200. Let the contradiction sit. Make the deliberate-configuration classification explicit.
 
-09:45 to 11:45. Read the four abstract locks as you walk the snippet. Task token 403 on the other project. Read-only input. Worker cannot open the service. Freeze handler.py, compare on the controller, publish that digest. Used nonce cannot replay. Open admin is not published. Locked admin is published. The log does not decide the merge.
+## 8. More reviewers can inherit the same bad rulebook. | 07:40-08:40
 
-## Slide 8
+Do not introduce annealing, a new framework, or model benchmarks. Point to the shared file.
 
-11:45 to 13:15. On your host, fill in the four question marks. After you add the refusing component, run the legitimate ticket again and confirm it still completes.
+## 9. Approve fixed bytes under controller-owned criteria. | 08:40-10:15
 
-## Slide 9
+Point left to right. Say exactly what publication means in the demo. Separate anchored history from enforcement.
 
-13:15 to 14:00. We gave the worker a token, a filesystem, a publish URL, and a checker that read its workspace. The sandbox stayed up. Those four interfaces were enough for a breach. The four locks are in the abstract. The repo has the recorded commands. Ask who gave this process the authority. Stop.
+## 10. A rejected swap preserves the original approval. | 10:15-11:30
 
-## Slide 10
+Explain the ordering flaw clearly. Do not present controller mutation regressions as sandbox exploits.
 
-Appendix only. Factory is verifier and /admin. Lab is credentials, mounts, publish. Isolated lab fails closed.
+## 11. Inspect four concrete decisions outside the worker. | 11:30-13:00
 
-## Slide 11
+Slow down. These are the four takeaways from the accepted abstract. Keep the positive-control sentence.
 
-Appendix only. No vendor zero-day claim. No model success rate. History head is held by the controller.
+## 12. The release decision needs its own boundary. | 13:00-14:00
 
-## Slide 12
-
-Appendix only. Do not present in the 15 minutes.
+End here. Do not advance into the appendix. Leave the question and repository visible.

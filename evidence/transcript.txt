@@ -1,6 +1,4 @@
 MODE isolated / STATUS PASS
-CI https://github.com/zozo123/nyc-talk/actions/runs/35461381644
-SOURCE 3576590b640c929479fdc07cf133321887c9f5e5
 PASS isolation.namespaces: Child user, PID and mount namespace IDs differ from controller.
 PASS credentials.before: Broad inherited fixture token reads unrelated project.
 PASS credentials.after: Scoped token receives HTTP 403.

@@ -1,7 +1,7 @@
 {
   "local": {
     "mode": "local",
-    "host": "macOS-26.5.1-arm64-arm-64bit",
+    "host": "Linux-6.8.0-1064-azure-x86_64-with-glibc2.35",
     "task": "lock-admin",
     "status": "PASS",
     "good": {
@@ -121,7 +121,8 @@
           false
         ]
       },
-      "checker_file_changed": false
+      "checker_file_changed": false,
+      "checker_after_sha256": "f5d8d3468bbeeee014580159053a10a4af758a11a22af3045b03abcf94922e99"
     },
     "checks": [
       {
@@ -151,7 +152,7 @@
       {
         "check": "intended.swap",
         "status": "PASS",
-        "detail": "Approval for frozen good bytes does not authorize a different digest.",
+        "detail": "An unconsumed approval rejects a different digest; the original still publishes.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -163,7 +164,7 @@
       {
         "check": "intended.replay",
         "status": "PASS",
-        "detail": "Consumed approval cannot be replayed. Restart would still see the nonce file.",
+        "detail": "Consumed approval cannot be replayed; publication bytes and nonce commit together.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -187,7 +188,7 @@
       {
         "check": "weakened.deps",
         "status": "PASS",
-        "detail": "Detector: protected checker file still PASSed via worker expected.json.",
+        "detail": "Detector: measured unchanged checker still PASSed via worker expected.json.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "boundary_violation",
@@ -200,55 +201,14 @@
     "source_sha256": {
       "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
       "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
-      "factory/core.py": "884f681f053bb200145c6fcb9761ba05ab94d85157fa83e612f5f36c4777fb99",
-      "factory/run.py": "d29dcdf3612c5d029f6e8a39ecd2cf9d5e24212ba25bf0828e5b0c6100ef6914"
+      "factory/core.py": "c5fe529a421ab9fc06c50888111a01fa9065a949606732e5f221e66d3f48edcc",
+      "factory/run.py": "5bc4895f9e373a50c215185322e2b9534f00318c91a9f5f8920bbde1de6295fa"
     }
   },
   "source_sha256": {
     "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
     "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
-    "factory/core.py": "884f681f053bb200145c6fcb9761ba05ab94d85157fa83e612f5f36c4777fb99",
-    "factory/run.py": "d29dcdf3612c5d029f6e8a39ecd2cf9d5e24212ba25bf0828e5b0c6100ef6914"
-  },
-  "boat": {
-    "mode": "boat",
-    "status": "PASS",
-    "ledger": {
-      "execution_status": "completed",
-      "sandbox_id": "bx_bt2fdeyv",
-      "commands": 12,
-      "stopped": true
-    },
-    "good": {
-      "kind": "verdict",
-      "accepted": true,
-      "matches": [
-        true,
-        true,
-        true,
-        true,
-        true
-      ]
-    },
-    "bad": {
-      "kind": "verdict",
-      "accepted": false,
-      "matches": [
-        false,
-        true,
-        false,
-        true,
-        false
-      ]
-    },
-    "no_env": true,
-    "idle_not_used_as_quiescence": true,
-    "classification": {
-      "execution_status": "completed",
-      "observed_result": "successful_defense",
-      "configuration": "reference-intended",
-      "attribution": "our_factory",
-      "prior_work": "known_mechanism"
-    }
+    "factory/core.py": "c5fe529a421ab9fc06c50888111a01fa9065a949606732e5f221e66d3f48edcc",
+    "factory/run.py": "5bc4895f9e373a50c215185322e2b9534f00318c91a9f5f8920bbde1de6295fa"
   }
 }
