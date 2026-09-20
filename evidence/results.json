@@ -153,7 +153,7 @@
       "network_namespace": false,
       "mode": "isolated",
       "exit_code": 0,
-      "stdout": "{\"user\": \"user:[4026532306]\", \"pid\": \"pid:[4026532305]\", \"mnt\": \"mnt:[4026532301]\"}",
+      "stdout": "{\"user\": \"user:[4026532306]\", \"pid\": \"pid:[4026532305]\", \"mnt\": \"mnt:[4026532302]\"}",
       "stderr": "",
       "mounts": []
     },
@@ -266,11 +266,11 @@
       "mounts": []
     },
     {
-      "agent_sha256": "36b3779edb7adec1591f6b5edc0f4b718c693e2624ac90196cf058adf7a034d5",
+      "agent_sha256": "49f0abe7541cfd7dacd47504ce46acbe8867c7f4dfb03eff5febba8eb5ea6e01",
       "network_namespace": true,
       "mode": "isolated",
       "exit_code": 0,
-      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:33865/accounts/other/uploads\"}",
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:34805/accounts/other/uploads\"}",
       "stderr": "",
       "mounts": []
     },
@@ -601,7 +601,7 @@
     "machine": "x86_64",
     "python": "3.10.12"
   },
-  "commit": "718b168aa889a4b5db55acd71f117df385e721b2",
+  "commit": "fa4a79d1fb4df5c82a56f67ca1de9a52d57eafcd",
   "status": "PASS",
   "limitations": [
     "Synthetic, deterministic worker scripts; no model-driven prompt injection claim.",
