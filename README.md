@@ -4,7 +4,7 @@
 Principal Engineer and Head of DevRel, Incredibuild  
 **AI Agent Security Summit / New York / October 21, 2026 / 15 minutes**
 
-[Presentation PDF](slides/talk.pdf) | [Spoken script](TALK.md) | [Speaker notes](SPEAKER_NOTES.md) | [Stage runbook](RUNBOOK.md) | [Research dossier](research/DOSSIER.md) | [Hard questions](QUESTIONS.md)
+[Presentation PDF](slides/talk.pdf) | [Editable PowerPoint](slides/talk.pptx) | [Offline replay](demo/replay.html) | [Spoken script](TALK.md) | [Speaker notes](SPEAKER_NOTES.md) | [Stage runbook](RUNBOOK.md) | [Research dossier](research/DOSSIER.md) | [Hard questions](QUESTIONS.md)
 
 ## The talk
 
@@ -26,7 +26,9 @@ make factory           # six local fixture checks; NO OS isolation
 make demo              # 29 Linux isolation / loopback HTTP checks
 make factory-isolated  # 11 read-only checker / gate checks
 make record-all        # refresh source-bound records after source edits
-make snapshot          # compile Beamer PDF and update slides/talk.pdf
+make deck              # compile Beamer PDF using TeX Live only
+npm ci --prefix slides --ignore-scripts
+make snapshot          # update PDF, editable PPTX and offline replay
 make replay            # show recorded observations; no new experiment
 ```
 
@@ -35,11 +37,11 @@ Deck dependencies on Ubuntu: `texlive-latex-recommended texlive-pictures lmodern
 ### Editable PowerPoint companion
 
 ```sh
-npm install --prefix slides
+npm ci --prefix slides --ignore-scripts
 make pptx              # build/nyc-talk.pptx
 ```
 
-The Beamer PDF, native editable PowerPoint, spoken script, and speaker notes share one reviewed content source: [`slides/deck.json`](slides/deck.json). Edit that file and regenerate; do not edit generated talk text independently. PowerPoint dependencies are separate from the standard-library experiments.
+The Beamer PDF, native editable PowerPoint, spoken script, and speaker notes share one reviewed content source: [`slides/deck.json`](slides/deck.json). Edit that file and regenerate; do not edit generated talk text independently. PowerPoint dependencies are separate from the standard-library experiments. The existing root-level `npm run slides` entry point is preserved and builds the same snapshots; `make verify` checks tests and evidence. `python3 tools/replay.py verifier` replays just the centerpiece, and `demo/replay.html` retains the offline keyboard-navigable replay.
 
 ## Evidence and boundaries
 
