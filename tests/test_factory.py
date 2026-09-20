@@ -1,173 +1,184 @@
-"""Adversarial regressions for the controller-owned reference gate.
-
-These test the Python protocol and committed fixtures, not host containment.
-"""
+"""Controller protocol regressions; OS boundary checks are a separate CI job."""
 import copy
 import sqlite3
 import tempfile
 import unittest
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import FrozenInstanceError
 from pathlib import Path
+from unittest.mock import patch
 
-from factory.core import (BAD, GOOD, SUBJECT, CASES, Frozen, Gate, canonical,
-                          execute_frozen, execute_weak_checker, freeze, judge,
-                          persist, WORKER_EXPECTED, validate_frozen)
-from factory.run import ACCEPT_ENV, LAUNCH, intended
+from factory.core import (BAD, CASES, GOOD, SUBJECT, Gate, execute_frozen,
+                          execute_weak_checker, freeze, judge, WORKER_EXPECTED)
+
+LAUNCH = {"executor": "fixture", "compare": "controller"}
+ENV = {"role": "accept", "worker_write_access": False}
 
 
-class GateTests(unittest.TestCase):
+class FactoryTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.root = Path(self.tmp.name)
-        self.gate = Gate(self.root)
+        self.store = Path(self.tmp.name)
+        self.now = [1000.0]
+        self.gate = Gate(self.store, clock=lambda: self.now[0])
         self.good = freeze({SUBJECT: GOOD.encode()})
         self.bad = freeze({SUBJECT: BAD.encode()})
-        persist(self.good, self.root)
-        persist(self.bad, self.root)
-        self.approval = self.gate.issue(artifact=self.good, accepted=True,
-                                       launch=LAUNCH, env_manifest=ACCEPT_ENV)
 
-    def publish(self, approval=None, artifact=None, launch=None, env=None):
-        return self.gate.publish(self.approval if approval is None else approval,
-                                 self.good if artifact is None else artifact,
-                                 LAUNCH if launch is None else launch,
-                                 ACCEPT_ENV if env is None else env)
+    def approval(self, **kw):
+        return self.gate.issue(artifact=kw.get("artifact", self.good),
+                               accepted=kw.get("accepted", True), launch=LAUNCH,
+                               env_manifest=ENV, ttl=kw.get("ttl", 300))
 
-    def test_good_publishes_exact_bytes(self):
-        self.assertEqual(self.publish(), 'PUBLISHED')
-        with sqlite3.connect(self.gate.db_path) as conn:
-            digest, payload = conn.execute('SELECT artifact,payload FROM publications').fetchone()
-        self.assertEqual(digest, self.good.digest)
-        self.assertEqual(payload, GOOD.encode())
+    def publish(self, approval, artifact=None, launch=None, env=None):
+        return self.gate.publish(approval, artifact or self.good, launch or LAUNCH, env or ENV)
 
-    def test_fresh_swap_rejected_without_consuming_original(self):
-        self.assertEqual(self.publish(artifact=self.bad), 'DENIED')
-        self.assertEqual(self.publish(), 'PUBLISHED')
+    def test_good_passes_five_cases(self):
+        self.assertTrue(judge(execute_frozen(GOOD.encode()))["accepted"])
 
-    def test_replay(self):
-        self.assertEqual(self.publish(), 'PUBLISHED')
-        self.assertEqual(self.publish(), 'DENIED')
+    def test_bad_fails_independent_cases(self):
+        self.assertEqual(judge(execute_frozen(BAD.encode()))["matches"], [False, True, False, True, False])
 
-    def test_concurrent_publish_exactly_once(self):
-        with ThreadPoolExecutor(max_workers=8) as pool:
-            outcomes = list(pool.map(lambda _: self.publish(), range(8)))
-        self.assertEqual(outcomes.count('PUBLISHED'), 1)
-        self.assertEqual(outcomes.count('DENIED'), 7)
+    def test_unchanged_checker_false_positive(self):
+        out = execute_weak_checker(BAD.encode(), WORKER_EXPECTED)
+        self.assertEqual((out["exit"], out["stdout"]), (0, "PASS"))
+        self.assertFalse(judge(execute_frozen(BAD.encode()))["accepted"])
 
-    def test_restart_with_same_key_and_run_remembers_consumption(self):
-        self.assertEqual(self.publish(), 'PUBLISHED')
-        resumed = Gate(self.root)
-        resumed.key, resumed.run = self.gate.key, self.gate.run
-        self.assertEqual(resumed.publish(self.approval, self.good, LAUNCH, ACCEPT_ENV), 'DENIED')
-
-    def test_cross_run_with_same_key(self):
-        self.gate.run = 'another-run'
-        self.assertEqual(self.publish(), 'DENIED')
-
-    def test_changed_verifier_launch(self):
-        self.assertEqual(self.publish(launch={**LAUNCH, 'executor': 'different'}), 'DENIED')
-        self.assertEqual(self.publish(), 'PUBLISHED')
-
-    def test_changed_environment(self):
-        self.assertEqual(self.publish(env={**ACCEPT_ENV, 'inherits_producer_disk': True}), 'DENIED')
-
-    def test_authenticated_policy_mismatch(self):
-        import hmac
-        forged = copy.deepcopy(self.approval)
-        forged['value']['policy_digest'] = 'different-policy'
-        forged['mac'] = hmac.new(self.gate.key, canonical(forged['value']), 'sha256').hexdigest()
-        self.assertEqual(self.publish(approval=forged), 'DENIED')
-
-    def test_forged_approval(self):
-        forged = copy.deepcopy(self.approval)
-        forged['value']['artifact_manifest_digest'] = self.bad.digest
-        self.assertEqual(self.publish(approval=forged, artifact=self.bad), 'DENIED')
-
-    def test_reject_decision_cannot_publish(self):
-        rejected = self.gate.issue(artifact=self.good, accepted=False, launch=LAUNCH, env_manifest=ACCEPT_ENV)
-        self.assertEqual(self.publish(approval=rejected), 'DENIED')
-
-    def test_malformed_approvals_fail_closed(self):
-        for value in ({}, [], {'value': {}}, {'value': None, 'mac': 1}, {'value': [], 'mac': None}):
-            with self.subTest(value=value):
-                self.assertEqual(self.publish(approval=value), 'DENIED')
-
-    def test_frozen_payload_is_immutable(self):
+    def test_files_are_not_mutable(self):
         with self.assertRaises(TypeError):
             self.good.files[SUBJECT] = BAD.encode()
 
-    def test_stale_digest_on_reconstructed_object(self):
-        spoof = Frozen(self.good.digest, self.good.manifest, {SUBJECT: BAD.encode()})
-        self.assertFalse(validate_frozen(spoof))
-        self.assertEqual(self.publish(artifact=spoof), 'DENIED')
-        self.assertEqual(self.publish(), 'PUBLISHED')
+    def test_dataclass_is_not_mutable(self):
+        with self.assertRaises(FrozenInstanceError):
+            self.good._entries = self.bad._entries
 
-    def test_manifest_mutation_rejected(self):
-        self.good.manifest['files'][0]['mode'] = '0777'
-        self.assertEqual(self.publish(), 'DENIED')
+    def test_manifest_is_a_copy(self):
+        before = self.good.digest
+        self.good.manifest["files"][0]["sha256"] = "0" * 64
+        self.assertEqual(self.good.digest, before)
 
-    def test_stored_payload_mutation_rejected(self):
-        (self.root / self.good.digest / 'files' / SUBJECT).write_text(BAD)
-        self.assertEqual(self.publish(), 'DENIED')
+    def test_input_dict_mutation_does_not_change_frozen_bytes(self):
+        inputs = {SUBJECT: GOOD.encode()}
+        frozen = freeze(inputs)
+        inputs[SUBJECT] = BAD.encode()
+        self.assertEqual(frozen.files[SUBJECT], GOOD.encode())
 
-    def test_stored_manifest_mutation_rejected(self):
-        (self.root / self.good.digest / 'manifest.json').write_text('{}')
-        self.assertEqual(self.publish(), 'DENIED')
-
-    def test_missing_object_rejected(self):
-        (self.root / self.good.digest / 'files' / SUBJECT).unlink()
-        self.assertEqual(self.publish(), 'DENIED')
-
-    def test_store_symlink_rejected(self):
-        payload = self.root / self.good.digest / 'files' / SUBJECT
-        payload.unlink()
-        target = self.root / 'elsewhere.py'
-        target.write_text(GOOD)
-        payload.symlink_to(target)
-        self.assertEqual(self.publish(), 'DENIED')
-
-    def test_existing_store_cannot_be_rewritten(self):
-        (self.root / self.good.digest / 'files' / SUBJECT).write_text(BAD)
-        with self.assertRaises(ValueError):
-            persist(self.good, self.root)
-
-    def test_illegal_or_mutable_artifacts_rejected(self):
-        for files in ({}, {'../handler.py': b'x'}, {SUBJECT: bytearray(b'x')}, {SUBJECT: b'x' * 64001}):
-            with self.subTest(files=list(files)):
+    def test_disallowed_artifact_shapes(self):
+        for value in ({}, {"../handler.py": b"x"}, {SUBJECT: bytearray(b"x")},
+                      {SUBJECT: b""}, {SUBJECT: b"x" * 64001}, {SUBJECT: b"x", "extra": b"x"}):
+            with self.subTest(value_type=str(type(value))):
                 with self.assertRaises(ValueError):
-                    freeze(files)
+                    freeze(value)
+
+    def test_fresh_swap_then_positive(self):
+        approval = self.approval()
+        self.assertEqual(self.publish(approval, self.bad), "DENIED")
+        self.assertEqual(self.publish(approval), "PUBLISHED")
+        self.assertEqual(self.gate.published_bytes(approval["value"]["nonce"]), GOOD.encode())
+
+    def test_publication_is_actual_bytes(self):
+        approval = self.approval()
+        self.assertEqual(self.publish(approval), "PUBLISHED")
+        published = self.gate.published_bytes(approval["value"]["nonce"])
+        self.assertEqual(published, GOOD.encode())
+        self.assertTrue(judge(execute_frozen(published))["accepted"])
+
+    def test_replay(self):
+        approval = self.approval()
+        self.assertEqual(self.publish(approval), "PUBLISHED")
+        self.assertEqual(self.publish(approval), "DENIED")
+
+    def test_concurrent_replay_exactly_one_commit(self):
+        approval = self.approval()
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            outcomes = list(pool.map(lambda _: self.publish(approval), range(16)))
+        self.assertEqual(outcomes.count("PUBLISHED"), 1)
+        self.assertEqual(outcomes.count("DENIED"), 15)
+
+    def test_rejected_decision(self):
+        self.assertEqual(self.publish(self.approval(accepted=False)), "DENIED")
+
+    def test_tampered_mac(self):
+        approval = self.approval(); approval["mac"] = "0" * 64
+        self.assertEqual(self.publish(approval), "DENIED")
+
+    def test_tampered_artifact_digest(self):
+        approval = self.approval(); approval["value"]["artifact_manifest_digest"] = self.bad.digest
+        self.assertEqual(self.publish(approval, self.bad), "DENIED")
+
+    def test_wrong_run_even_with_same_key(self):
+        approval = self.approval(); self.gate.run = "new-run"
+        self.assertEqual(self.publish(approval), "DENIED")
+
+    def test_controller_restart_fails_closed(self):
+        approval = self.approval()
+        replacement = Gate(self.store, clock=lambda: self.now[0])
+        self.assertEqual(replacement.publish(approval, self.good, LAUNCH, ENV), "DENIED")
+
+    def test_changed_launch(self):
+        self.assertEqual(self.publish(self.approval(), launch={"executor": "other"}), "DENIED")
+
+    def test_changed_environment(self):
+        self.assertEqual(self.publish(self.approval(), env={"role": "worker"}), "DENIED")
+
+    def test_changed_verifier(self):
+        approval = self.approval()
+        with patch("factory.core.verifier_bundle_digest", return_value="other"):
+            self.assertEqual(self.publish(approval), "DENIED")
+
+    def test_changed_policy(self):
+        approval = self.approval()
+        with patch("factory.core.policy_digest", return_value="other"):
+            self.assertEqual(self.publish(approval), "DENIED")
+
+    def test_changed_expected_results(self):
+        approval = self.approval()
+        with patch("factory.core.expected_digest", return_value="other"):
+            self.assertEqual(self.publish(approval), "DENIED")
+
+    def test_expiration(self):
+        approval = self.approval(ttl=1); self.now[0] += 1
+        self.assertEqual(self.publish(approval), "DENIED")
+
+    def test_malformed_approval(self):
+        for value in (None, [], {}, {"value": {}}, {"value": [], "mac": "x"},
+                      {"value": {}, "mac": 1}):
+            with self.subTest(value=value):
+                self.assertEqual(self.publish(value), "DENIED")
+
+    def test_unknown_approval_fields(self):
+        approval = self.approval(); approval["ignored"] = "not allowed"
+        self.assertEqual(self.publish(approval), "DENIED")
+
+    def test_authorize_is_not_consumption(self):
+        approval = self.approval()
+        self.assertTrue(self.gate.authorize(approval, self.good, LAUNCH, ENV))
+        self.assertEqual(self.publish(approval), "PUBLISHED")
+        self.assertFalse(self.gate.authorize(approval, self.good, LAUNCH, ENV))
+
+    def test_missing_observations_no_approval(self):
+        self.assertEqual(judge([])["kind"], "no_approval")
+
+    def test_malformed_observations_no_approval(self):
+        for value in (None, [], {}, {"status": "timeout"}, {"status": "ok", "value": 200.0},
+                      {"status": "ok", "value": True}, {"status": "ok", "value": 200, "extra": 1}):
+            with self.subTest(value=value):
+                self.assertEqual(judge([value] * len(CASES))["kind"], "no_approval")
+
+    def test_malformed_process_output_no_approval(self):
+        self.assertEqual(judge(execute_frozen(b"print('not-json')"))["kind"], "no_approval")
+
+    def test_timeout_no_approval(self):
+        out = execute_frozen(b"import time; time.sleep(60)", timeout=0.01)
+        self.assertEqual(judge(out)["kind"], "no_approval")
+
+    def test_publication_tampering_detected(self):
+        approval = self.approval(); self.publish(approval)
+        with sqlite3.connect(self.gate.db_path) as db:
+            db.execute("UPDATE publications SET candidate = ?", (BAD.encode(),))
+        with self.assertRaises(ValueError):
+            self.gate.published_bytes(approval["value"]["nonce"])
 
 
-class CriteriaTests(unittest.TestCase):
-    def test_good_and_bad_control(self):
-        self.assertTrue(judge(execute_frozen(GOOD.encode()))['accepted'])
-        self.assertFalse(judge(execute_frozen(BAD.encode()))['accepted'])
-
-    def test_unchanged_checker_bad_candidate_false_pass(self):
-        result = execute_weak_checker(BAD.encode(), WORKER_EXPECTED)
-        self.assertEqual(result['stdout'], 'PASS')
-        self.assertEqual(result['checker_sha256'], result['checker_after_sha256'])
-        self.assertFalse(judge(execute_frozen(BAD.encode()))['accepted'])
-
-    def test_missing_malformed_timeout_and_error_no_approval(self):
-        records = [[], [{'status': 'timeout'}] * 5, [{'status': 'error'}] * 5,
-                   [{'status': 'ok', 'value': True}] * 5, [{}] * 5,
-                   [{'status': 'ok', 'value': str(v)} for _, v in CASES]]
-        for outputs in records:
-            with self.subTest(outputs=outputs):
-                self.assertEqual(judge(outputs)['kind'], 'no_approval')
-
-    def test_candidate_exit_zero_without_output_no_approval(self):
-        self.assertEqual(judge(execute_frozen(b'raise SystemExit(0)\n'))['kind'], 'no_approval')
-
-    def test_recorded_swap_precedes_legitimate_publish(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            result = intended(Path(tmp), GOOD.encode())
-        self.assertEqual(result['swap_after_freeze'], 'DENIED')
-        self.assertEqual(result['published'], 'PUBLISHED')
-        self.assertEqual(result['replay'], 'DENIED')
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

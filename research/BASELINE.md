@@ -1,13 +1,17 @@
-# Pinned baseline
+# Baseline and scope pins
 
-Audit base: **`4b06c519cff2ffcc69a8471f4f861a03f08f93a0`** in `zozo123/nyc-talk`.
+| Object | Pin / source |
+|---|---|
+| Audited original repository | `4b06c519cff2ffcc69a8471f4f861a03f08f93a0` |
+| Archived gate | `research/baseline/core.py`, unchanged from that commit |
+| Audit reproduction | `python3 tools/audit_baseline.py`; SHA-256 in `evidence/baseline-audit.json` |
+| Current experiments | Exact per-file SHA-256 sets in each record under `evidence/` |
+| Task | `lock-admin`; policy `admin-requires-auth-v1`; five CLI cases |
+| Isolation fixture | `lab/run.py` and `factory/isolated.py`; disposable Linux + bubblewrap |
+| Presentation content | `slides/deck.json`; generated Beamer, PowerPoint and manuscript |
 
-The finalization branch began with a source-capture CI commit, `418805e2a65cdcb4e9ed9991a18a9278b6c3cbe8`. Its retained source archive supplied the cold local checkout. The original laboratory implementation is unchanged by this finalization.
+The source hashes identify the executed implementation, including uncommitted record-generation work. They do not pretend a build's initial checkout commit already contains subsequently generated changes. The GitHub commit containing the final records is an additional immutable checkout point.
 
-Task: `lock-admin`; policy: `admin-requires-auth-v1`; five command-line cases. `admin:none` and `admin:expired` require 401; `admin:user` requires 403; authenticated admin and public requests require 200.
+The intentionally weakened answer-key configuration is a positive detector for a known mechanism. The independent controller is a narrow reference design, not an audited production factory. No proprietary provider, real credential, or customer dataset is in scope.
 
-The final run's exact revision is written into the CI artifact's `build/release/COMMIT.txt`. Per-source SHA-256 values are in the evidence JSON. The source archive and output files are included in the artifact checksum manifest. A hash identifies content, not trustworthiness or successful execution.
-
-This is our reference implementation. The weak report and dependency configurations are deliberately constructed. There is no assertion of an unknown production incident or vendor vulnerability.
-
-Boat is optional infrastructure. It was not rerun for this revision. No cloud credential is required for the default path.
+Optional Boat integration is excluded from the final evidence claim. It is retained for historical reproducibility, not asserted as a fresh cloud run.

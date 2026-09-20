@@ -1,0 +1,339 @@
+{
+  "mode": "isolated",
+  "status": "PASS",
+  "host": "Linux-6.8.0-1064-azure-x86_64-with-glibc2.35",
+  "checker_sha256_before": "f5d8d3468bbeeee014580159053a10a4af758a11a22af3045b03abcf94922e99",
+  "checker_sha256_after": "f5d8d3468bbeeee014580159053a10a4af758a11a22af3045b03abcf94922e99",
+  "weak_before": {
+    "exit": 1,
+    "stdout": "FAIL"
+  },
+  "weak_stdout": "PASS",
+  "bad_outputs": [
+    {
+      "status": "ok",
+      "value": 200
+    },
+    {
+      "status": "ok",
+      "value": 200
+    },
+    {
+      "status": "ok",
+      "value": 200
+    },
+    {
+      "status": "ok",
+      "value": 200
+    },
+    {
+      "status": "ok",
+      "value": 200
+    }
+  ],
+  "bad_verdict": {
+    "kind": "verdict",
+    "accepted": false,
+    "matches": [
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  "good_outputs": [
+    {
+      "status": "ok",
+      "value": 401
+    },
+    {
+      "status": "ok",
+      "value": 200
+    },
+    {
+      "status": "ok",
+      "value": 403
+    },
+    {
+      "status": "ok",
+      "value": 200
+    },
+    {
+      "status": "ok",
+      "value": 401
+    }
+  ],
+  "good_verdict": {
+    "kind": "verdict",
+    "accepted": true,
+    "matches": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "checks": [
+    {
+      "check": "answer_key.honest_key_fails",
+      "status": "PASS",
+      "detail": "The unchanged checker rejects the same candidate with the honest answer key."
+    },
+    {
+      "check": "answer_key.checker_write_denied",
+      "status": "PASS",
+      "detail": "Read-only checker mount rejects the direct write."
+    },
+    {
+      "check": "answer_key.checker_unchanged",
+      "status": "PASS",
+      "detail": "Checker SHA-256 is identical before and after the worker step."
+    },
+    {
+      "check": "answer_key.candidate_unchanged",
+      "status": "PASS",
+      "detail": "The always-200 candidate bytes are also unchanged."
+    },
+    {
+      "check": "answer_key.expected_changed",
+      "status": "PASS",
+      "detail": "Worker changed only the answer key to expect 200 for every case."
+    },
+    {
+      "check": "answer_key.weak_pass",
+      "status": "PASS",
+      "detail": "Unchanged, read-only checker accepts the open-admin fixture."
+    },
+    {
+      "check": "answer_key.independent_reject",
+      "status": "PASS",
+      "detail": "Controller-owned cases reject the same always-200 bytes."
+    },
+    {
+      "check": "answer_key.positive",
+      "status": "PASS",
+      "detail": "Fixed handler satisfies all five controller-owned cases."
+    },
+    {
+      "check": "release.fresh_swap",
+      "status": "PASS",
+      "detail": "Substitution is tested BEFORE the approval nonce is consumed."
+    },
+    {
+      "check": "release.exact_bytes",
+      "status": "PASS",
+      "detail": "The same unused approval still publishes the exact accepted bytes into the local database."
+    },
+    {
+      "check": "release.replay",
+      "status": "PASS",
+      "detail": "A second publication with the consumed approval is rejected."
+    }
+  ],
+  "invocations": [
+    {
+      "agent_sha256": "da4593189b25790a57e43fc7d7e25c3f7b88578c57614fbd2b290544c227f63f",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "{\"exit\": 1, \"stdout\": \"FAIL\"}",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/work",
+          "writable": false
+        },
+        {
+          "guest": "/verifier",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "57db7c1ae7e0ebb0cd3c539be7827248f388668e0ace4ab92e177610d7f63e20",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "DENIED",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/work",
+          "writable": true
+        },
+        {
+          "guest": "/verifier",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "1c1501e2e7a6c74c9c66074f5b0c88be0434e5f3079994d7b75720c48fd482ac",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "PASS",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/work",
+          "writable": false
+        },
+        {
+          "guest": "/verifier",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "200",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "200",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "200",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "200",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "200",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "401",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "200",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "403",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "200",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    },
+    {
+      "agent_sha256": "3340e7b0db7d9a5faf27049e33731bbedc0677b4474ec6d9af154632e7a41d49",
+      "network_namespace": true,
+      "mode": "isolated",
+      "exit_code": 0,
+      "stdout": "401",
+      "stderr": "",
+      "mounts": [
+        {
+          "guest": "/candidate",
+          "writable": false
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
+    "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
+    "factory/core.py": "cf198c881093f1e2c590494d352ce25eba33d7ab475e59abe4b27baeefcca22c",
+    "factory/isolated.py": "0d599e566def58bc9d150f259f4e9fb9b6c36b4117012ed07eb1bfb101272977",
+    "factory/run.py": "d44a1ad803066fd8aeaa8f362ab1ceea920bbba3ad004a9dc709c6b60d0032ae",
+    "lab/run.py": "9f111728533aa2d2454583da2f883a6ae5d47df30fcdb137b2dafcc92570d4e7"
+  }
+}

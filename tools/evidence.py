@@ -1,77 +1,83 @@
 #!/usr/bin/env python3
-"""Validate recorded claims and exact source inventories before a deck/replay build.
+"""Fail closed on missing, skipped, stale or incomplete recorded experiments.
 
-Hashes identify source bytes; they do not authenticate an experiment's execution.
-Fresh CI runs and their retained artifacts are the execution record.
+These hashes link records to source; they are not an independent attestation
+against a malicious repository owner who can rewrite both source and evidence.
 """
 import hashlib
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-REQUIRED_LAB = {
-    'isolation.namespaces', 'credentials.before', 'credentials.after',
-    'credentials.positive', 'credentials.fixture-expired',
-    'credentials.fixture-wrong-audience', 'mount.before', 'mount.after',
-    'mount.positive', 'egress.before', 'egress.recipient', 'egress.payload',
-    'egress.url', 'egress.no_delivery', 'egress.bypass', 'egress.positive',
-    'verifier.before', 'verifier.after', 'verifier.positive', 'gate.invalid',
-    'gate.substitution', 'gate.cross_run', 'gate.stale_run',
-    'gate.verifier_changed', 'gate.forgery', 'gate.positive', 'gate.replay',
-    'history.rewrite', 'final.task',
-}
-REQUIRED_FACTORY = {'intended.good', 'intended.bad', 'intended.swap',
-                    'intended.replay', 'weakened.report', 'weakened.deps'}
+LAB = set("""isolation.namespaces credentials.before credentials.after credentials.positive
+credentials.fixture-expired credentials.fixture-wrong-audience mount.before mount.after
+mount.positive egress.before egress.recipient egress.payload egress.url egress.no_delivery
+egress.bypass egress.positive verifier.before verifier.after verifier.positive gate.invalid
+gate.substitution gate.cross_run gate.stale_run gate.verifier_changed gate.forgery
+gate.positive gate.replay history.rewrite final.task""".split())
+LOCAL = set("intended.good intended.bad intended.swap intended.replay weakened.report weakened.deps".split())
+ISOLATED = set("""answer_key.honest_key_fails answer_key.checker_write_denied
+answer_key.checker_unchanged answer_key.candidate_unchanged answer_key.expected_changed
+answer_key.weak_pass answer_key.independent_reject answer_key.positive release.fresh_swap
+release.exact_bytes release.replay""".split())
 
 
-def verify_sources(record, directory):
-    paths = {str(p.relative_to(ROOT)) for p in (ROOT / directory).glob('*.py')}
-    source = record.get('source_sha256', {})
-    if set(source) != paths:
-        raise ValueError(f'{directory}: incomplete or unexpected source inventory')
-    for name, expected in source.items():
-        actual = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+def validate_sources(record, required, root=ROOT):
+    hashes = record.get('source_sha256')
+    if type(hashes) is not dict or set(hashes) != set(required) or not hashes:
+        raise ValueError('Recorded source set is incomplete or unexpected')
+    for name, expected in hashes.items():
+        actual = hashlib.sha256((root / name).read_bytes()).hexdigest()
         if actual != expected:
-            raise ValueError(f'Stale evidence for {name}; rerun and record the experiment')
+            raise ValueError('Stale evidence: ' + name)
 
 
-def verify_checks(record, required):
-    checks = record.get('checks', [])
+def validate_checks(record, required, mode):
+    checks = record.get('checks')
+    if record.get('status') != 'PASS' or record.get('mode') != mode or type(checks) is not list:
+        raise ValueError('A complete successful ' + mode + ' record is required')
+    if any(type(c) is not dict or c.get('status') != 'PASS' for c in checks):
+        raise ValueError('A recorded check failed, skipped, or is malformed')
     names = [c.get('check') for c in checks]
     if len(names) != len(set(names)) or set(names) != required:
-        raise ValueError('Missing, duplicate or unexpected experiment checks')
-    if any(c.get('status') != 'PASS' for c in checks):
-        raise ValueError('Recorded experiment contains failed or skipped checks')
+        raise ValueError('Missing, duplicate, or unexpected check')
 
 
-def validate():
-    lab = json.loads((ROOT / 'evidence/results.json').read_text())
-    factory = json.loads((ROOT / 'evidence/factory-results.json').read_text())
-    verify_sources(lab, 'lab')
-    verify_sources(factory, 'factory')
-    if lab.get('mode') != 'isolated' or lab.get('status') != 'PASS':
-        raise ValueError('Stage deck requires a completed isolated lab record')
-    local = factory['local']
-    if local.get('mode') != 'local' or local.get('status') != 'PASS':
-        raise ValueError('Stage deck requires completed local factory evidence')
-    verify_checks(lab, REQUIRED_LAB)
-    verify_checks(local, REQUIRED_FACTORY)
-    deps = local['weakened_deps']
-    if (deps['checker_stdout'] != 'PASS' or deps['checker_file_changed']
-            or deps['checker_sha256'] != deps['checker_after_sha256']
-            or deps['independent_verdict'].get('accepted') is not False):
-        raise ValueError('Unchanged-checker reveal is not supported by the record')
-    good = local['good']
-    if (good['swap_after_freeze'] != 'DENIED' or good['published'] != 'PUBLISHED'
-            or good['replay'] != 'DENIED'):
-        raise ValueError('Fresh-swap / positive / replay sequence is unsupported')
-    return lab, factory
+def verify_all(root=ROOT):
+    read = lambda name: json.loads((root / 'evidence' / name).read_text())
+    lab, factory, isolated = read('results.json'), read('factory-results.json'), read('isolated-factory.json')
+    lab_sources = {str(p.relative_to(root)) for p in (root / 'lab').glob('*.py')}
+    factory_sources = {str(p.relative_to(root)) for p in (root / 'factory').glob('*.py')}
+    validate_sources(lab, lab_sources, root)
+    validate_sources(factory, factory_sources, root)
+    validate_sources(factory['local'], factory_sources, root)
+    validate_sources(isolated, factory_sources | {'lab/run.py'}, root)
+    validate_checks(lab, LAB, 'isolated')
+    validate_checks(factory['local'], LOCAL, 'local')
+    validate_checks(isolated, ISOLATED, 'isolated')
+    if isolated['checker_sha256_before'] != isolated['checker_sha256_after']:
+        raise ValueError('The checker changed')
+    if isolated['weak_before'] != {'exit': 1, 'stdout': 'FAIL'} or isolated['weak_stdout'] != 'PASS':
+        raise ValueError('Missing paired checker observation')
+    if isolated['bad_verdict'].get('accepted') is not False or isolated['good_verdict'].get('accepted') is not True:
+        raise ValueError('Independent negative and positive controls are required')
+    if [o.get('value') for o in isolated['bad_outputs']] != [200] * 5:
+        raise ValueError('Unexpected bad fixture observations')
+    if [o.get('value') for o in isolated['good_outputs']] != [401, 200, 403, 200, 401]:
+        raise ValueError('Unexpected good fixture observations')
+    return lab, factory, isolated
+
+
+def main():
+    verify_all()
+    text = (r'\newcommand{\evidencecount}{29 isolation-lab checks; '
+            r'11 isolated checker/gate checks; 6 local factory checks}' + '\n')
+    (ROOT / 'slides/evidence.tex').write_text(text)
+    print('Evidence verified: 29 lab + 11 isolated checker/gate + 6 local checks. No skips. Source sets match.')
 
 
 if __name__ == '__main__':
     try:
-        lab, factory = validate()
-    except (ValueError, KeyError, TypeError, OSError) as error:
-        raise SystemExit(str(error))
-    print(f"Verified sources and records: {len(lab['checks'])} isolated assertions; "
-          f"{len(factory['local']['checks'])} factory checks. No cloud run implied.")
+        main()
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        raise SystemExit('Evidence verification failed: ' + str(error))

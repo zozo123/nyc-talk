@@ -1,39 +1,35 @@
 # October 21 stage runbook
 
-## Stage master
+**15-minute slot; 14-minute delivery target.** Present `slides/talk.pdf` offline. Main route: slides 1-12. Slides 13-18 are only for questions. Keep a local second copy. The manuscript is approximately 1,700 words; the timing below is a rehearsal budget, not a measured speaking-time guarantee.
 
-Open `slides/talk.pdf` full-screen. Present slides **1-12 only**. Slides 13-18 are Q&A. Editable `slides/talk.pptx` contains presenter notes and source blocks. Beamer and PowerPoint share the narrative and layout source in `slides/deck.json`.
+| Clock | Slide | Action |
+|---|---:|---|
+| 00:00-00:35 | 1 | Open with the unchanged checker and the bad candidate. |
+| 00:35-01:25 | 2 | Name worker control and controller authority. |
+| 01:25-02:35 | 3 | Read the other-project 200/403; keep task input 200. |
+| 02:35-03:40 | 4 | Show ordinary write through the mount; keep output writable. |
+| 03:40-05:00 | 5 | Receiver stores the wrong-account upload; broker keeps the report working. |
+| 05:00-06:25 | 6 | Pause after: the checker is read-only; its answer key is not. |
+| 06:25-08:00 | 7 | Hold candidate and checker constant. Walk all four rows. |
+| 08:00-09:20 | 8 | Trace freeze through exact-byte publication. |
+| 09:20-10:35 | 9 | Fresh substitution first, positive publication second, replay third. |
+| 10:35-11:40 | 10 | Shared authority is the multi-agent implication; say it was not a model trial. |
+| 11:40-13:10 | 11 | Four checks attendees can run; insist on positive controls. |
+| 13:10-14:00 | 12 | Close on artifact eligibility. Stop. |
+| 14:00-15:00 | - | Margin for pauses, transitions or the host. |
 
-Bring local copies on the laptop and a USB drive. Disable notifications, sleep and automatic updates. Test the venue display ratio and contrast. The PDF requires no Wi-Fi, login or video codec.
+## Rehearsal
 
-## Timing
+Rehearse once with an audible timer. At minute five, reach the read-only checker. At minute eight, reach the release protocol. At minute thirteen, move to the close. Read full sentences; do not improvise an unsupported customer incident, vendor vulnerability, LLM success rate or production deployment.
 
-| Clock | Slides | Beat |
-|---|---|---|
-| 00:00-01:20 | 1-2 | Result first, then precise threat model |
-| 01:20-05:00 | 3-5 | Credential, mount, allowed endpoint; preserve positive controls |
-| 05:00-07:40 | 6-7 | Ask who owns expectations, pause, reveal unchanged-checker PASS |
-| 07:40-08:40 | 8 | Shared rulebook in a multi-agent system; clearly an inference |
-| 08:40-11:30 | 9-10 | Freeze/judge/gate, fresh swap, legitimate publication, replay |
-| 11:30-14:00 | 11-12 | Four deployment questions and close |
-| 14:00-15:00 | - | Margin; do not add new material |
+If behind, shorten the explanations of expired-token fixtures, extra broker fields and the multi-agent diagram. Preserve the four-row controlled comparison, the fresh-swap positive control and the final checklist. Never present an infrastructure failure as an attack blocked.
 
-The manuscript has 1,614 words. At about 130 words/minute plus 90 seconds of pauses and slide handling it approaches 14 minutes. Do a timed human rehearsal; this arithmetic does not confirm delivery duration.
+## Demonstration policy
 
-## Exact reveal
+The slides carry the demonstration; no live cloud login or network-dependent terminal is required. Before travel, run `make test && make record-all && make snapshot`. For a rehearsed recorded replay, use `make replay`. It verifies source hashes and explicitly labels the output recorded. Do not substitute a simulated terminal animation for executed evidence.
 
-At slide 6, ask **"Who controls expected.json?"** Wait three seconds. Advance once. On slide 7 read **PASS**, then **200**, then **required 401**. Say the checker faithfully used the altered expectations. Keep the CLI-policy-model label visible; do not pretend to curl a production service.
+In Q&A, open the source and raw JSON locally. `factory` emits CLI status values, not web responses; only the first and third lab cases use actual loopback HTTP. The archived gate audit is controller API misuse, not a demonstrated worker escape. The optional Boat path is outside the stage plan.
 
-## Cut plan
+## Organizer and AV
 
-At 05:00, be on slide 6. If behind, give slide 8 one sentence: "Several reviewers can all trust the same worker-writable expectations." On slide 9 omit the approval-field enumeration. Preserve the slide-10 fresh-swap order, all four controls and the closing question. Do not shorten by omitting limitations that change the interpretation of the result.
-
-## Backup demo
-
-Open `demo/replay.html` locally and use arrow keys. It is visibly labeled recorded evidence and makes no network calls. Or use `python3 tools/replay.py verifier`. Never present playback as a live attack. Do not execute arbitrary audience-supplied code through the local factory executor.
-
-## Reproduction and final checks
-
-On disposable Linux, run `make record`, `make record-factory`, `make verify`, then `make snapshot`. CI retains the exact source archive, commit, fresh evidence and rendered deck. A namespace-creation failure is an infrastructure failure, not a passing containment test.
-
-Before delivery, confirm the organizer's precise slot and AV instructions. This repository plans a 15-minute slot; no new organizer correspondence was sent during finalization.
+The repository's session brief is 15 minutes. The public series page confirms October 21, not the exact speaker slot or a rehearsal room. Keep the title unchanged in organizer material. Confirm the final stage time and HDMI/USB-C arrangement with the organizer separately; no logistical confirmation is implied by this technical release.

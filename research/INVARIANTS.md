@@ -1,15 +1,13 @@
-# Invariants and trusted boundary
+# Acceptance and release invariants
 
-**Acceptance integrity:** for the five fixed task cases, worker-authored expectations and reports cannot cause the intended controller to accept a candidate that fails the controller-owned reference criteria.
+**Acceptance integrity.** For these five committed cases, the worker cannot redefine the expected values used by the independent controller. An unchanged verifier file is insufficient if its authoritative inputs remain worker-writable.
 
-**Release identity:** a publication contains the exact payload whose manifest digest was authorized for the same task, run, verifier source, expected results, policy and declared acceptance environment.
+**Release integrity.** Publication records exactly the candidate bytes authorized for this task, run, verifier source bundle, expected results, policy, environment manifest and unexpired nonce. Substitution is challenged before the nonce is consumed; the legitimate publication must still succeed afterward.
 
-**Single use:** the publication bytes and approval nonce commit in one transaction. Concurrent attempts using the same approval produce at most one publication.
+**Single use.** Checking and consuming a nonce and recording candidate bytes occur in one SQLite transaction. Parallel use of the same approval produces one publication. A fresh controller has a new key and run ID and rejects previous-session approvals.
 
-**Positive controls:** the correct candidate must publish. A rejected fresh swap must not consume the original valid approval. Replay is tested only after a successful original publication.
+**Evidence integrity.** All required sources and all named checks must be present. Missing, skipped, stale, malformed, duplicate or failed evidence blocks the deck build. Missing or malformed candidate observations produce no approval, not a claimed successful defense.
 
-**Uncertainty:** missing, malformed or incomplete results produce no approval. An infrastructure failure is inconclusive, not a successful security defense.
+**Trust assumptions.** The controller, its key, policy, interpreter, SQLite store, and host remain trusted. The worker receives neither those writable paths nor those capabilities in the isolated experiment. Local `python -I` is not process isolation. The diagnostic content-addressed store is not a hostile multi-tenant filesystem.
 
-The controller process, keys, policy, reference cases, filesystem and database are trusted. Worker code is untrusted. The local executor runs committed deterministic fixtures and provides no OS containment for arbitrary programs. The separate Linux lab exercises actual namespaces and bind mounts. For hostile submissions, place the candidate behind a separately enforced execution boundary and transport only bounded results to the controller.
-
-A second machine is independent only with respect to the state and capabilities actually separated. Shared worker-writable criteria remain a decision dependency. A declared environment digest is not hardware attestation or a complete dependency pin. Finite passing cases do not prove universal application correctness.
+**Finite scope.** A correct answer to five inputs is not proof of application security. The status-code fixture is a CLI model. Production readiness, network-server correctness, resource-exhaustion resistance, cryptographic key management, disaster recovery, package deployment and GitHub merge integration are not established here.

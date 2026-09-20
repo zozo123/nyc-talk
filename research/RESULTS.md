@@ -1,11 +1,32 @@
-# Result summary
+# Evidence ledger
 
-**Real Linux lab:** 29 completed assertions, no skipped integration groups, in the retained CI record. The original `lab/run.py` is unchanged. Cases use synthetic fixtures and actual namespaces, mounts and host-loopback HTTP.
+Run `make record-all` on disposable Linux, then `make evidence`. Each record binds its exact experiment source set. CI fails rather than labeling an unavailable isolation run a success.
 
-**Local factory:** six completed checks. The incorrect candidate false-passes both deliberately weak configurations. Fixed controller criteria reject it. The correct candidate publishes. An unconsumed approval rejects different bytes, still publishes the original bytes, and rejects subsequent replay.
+| Evidence class | Record | Checks | What the passing record establishes |
+|---|---|---:|---|
+| Linux lab | `evidence/results.json` | 29 | Actual namespace/mount observations, fixture-token HTTP access, stored loopback uploads, broker denials, positive controls, original parser/gate/history cases |
+| Read-only checker experiment | `evidence/isolated-factory.json` | 11 | Direct checker write denied; unchanged checker and candidate; mutable answer key changes FAIL to PASS; independent rejection and positive control; fresh substitution, exact-byte local publication, replay |
+| Local factory protocol | `evidence/factory-results.json` | 6 | Local acceptance/rejection, fresh substitution and replay, two deliberately weakened detectors; no OS-isolation claim |
+| Regression suite | `tests/test_factory.py`, `tests/test_evidence.py`; CI test log | 37 | Controller protocol and fail-closed evidence regressions, including concurrent nonce use |
+| Archived gate audit | `evidence/baseline-audit.json` | one reproduction | Internal API can retain stale digest after bytes mutate; requires controller-object access |
 
-**Regression suite:** 26 tests covering exact-byte publication, malformed approvals/results, fresh swap, same-key cross-run mismatch, verifier/environment/policy mismatch, object and stored-byte changes, single-use consumption, concurrent publication and missing evidence.
+These are assertion counts, not vulnerability or attack-success counts. A passing deliberately weakened check means the unwanted acceptance was successfully reproduced.
 
-The local before/after audit is in `AUDIT.md`. Changes to controller memory in those robustness probes are outside the worker threat model. The local candidate executor is not a sandbox.
+## Paired checker result
 
-The exact source commit, fresh experiment outputs, test results and compiled slides are retained together by CI. Do not describe infrastructure errors as successful defenses. No live model or current cloud-VM run is part of this revision. Boat remains optional and was not rerun.
+| Candidate bytes | Answer-key owner | Decision |
+|---|---|---|
+| Always 200 | Honest workspace key | FAIL |
+| Same bytes | Worker-edited workspace key | PASS |
+| Same bytes | Controller-owned policy | REJECT |
+| Corrected handler | Controller-owned policy | ACCEPT |
+
+The checker SHA-256 before and after is recorded, not merely asserted by a constant. The worker's direct write attempt is denied by a read-only mount. The candidate digest is also unchanged. The independent expected values are `[401, 200, 403, 200, 401]`; the bad candidate emits five 200s.
+
+## Publication controls
+
+A fresh unused approval is first offered with bad bytes: denied. The same approval then publishes the correct bytes: accepted and read back from SQLite. Reuse is denied. This ordering distinguishes digest enforcement from a test that passes only because an earlier operation already consumed the nonce.
+
+## Explicit non-results
+
+There is no measured LLM behavior, prompt-injection campaign, model attack-success rate, commercial-product vulnerability, real customer exposure, kernel escape evaluation, or multi-agent benchmark. CLI status values are not packets from a deployed `/admin` server. No production package or GitHub merge is performed by the reference gate. The optional cloud path was not needed for this evidence bundle.

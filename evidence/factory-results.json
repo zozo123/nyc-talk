@@ -6,7 +6,7 @@
     "status": "PASS",
     "good": {
       "config": "reference-intended",
-      "artifact": "aa8ce096bdb14b5690595c7336139ba2708941940fb073d99a7f4dfafb569bd6",
+      "artifact": "bf2a3a3791fd4f71eeb57da4a1841da918149c655a5d478bc9babc4df85acc05",
       "outputs": [
         {
           "status": "ok",
@@ -47,7 +47,7 @@
     },
     "bad": {
       "config": "reference-intended",
-      "artifact": "0d8f270afdeb725dc02017fd7439887ae3f7544a7d350fb54a3df644d3565dca",
+      "artifact": "d14afeb642bce2d713440d19cc6015114a51a10339fee84335c2e0c2fdea4848",
       "outputs": [
         {
           "status": "ok",
@@ -121,14 +121,13 @@
           false
         ]
       },
-      "checker_file_changed": false,
-      "checker_after_sha256": "f5d8d3468bbeeee014580159053a10a4af758a11a22af3045b03abcf94922e99"
+      "checker_file_changed": false
     },
     "checks": [
       {
         "check": "intended.good",
         "status": "PASS",
-        "detail": "Frozen locked-admin handler is accepted and published from the frozen object.",
+        "detail": "Frozen locked-admin fixture is accepted; exact bytes are stored in the publication database.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -152,7 +151,7 @@
       {
         "check": "intended.swap",
         "status": "PASS",
-        "detail": "An unconsumed approval rejects a different digest; the original still publishes.",
+        "detail": "Fresh, unused approval rejects substituted bytes, then still publishes the intended bytes.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -164,7 +163,7 @@
       {
         "check": "intended.replay",
         "status": "PASS",
-        "detail": "Consumed approval cannot be replayed; publication bytes and nonce commit together.",
+        "detail": "Consumed approval cannot publish twice; nonce and published bytes commit in one SQLite transaction.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -188,7 +187,7 @@
       {
         "check": "weakened.deps",
         "status": "PASS",
-        "detail": "Detector: measured unchanged checker still PASSed via worker expected.json.",
+        "detail": "Detector: unchanged checker still PASSed via worker expected.json (local logic run).",
         "classification": {
           "execution_status": "completed",
           "observed_result": "boundary_violation",
@@ -201,14 +200,16 @@
     "source_sha256": {
       "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
       "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
-      "factory/core.py": "c5fe529a421ab9fc06c50888111a01fa9065a949606732e5f221e66d3f48edcc",
-      "factory/run.py": "5bc4895f9e373a50c215185322e2b9534f00318c91a9f5f8920bbde1de6295fa"
+      "factory/core.py": "cf198c881093f1e2c590494d352ce25eba33d7ab475e59abe4b27baeefcca22c",
+      "factory/isolated.py": "0d599e566def58bc9d150f259f4e9fb9b6c36b4117012ed07eb1bfb101272977",
+      "factory/run.py": "d44a1ad803066fd8aeaa8f362ab1ceea920bbba3ad004a9dc709c6b60d0032ae"
     }
   },
   "source_sha256": {
     "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
     "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
-    "factory/core.py": "c5fe529a421ab9fc06c50888111a01fa9065a949606732e5f221e66d3f48edcc",
-    "factory/run.py": "5bc4895f9e373a50c215185322e2b9534f00318c91a9f5f8920bbde1de6295fa"
+    "factory/core.py": "cf198c881093f1e2c590494d352ce25eba33d7ab475e59abe4b27baeefcca22c",
+    "factory/isolated.py": "0d599e566def58bc9d150f259f4e9fb9b6c36b4117012ed07eb1bfb101272977",
+    "factory/run.py": "d44a1ad803066fd8aeaa8f362ab1ceea920bbba3ad004a9dc709c6b60d0032ae"
   }
 }

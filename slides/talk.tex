@@ -1,477 +1,516 @@
-\documentclass[aspectratio=169,10pt]{beamer}
+% Generated from slides/deck.json by tools/build_deck.py. Edit the JSON.
+\documentclass[aspectratio=169,11pt]{beamer}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{tikz}
-\usepackage{hyperref}
-\hyphenpenalty=10000
-\exhyphenpenalty=10000
+\usepackage{lmodern,listings,booktabs,array,tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\definecolor{void}{HTML}{101214}
+\definecolor{panel}{HTML}{1B2026}
+\definecolor{paper}{HTML}{F0F0E8}
+\definecolor{acid}{HTML}{C7FF48}
+\definecolor{muted}{HTML}{A7ADB3}
+\setbeamercolor{background canvas}{bg=void}
+\setbeamercolor{normal text}{fg=paper}
+\setbeamercolor{frametitle}{fg=paper}
+\setbeamercolor{structure}{fg=acid}
+\setbeamercolor{codepanel}{fg=paper,bg=panel}
+\setbeamerfont{frametitle}{size=\fontsize{18}{21}\selectfont,series=\bfseries}
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{footline}{}
-\setbeamersize{text margin left=0pt,text margin right=0pt}
-\definecolor{pagebg}{HTML}{111518}
-\setbeamercolor{background canvas}{bg=pagebg}
-\hypersetup{pdftitle={Your Agent Escaped Without Escaping the Sandbox},pdfauthor={Yossi Eliaz},colorlinks=false}
+\setbeamersize{text margin left=9mm,text margin right=9mm}
+\setbeamertemplate{footline}{\hspace{9mm}{\color{muted}\tiny YOSSI ELIAZ / AI AGENT SECURITY SUMMIT / OCT 21, 2026}\hfill{\color{muted}\tiny\insertframenumber}\hspace{9mm}\vspace{3mm}}
+\setlength{\parskip}{3pt}
+\lstset{basicstyle=\ttfamily\fontsize{9.6}{11.6}\selectfont,keywordstyle=\color{acid},commentstyle=\color{muted},stringstyle=\color{acid},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,aboveskip=5pt,belowskip=3pt}
+\newcommand{\kicker}[1]{{\color{acid}\ttfamily\fontsize{7.5}{9}\selectfont #1}\par}
+\newcommand{\takeaway}[1]{\vfill{\color{acid}\rule{8mm}{0.7pt}}\par{\fontsize{11.8}{14}\selectfont #1}\par}
+\newcommand{\scope}[1]{{\color{muted}\fontsize{6.2}{7.2}\selectfont #1}\par}
+\title{Your Agent Escaped Without Escaping the Sandbox}
+\author{Yossi Eliaz}
+\date{October 21, 2026}
 \begin{document}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.399999999999999cm,align=left,font=\sffamily\bfseries\fontsize{6.142}{7.186}\selectfont] at (0.6,0.47) {\strut AI AGENT SECURITY SUMMIT / NEW YORK / OCT 21, 2026};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=11.4cm,align=left,font=\sffamily\bfseries\fontsize{20.315}{23.769}\selectfont] at (0.6,1.35) {\strut Your Agent Escaped\\ \strut Without Escaping\\ \strut the Sandbox};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.4724409448353897pt] (0.6,4.59) -- (12.65,4.59);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=12.719999999999999cm,align=left,font=\sffamily\fontsize{11.811}{13.819}\selectfont] at (0.6,4.97) {\strut We verified the checker.\\ \strut The worker controlled what it trusted.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=12cm,align=left,font=\sffamily\fontsize{7.559}{8.844}\selectfont] at (0.6,6.75) {\strut Yossi Eliaz, PhD  /  Incredibuild};
-\end{scope}
-\end{tikzpicture}
-\note{I am Yossi Eliaz. Here is the result I want you to remember: the checker prints PASS, its file hash has not changed, and the candidate still allows the unauthenticated admin request.
-
-We will walk through four small, reproducible boundary failures. The final one explains how a worker can influence the evidence used to approve its own work. Everything on screen comes from synthetic fixtures in this repository. The examples use deterministic scripts so the mechanism is repeatable.}
+\begin{frame}[t,fragile,plain]
+\kicker{AI AGENT SECURITY SUMMIT / NEW YORK / OCT 21, 2026}
+\vspace{2mm}
+\vspace{2mm}
+{\fontsize{28}{31}\selectfont\bfseries Your Agent Escaped\\ Without Escaping\\ the Sandbox\par}
+\vspace{5mm}
+{\fontsize{12}{15}\selectfont Yossi Eliaz, PhD\\ Principal Engineer and Head of DevRel, Incredibuild\par}
+\takeaway{Four authority failures. One release decision.}
+% Source: https://zenity.io/resources/events/ai-agent-security-summit-2026
+% Source: https://github.com/zozo123/nyc-talk/tree/main/factory
+\note{You ask a coding agent to fix authorization. Its checker reports PASS. The checker file has exactly the same hash as before. The unauthenticated admin case still returns two hundred.\\ \\ I am Yossi Eliaz. I will show how that happens, alongside three other failures that use capabilities we deliberately give a worker. Every demonstration uses synthetic fixtures. The worker scripts are deterministic, so we can inspect the mechanism without debating what a model intended.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut THE THREAT MODEL};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut The sandbox gives a worker useful permissions.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Synthetic fixtures. Recorded observations; no live model call.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 02};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.25) rectangle (3.65,5.6);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=2.94cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.88,2.59) {\strut WORKER};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=2.94cm,align=left,font=\sffamily\bfseries\fontsize{12.283}{14.372}\selectfont] at (0.88,3.24) {\strut Worker code\\ \strut in an isolated\\ \strut process};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.4724409448353897pt] (3.66,2.52) -- (4.390000000000001,2.52);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=3.9cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (4.57,2.23) {\strut Credential};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=4.44cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (8.34,2.23) {\strut Another project};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.4724409448353897pt] (3.66,3.36) -- (4.390000000000001,3.36);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=3.9cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (4.57,3.07) {\strut Mounted files};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=4.44cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (8.34,3.07) {\strut The next job};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.4724409448353897pt] (3.66,4.2) -- (4.390000000000001,4.2);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=3.9cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (4.57,3.91) {\strut Publish request};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=4.44cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (8.34,3.91) {\strut Another account};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.4724409448353897pt] (3.66,5.04) -- (4.390000000000001,5.04);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=3.9cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (4.57,4.75) {\strut Verifier inputs};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=4.44cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (8.34,4.75) {\strut Release approval};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut The controller, its keys and its reference criteria are trusted.};
-\end{scope}
-\end{tikzpicture}
-\note{Assume the worker can execute the code we allow inside its sandbox. It can use its injected token, write its mounted output and submit a publish request. In the weakened verifier configuration, it can also write the expected-results file.
 
-The controller, its keys, its reference cases and its storage are trusted. We are not trying to compromise that controller or exploit the kernel.
-
-There are four interfaces to inspect: credentials, mounted files, network operations and the inputs to the release decision. Each connects a contained process to something valuable outside its task.
-
-Our Linux lab exercises real namespaces, real bind mounts and a loopback HTTP service. The final admin example is a five-case command-line policy model. Keeping those scopes distinct matters when we interpret the results.}
+\begin{frame}[t,fragile]
+\frametitle{The worker can act. Who can authorize?}
+\kicker{THREAT MODEL}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{WORKER-CONTROLLED}
+\begin{lstlisting}
+task code
+writable workspace
+tool requests
+proposed results
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{CONTROLLER-OWNED}
+\begin{lstlisting}
+task-scoped grants
+expected results
+approval key + run
+publication store
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{The worker must not acquire the authority that judges its own output.}
+\vspace{1mm}\scope{Trusted kernel + controller; deterministic fixtures; no model attack-success claim.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/INVARIANTS.md
+% Source: https://github.com/containers/bubblewrap#sandbox-security
+\note{Here is the threat model. Treat the worker as an arbitrary task program. It can edit its code and writable files, invoke its tools, and ask for its output to be published. We trust the controller and the operating-system boundary. We do not give the worker the controller's key or storage.\\ \\ In the isolated runs, Linux user, PID, and mount namespaces really are different. Network access is disabled where the experiment requires it. The question is what authority remains through the interfaces we intentionally leave open.\\ \\ I will use four concrete interfaces: a credential, a shared mount, an upload operation, and the inputs to a checker. For each fix, the legitimate task must still work.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut 01 / INHERITED CREDENTIALS};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut The injected token can read another project.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Recorded Linux lab: credentials.before / after / positive / expired / wrong-audience};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 03};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.17) rectangle (6.449999999999999,5.67);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=6.491999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (0.82,2.37) {\strut RUNNER CREDENTIAL / OBSERVED HTTP};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=6.491999999999999cm,align=left,font=\ttfamily\fontsize{8.976}{10.502}\selectfont] at (0.82,2.9299999999999997) {\strut Bearer fixture-runner\\ \strut \\ \strut GET /projects/other/private\\ \strut 200\\ \strut \\ \strut SYNTHETIC-PRIVATE-FIXTURE};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (6.67,2.17) rectangle (12.719999999999999,5.67);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=6.731999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (6.89,2.37) {\strut TASK CREDENTIAL / OBSERVED HTTP};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=6.731999999999999cm,align=left,font=\ttfamily\fontsize{8.976}{10.502}\selectfont] at (6.89,2.9299999999999997) {\strut Bearer fixture-task\\ \strut \\ \strut GET /projects/other/private\\ \strut 403\\ \strut \\ \strut GET /input/parser-fix   200};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut Project scope blocks the read. Expiry limits how long the token works.};
-\end{scope}
-\end{tikzpicture}
-\note{The job needs an input file. We give the worker the token that the runner already has. The request on the left uses that token to read another project's private fixture. The service returns 200.
 
-The worker used the credential through its intended interface. The permission was broader than the job.
+\begin{frame}[t,fragile]
+\frametitle{1. The inherited token reaches another project.}
+\kicker{INHERITED CREDENTIALS}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{RUNNER TOKEN}
+\begin{lstlisting}
+GET /projects/other/private
+Authorization: Bearer fixture-runner
 
-On the right we replace it with a task-scoped credential. The other-project read returns 403. The input for the actual task still returns 200. The service also rejects the expired and wrong-audience fixtures.
+200
+SYNTHETIC-PRIVATE-FIXTURE
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{TASK TOKEN}
+\begin{lstlisting}
+GET /projects/other/private
+403
 
-That positive control is important. We did not obtain a safe-looking result by disabling the job. For a real deployment, ask the issuer for the task's audience and minimum scope, then bound its lifetime. A short lifetime alone still permits an over-scoped request while the token is valid.}
+GET /input/parser-fix
+200
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Project a short-lived task grant. The service must enforce its scope.}
+\vspace{1mm}\scope{Recorded: credentials.before / after / positive / expired / wrong-audience}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\note{The task needs one input. We start the worker with a synthetic runner token inherited through its environment. That token is broader than the task. The worker asks the service for another project's private fixture. The service returns two hundred and the fixture bytes.\\ \\ The process has not escaped. The service has accepted a credential we placed inside it.\\ \\ Now use the task token. The same request returns four-oh-three. The authorized task input still returns two hundred. The service also rejects an expired token and a token for the wrong audience.\\ \\ The important control is enforced scope. A short expiry reduces the exposure window, but a broad token can still do damage before it expires. Project only the grant this task needs, and validate that grant at the resource. These token strings and the private data on this slide are fixtures, not live credentials.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut 02 / DANGEROUS MOUNTS};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut A permitted write changes the next job.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Recorded Linux lab: mount.before / mount.after / mount.positive};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 04};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.17) rectangle (6.449999999999999,5.67);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=6.491999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (0.82,2.37) {\strut WRITABLE BIND / OBSERVED};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=6.491999999999999cm,align=left,font=\ttfamily\fontsize{8.976}{10.502}\selectfont] at (0.82,2.9299999999999997) {\strut /shared/next-job.json\\ \strut \\ \strut write\_text(...)\\ \strut WRITE\_SUCCEEDED\\ \strut \\ \strut Host fixture changed.};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (6.67,2.17) rectangle (12.719999999999999,5.67);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=6.731999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (6.89,2.37) {\strut READ-ONLY BIND / OBSERVED};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=6.731999999999999cm,align=left,font=\ttfamily\fontsize{8.976}{10.502}\selectfont] at (6.89,2.9299999999999997) {\strut /shared/next-job.json\\ \strut \\ \strut write\_text(...)\\ \strut WRITE\_DENIED\\ \strut \\ \strut /output/patch.txt still works.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut Mount only the task input and output; omit the next job's state.};
-\end{scope}
-\end{tikzpicture}
-\note{The next example uses an ordinary file write. We bind another job's directory into the worker and leave it writable. Writing the file changes the host fixture exactly as the mount configuration permits.
 
-Then we run the same write with a read-only bind. The write is denied and the host fixture is unchanged. The worker can still write its legitimate patch to the output directory.
+\begin{frame}[t,fragile]
+\frametitle{2. The mount grants a write into the next job.}
+\kicker{DANGEROUS MOUNTS}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{SHARED DIRECTORY: WRITABLE}
+\begin{lstlisting}
+open("/shared/next-job.json",
+     "w").write(payload)
 
-In a deployment I would usually remove the next job's directory entirely. The read-only experiment is a controlled comparison, not a reason to expose unnecessary data.
+WRITE_SUCCEEDED
+host fixture changed
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{SHARED DIRECTORY: READ-ONLY}
+\begin{lstlisting}
+same write
 
-Also inspect the state you snapshot. A file carried into a later worker can become that worker's input. Our lab demonstrates the shared mount; snapshot propagation is an architectural consequence to check separately, not an extra experiment we claim to have run.}
+WRITE_DENIED
+host fixture unchanged
+/output/patch.txt still works
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Give the task a narrow input view and a separate writable output.}
+\vspace{1mm}\scope{Recorded with real bind mounts: mount.before / after / positive}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+% Source: https://github.com/containers/bubblewrap#sandbox-security
+\note{The second interface is a shared directory. In the first configuration it is writable. The worker performs an ordinary file write, and the next-job fixture on the host changes. The mount is doing exactly what we configured it to do.\\ \\ We repeat the same operation with a read-only bind. The write is denied and the host fixture remains unchanged. A separate output mount still accepts the legitimate patch.\\ \\ That positive control matters. We did not fix the system by making the agent unable to work.\\ \\ For a system that forks snapshots or reuses workspaces, ask which writable state crosses into the next task. That is an architectural implication of sharing those bytes; we did not measure a snapshot attack here. In this experiment, the demonstrated boundary is the bind mount.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut 03 / ALLOWED ENDPOINT};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut An allowed service can receive the wrong upload.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Recorded Linux lab: egress.*; the service is loopback-only, not a public SaaS test.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 05};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.17) rectangle (6.449999999999999,5.67);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=6.491999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (0.82,2.37) {\strut WORKER CHOOSES THE UPLOAD / HTTP};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=6.491999999999999cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (0.82,2.9299999999999997) {\strut POST /accounts/other/uploads\\ \strut \\ \strut \{"data": "SYNTHETIC-..."\}\\ \strut \\ \strut 201\\ \strut Stored under other account.};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (6.67,2.17) rectangle (12.719999999999999,5.67);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=6.731999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (6.89,2.37) {\strut BROKER FIXES THE ENVELOPE};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=6.731999999999999cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (6.89,2.9299999999999997) {\strut operation: publish\_report\\ \strut task: parser-fix\\ \strut \\ \strut Extra fields -> DENIED\\ \strut Direct route -> UNREACHABLE\\ \strut Team report -> DELIVERED};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut The broker owns the destination and payload; isolation removes bypass.};
-\end{scope}
-\end{tikzpicture}
-\note{The worker needs to publish a report. The allowed service accepts uploads for more than one account. The worker posts our private fixture to the other account's path, and the receiving service records it.
 
-Checking a service name does not answer who selected the account, the operation or the body. Our lab models that service boundary on loopback; it does not claim to test a particular firewall or SaaS product.
+\begin{frame}[t,fragile]
+\frametitle{3. The allowed service accepts the wrong upload.}
+\kicker{EXFILTRATION THROUGH AN ALLOWED ENDPOINT}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{WORKER CHOOSES PATH + BODY}
+\begin{lstlisting}
+POST /accounts/other/uploads
+{"data":"PRIVATE-FIXTURE"}
 
-The restricted worker can request one fixed report operation. The controller-side broker rejects extra recipient, payload and URL fields. It constructs the team destination and the report body itself. The worker's separate network namespace cannot reach the host service directly.
+201 STORED
+receiving service has the bytes
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{BROKER OWNS THE OPERATION}
+\begin{lstlisting}
+{"operation":"publish_report",
+ "task":"parser-fix"}
 
-The team report still arrives. For this operation the body has no worker-selected free text. That restriction is why this fixture cannot carry arbitrary bytes through the report. A general-purpose text publishing tool needs a separate information-flow decision. Process isolation and the broker's semantic policy have different jobs here.}
+extra fields -> DENIED
+fixed team report -> ACCEPTED
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Remove the direct route; mediate destination, operation, and payload.}
+\vspace{1mm}\scope{Loopback upload fixture; isolated direct-route probe; receiver-side delivery checks.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\note{Here the task needs to publish a completion report. Our synthetic upload service supports a team report path and another account's upload path. Both live on the same service. The worker sends the private fixture to the other path. The service returns created, and we inspect its receiving-side delivery record to confirm the bytes arrived.\\ \\ A hostname decision cannot express which account should receive which data. This fixture models that distinction; it is not a test of an enterprise firewall or a SaaS vendor.\\ \\ In the corrected configuration the worker has no direct route to the service. It can request one operation from a broker. The broker constructs the destination and a fixed body itself. Recipient, payload, and URL overrides are rejected. The legitimate report still arrives.\\ \\ Both parts matter: the broker must constrain the operation, and the worker must not bypass it. This deliberately narrow reporting interface does not prove that every free-form output channel is free of exfiltration.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut 04 / VERIFIER TAMPERING / SETUP};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut The checker stays unchanged throughout the test.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Factory policy model: admin:none is a CLI input, not a deployed HTTP request.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 06};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.12) rectangle (6.449999999999999,3.77);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=6.491999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (0.82,2.3200000000000003) {\strut CONTROLLER POLICY};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=6.491999999999999cm,align=left,font=\ttfamily\fontsize{10.866}{12.713}\selectfont] at (0.82,2.88) {\strut admin:none  ->  401};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (6.67,2.12) rectangle (12.719999999999999,3.77);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=6.731999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (6.89,2.3200000000000003) {\strut OBSERVED CANDIDATE};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=6.731999999999999cm,align=left,font=\ttfamily\fontsize{10.866}{12.713}\selectfont] at (6.89,2.88) {\strut admin:none  ->  200};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,4.06) rectangle (12.719999999999999,5.739999999999999);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=14.016cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (0.82,4.26) {\strut CHECKER.PY - IDENTICAL BYTES BEFORE AND AFTER};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.016cm,align=left,font=\ttfamily\fontsize{9.449}{11.055}\selectfont] at (0.82,4.819999999999999) {\strut expected = json.loads(Path("expected.json").read\_text())\\ \strut \# Compare candidate output against each expected result.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut Who controls expected.json?};
-\end{scope}
-\end{tikzpicture}
-\note{Now the interface is the answer to a more consequential question: may this work be accepted?
 
-The policy says an unauthenticated admin request must return 401. Our small handler represents that request as the command-line input admin colon none. The bad candidate returns 200. We are modeling the authorization decision rather than deploying a web application.
+\begin{frame}[t,fragile]
+\frametitle{4. The checker is read-only. Its answer key is not.}
+\kicker{VERIFIER TAMPERING}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{UNCHANGED CHECKER}
+\begin{lstlisting}
+expected = json.loads(
+  Path("expected.json")
+  .read_text())
 
-The checker executes the candidate and compares its outputs against expected.json. We measure the checker's bytes before and after execution. They are identical.
+compare(handler, expected)
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{WORKER-EDITED ANSWER KEY}
+\begin{lstlisting}
+input:  admin:none
+output: 401 -> 200
 
-There is one fact I have not shown yet: the expected-results file comes from the worker's workspace. Before looking at the next slide, decide what the unchanged hash actually tells us about the decision this checker will make.}
+checker.py write: DENIED
+checker.py hash: UNCHANGED
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Protecting a checker file does not protect the inputs that define success.}
+\vspace{1mm}\scope{Isolated factory: honest key fails; answer-key edit succeeds; unchanged checker passes.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\note{Now the fourth interface: the meaning of done. The policy says the unauthenticated admin case must return four-oh-one. The candidate is an intentionally broken handler that always returns two hundred. It is a small status-code model, invoked as a Python program, not a deployed web server.\\ \\ We put the checker on a read-only mount. With the honest answer key, it reports FAIL. The worker attempts to overwrite the checker and the operating system denies the write.\\ \\ But the checker reads expected dot json from the workspace. The worker changes that file to expect two hundred. The checker now reports PASS. Its SHA-256 is unchanged. The broken handler's bytes are unchanged too.\\ \\ The failure is in what the checker trusts. Hashing its source does not bind the specification it loads. A separate machine would not repair this dependency if we copied the same worker-controlled answer key into it. The isolation experiment is recorded; the second-machine statement is the consequence of that dependency, not a separate measured trial.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut 04 / VERIFIER TAMPERING / RESULT};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut The worker changes the expected result.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Recorded factory result: unchanged checker PASS; controller-owned criteria reject.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 07};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.2) rectangle (7.659999999999999,5.61);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=7.943999999999999cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (0.82,2.4000000000000004) {\strut WORKER-WRITTEN EXPECTED.JSON};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=7.943999999999999cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (0.82,2.96) {\strut [\\ \strut   \{"input": "admin:none",\\ \strut    "output": 200\},\\ \strut   ...\\ \strut ]\\ \strut \\ \strut \# Worker expects 200\\ \strut \# for every test case.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=5.1cm,align=left,font=\sffamily\bfseries\fontsize{27.402}{32.060}\selectfont] at (8.05,2.29) {\strut PASS};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=5.004cm,align=left,font=\sffamily\fontsize{9.921}{11.608}\selectfont] at (8.07,3.3) {\strut checker output};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=5.004cm,align=left,font=\sffamily\bfseries\fontsize{23.150}{27.085}\selectfont] at (8.07,4.11) {\strut 200};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=5.159999999999999cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (8.07,5.05) {\strut candidate / required: 401};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut The checker faithfully compared against the altered expectations.};
-\end{scope}
-\end{tikzpicture}
-\note{The worker writes expectations that allow every request. The bad handler returns 200 for every case. The checker therefore prints PASS.
 
-The checker has done exactly what its code says. Its own integrity check tells us nothing about whether the worker was allowed to redefine the expected answers.
-
-Our independent comparison still requires 401 for an unauthenticated or expired request and 403 for an ordinary user accessing admin. It rejects the same candidate. The legitimate admin and public cases still pass.
-
-We also include the simpler worker-written PASS-file configuration as a detector. It confirms that the experiment can recognize a false accept. The dependency case is the useful reveal: changing the trusted input is enough while the checker code remains unchanged.
-
-Both weak configurations were constructed deliberately. We are reproducing an authority failure, not reporting a vendor zero-day or measuring how often a model discovers it.}
+\begin{frame}[t,fragile]
+\frametitle{Keep the candidate fixed. Change who owns the cases.}
+\kicker{CONTROLLED COMPARISON}
+\vspace{2mm}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Candidate & \color{acid}\bfseries Expected results & \color{acid}\bfseries Observed decision \\ \midrule
+Always 200 & Honest workspace key & FAIL \\
+Same bytes & Worker changes key & PASS \\
+Same bytes & Controller-owned cases & REJECT \\
+Correct handler & Controller-owned cases & ACCEPT \\
+\end{tabular}}
+\takeaway{The controller rejects the bad bytes and still accepts the repaired task.}
+\vspace{1mm}\scope{Five fixed cases: anonymous, admin, ordinary user, public route, expired credential.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+\note{This comparison is the evidence. Follow the first three rows: the candidate does not change. With the honest workspace key, the weak checker fails it. After the worker changes the key, the same checker passes it. With controller-owned expectations, those same candidate bytes are rejected.\\ \\ Then the positive control: the corrected handler is accepted. We test five cases. An anonymous admin request is four-oh-one. An administrator receives two hundred. An ordinary user receives four-oh-three. The public route returns two hundred. An expired credential receives four-oh-one.\\ \\ The always-two-hundred candidate fails three of those expectations. The corrected candidate meets all five.\\ \\ This is a deterministic reproduction of a known trust-boundary failure. It does not tell us how often a language model discovers the trick, and five cases do not establish universal application security. What it establishes is narrower and useful: moving the answer key outside worker control changes the decision while we hold the bad artifact fixed. That is the experiment to repeat against your own acceptance pipeline.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut THE MULTI-AGENT CONSEQUENCE};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut More reviewers can inherit the same bad rulebook.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Architectural inference from the shared dependency; no multi-model experiment is claimed.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 08};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.2) rectangle (4.4399999999999995,3.24);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=4.08cm,align=left,font=\sffamily\bfseries\fontsize{10.394}{12.161}\selectfont] at (0.82,2.5) {\strut WRITER};
-\draw[draw={rgb,255:red,255;green,199;blue,122},line width=0.5669291338024676pt] (2.52,3.28) -- (2.52,3.9);
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (4.74,2.2) rectangle (8.58,3.24);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=4.08cm,align=left,font=\sffamily\bfseries\fontsize{10.394}{12.161}\selectfont] at (4.96,2.5) {\strut REVIEWER};
-\draw[draw={rgb,255:red,255;green,199;blue,122},line width=0.5669291338024676pt] (6.66,3.28) -- (6.66,3.9);
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (8.88,2.2) rectangle (12.72,3.24);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=4.08cm,align=left,font=\sffamily\bfseries\fontsize{10.394}{12.161}\selectfont] at (9.100000000000001,2.5) {\strut TESTER};
-\draw[draw={rgb,255:red,255;green,199;blue,122},line width=0.5669291338024676pt] (10.8,3.28) -- (10.8,3.9);
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (2.08,3.9) rectangle (11.26,4.98);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=10.415999999999999cm,align=left,font=\ttfamily\fontsize{10.866}{12.713}\selectfont] at (2.33,4.24) {\strut shared expected.json};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.543999999999999cm,align=left,font=\sffamily\fontsize{10.866}{12.713}\selectfont] at (0.6,5.3) {\strut All three agents trust the same worker-writable expectations.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut Trace every write path into the release decision.};
-\end{scope}
+
+\begin{frame}[t,fragile]
+\frametitle{Make the release decision outside the worker.}
+\kicker{REFERENCE ACCEPTANCE PROTOCOL}
+\vspace{2mm}
+\vspace{3mm}
+\begin{tikzpicture}[>=Stealth]
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n0) at (0.0,0) {FREEZE};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n0] {copy artifact bytes};
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n1) at (2.84,0) {EXECUTE};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n1] {read-only candidate};
+\draw[->,color=acid] (n0.east) -- (n1.west);
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n2) at (5.68,0) {COMPARE};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n2] {controller cases};
+\draw[->,color=acid] (n1.east) -- (n2.west);
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n3) at (8.52,0) {AUTHORIZE};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n3] {bind run + policy};
+\draw[->,color=acid] (n2.east) -- (n3.west);
+\node[fill=panel,text=acid,minimum width=2.55cm,minimum height=0.85cm,font=\ttfamily\small] (n4) at (11.36,0) {PUBLISH};
+\node[text=muted,text width=2.45cm,align=center,font=\scriptsize,below=0.25cm of n4] {exact approved bytes};
+\draw[->,color=acid] (n3.east) -- (n4.west);
 \end{tikzpicture}
-\note{This is where the result connects to multi-agent systems. Imagine a writer, a reviewer and a tester. They have different prompts, different models, or different sampling temperatures. They all load the same worker-writable expected-results file.
-
-Each can reach agreement using the altered criterion. Agreement does not remove the writer's ability to set that criterion.
-
-The same applies to a second machine that consumes the same contaminated dependency. Moving execution changes the process boundary; the trust dependency still needs inspection.
-
-I would draw a write-authority graph. Starting at every worker-controlled object, follow what reads it and what ultimately influences release. The property we need is that a worker cannot modify the authoritative cases, policy or approval state. This slide is an architectural inference from the demonstrated dependency, not a measured claim about any particular multi-agent framework.}
+\vspace{4mm}
+\begin{lstlisting}
+approval = MAC(artifact, verifier, cases, policy,
+               environment, task, run, nonce, expiry)
+\end{lstlisting}
+\takeaway{An approval is a scoped capability for one exact artifact and one decision context.}
+\vspace{1mm}\scope{MAC is an internal shared-key model. Publication is an atomic local SQLite record of bytes.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% Source: https://slsa.dev/spec/v1.2/verifying-artifacts
+\note{The repair has a sequence. Copy the candidate into a narrow frozen representation. Execute those bytes with a read-only candidate mount. The controller compares observed outputs against expectations the worker cannot rewrite.\\ \\ Only that controller can issue the approval. The approval binds the artifact manifest, verifier, expected results, policy, environment description, task, run, a fresh nonce, and an expiry. Publication rechecks that context and stores the exact approved bytes.\\ \\ In this repository, publication is a local SQLite transaction. It is a runnable model of the release boundary, not a claim that we integrated with a production deployment system. Consuming the nonce and storing the bytes happen together.\\ \\ The trust assumption remains important: the worker cannot access the controller key, database, or comparison code. A local Python subprocess with isolated-import flags is not an operating-system sandbox. That is why the local protocol tests and the Linux isolation experiments are separate evidence classes. A hash chain supports integrity checking; it does not decide whether the application behavior meets policy.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut THE ENFORCEMENT DESIGN};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut Approve fixed bytes under controller-owned criteria.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Reference gate: SQLite transaction records exact artifact bytes and consumes the nonce.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 09};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.25) rectangle (3.44,3.9);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=2.952cm,align=left,font=\sffamily\bfseries\fontsize{9.449}{11.055}\selectfont] at (0.79,2.49) {\strut FREEZE};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=2.952cm,align=left,font=\sffamily\fontsize{8.031}{9.397}\selectfont] at (0.79,3.13) {\strut Copy candidate bytes};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (3.69,2.25) rectangle (6.529999999999999,3.9);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=2.952cm,align=left,font=\sffamily\bfseries\fontsize{9.449}{11.055}\selectfont] at (3.88,2.49) {\strut JUDGE};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=2.952cm,align=left,font=\sffamily\fontsize{8.031}{9.397}\selectfont] at (3.88,3.13) {\strut Controller-owned cases};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (6.779999999999999,2.25) rectangle (9.62,3.9);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=2.952cm,align=left,font=\sffamily\bfseries\fontsize{9.449}{11.055}\selectfont] at (6.97,2.49) {\strut GATE};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=2.952cm,align=left,font=\sffamily\fontsize{8.031}{9.397}\selectfont] at (6.97,3.13) {\strut Bind one approval};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (9.87,2.25) rectangle (12.709999999999999,3.9);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=2.952cm,align=left,font=\sffamily\bfseries\fontsize{9.449}{11.055}\selectfont] at (10.059999999999999,2.49) {\strut PUBLISH};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=2.952cm,align=left,font=\sffamily\fontsize{8.031}{9.397}\selectfont] at (10.059999999999999,3.13) {\strut Store those bytes};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,4.28) rectangle (12.719999999999999,5.65);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=14.016cm,align=left,font=\sffamily\bfseries\fontsize{5.197}{6.080}\selectfont] at (0.82,4.48) {\strut APPROVAL CONTEXT};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.016cm,align=left,font=\ttfamily\fontsize{8.031}{9.397}\selectfont] at (0.82,5.04) {\strut artifact + task/run + verifier + expected results + policy\\ \strut + declared acceptance environment + one-use nonce};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut The untrusted worker never receives the gate key or release authority.};
-\end{scope}
-\end{tikzpicture}
-\note{The corrected path has four steps. First, collect the candidate into controller-owned storage and compute a manifest over the actual bytes. Second, execute those bytes and compare the results against controller-owned cases. Third, bind the decision to the artifact, task, run, verifier, expected results, policy, environment description and a one-use nonce. Finally, publish the exact bytes that were authorized.
 
-In this repository publication means writing the bytes and consumed nonce in one SQLite transaction. It is a reference gate, not a production deployment service. A real publisher needs the equivalent guarantee at its own release boundary.
-
-The gate recomputes the payload identity. A cached digest label is insufficient. It also checks the stored bytes before committing publication. The worker never holds the gate key.
-
-We retain a controller-held history anchor in the isolation lab to detect a rewritten event history. That detects disagreement with the retained record. The acceptance comparison and publication gate are what enforce this release decision. Missing or malformed results produce no approval and must be investigated, rather than celebrated as proof of a successful defense.}
+\begin{frame}[t,fragile]
+\frametitle{Challenge the gate before you trust the green check.}
+\kicker{NEGATIVE TESTS + A POSITIVE CONTROL}
+\vspace{2mm}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Attempt & \color{acid}\bfseries Required outcome & \color{acid}\bfseries Control \\ \midrule
+Bad candidate & REJECT & Good candidate accepted \\
+Fresh approval, different bytes & DENIED & Original bytes still publish \\
+Consumed approval & DENIED & One publication only \\
+Timeout / malformed output & NO APPROVAL & No fabricated verdict \\
+\end{tabular}}
+\takeaway{Test substitution before consuming the nonce, or the wrong defense may hide the bug.}
+\vspace{1mm}\scope{Protocol tests cover changed context, expiry, replay, immutable bytes, and concurrent publication.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/tests/test_factory.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+\note{Now attack the approval protocol itself. Take a fresh, unused approval for the good candidate and offer different bytes. The gate must deny it. Immediately offer the original good bytes with that same approval. They must still publish. Only then test replay.\\ \\ That ordering prevents a misleading test: if you consume the nonce first, a substitution test can pass because the nonce is already used, even when artifact binding is broken. We corrected that ordering in this repository.\\ \\ We also hardened our frozen representation and made publication store bytes instead of only a success marker. The appendix records the baseline flaw as controller API misuse. We have not demonstrated a worker crossing the OS boundary to reach those objects.\\ \\ Finally, distinguish rejection from missing evidence. A timed-out or malformed execution produces no approval. That is a fail-closed outcome, but it is not proof that the candidate met the policy. Keep that distinction in the dashboard and in the release logic.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut THE CONTROL EXPERIMENTS};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut A rejected swap preserves the original approval.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut 6 factory checks + 26 regression tests. Counts are assertions/tests, not vulnerabilities.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 10};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=8.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.84,2.06) {\strut OBSERVATION};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=4.584cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (8.18,2.06) {\strut RESULT};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,2.4899999999999998) rectangle (12.719999999999999,3.03);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=8.52cm,align=left,font=\sffamily\fontsize{9.449}{11.055}\selectfont] at (0.84,2.55) {\strut Correct candidate under fixed criteria};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=5.136cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (8.18,2.55) {\strut PUBLISHED};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=8.52cm,align=left,font=\sffamily\fontsize{9.449}{11.055}\selectfont] at (0.84,3.1199999999999997) {\strut Original bytes after rejected fresh swap};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=5.136cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (8.18,3.1199999999999997) {\strut PUBLISHED};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,3.6299999999999994) rectangle (12.719999999999999,4.17);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=8.52cm,align=left,font=\sffamily\fontsize{9.449}{11.055}\selectfont] at (0.84,3.6899999999999995) {\strut Incorrect candidate under fixed criteria};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=5.136cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (8.18,3.6899999999999995) {\strut NOT PUBLISHED};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=8.52cm,align=left,font=\sffamily\fontsize{9.449}{11.055}\selectfont] at (0.84,4.26) {\strut Different artifact / fresh approval};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=5.136cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (8.18,4.26) {\strut DENIED};
-\fill[fill={rgb,255:red,27;green,35;blue,41}] (0.6,4.7700000000000005) rectangle (12.719999999999999,5.3100000000000005);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=8.52cm,align=left,font=\sffamily\fontsize{9.449}{11.055}\selectfont] at (0.84,4.83) {\strut Already-consumed approval};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=5.136cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (8.18,4.83) {\strut DENIED};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=8.52cm,align=left,font=\sffamily\fontsize{9.449}{11.055}\selectfont] at (0.84,5.3999999999999995) {\strut Missing or malformed result};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,255;green,199;blue,122},text width=5.136cm,align=left,font=\ttfamily\fontsize{8.504}{9.950}\selectfont] at (8.18,5.3999999999999995) {\strut NO APPROVAL};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut Change one condition at a time. Preserve a working positive control.};
-\end{scope}
-\end{tikzpicture}
-\note{These are the distinctions I want in a convincing demo. The correct candidate publishes. The incorrect candidate fails the fixed criteria. A fresh approval for the correct candidate rejects a different artifact. The original bytes can still publish with that approval. Only after that publication do we test replay.
 
-The order matters. During this audit, the previous swap test ran after the approval had already been consumed. That result could not tell us whether the digest check or replay check rejected it. We changed the order and added a regression test.
+\begin{frame}[t,fragile]
+\frametitle{More agents do not create an independent judge.}
+\kicker{MULTI-AGENT IMPLICATION / NOT A MEASURED TRIAL}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{SHARED AUTHORITY}
+\begin{lstlisting}
+builder -> expected.json
+reviewer -> expected.json
+judge   -> expected.json
 
-We also hardened the reference artifact object and checked mutation of the stored bytes. Those are robustness tests at the trusted controller API; they are not evidence that a sandboxed worker can write controller memory.
+three roles, one writable key
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{SEPARATE AUTHORITY}
+\begin{lstlisting}
+workers -> proposals
+controller -> policy
+isolated runs -> observations
 
-The suite exercises eight concurrent publication attempts and expects exactly one recorded publication. A timeout or missing result gets no approval. It remains incomplete evidence, not a demonstrated attack rejection.}
+one controlled publication gate
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Independence follows write authority and trusted dependencies, not agent count.}
+\vspace{1mm}\scope{Architectural inference from the answer-key experiment. No multi-agent benchmark is claimed.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/INVARIANTS.md
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+\note{This matters when one worker becomes a software factory. You may have a builder, a reviewer, and a judge. They may run different models or use different prompts. But if all three read a writable answer key produced by the builder, you have replicated the dependency.\\ \\ Trace who can write the specification, fixtures, dependencies, evidence, and final approval. A second role or a second machine is not automatically a second authority boundary.\\ \\ You can still let many workers explore, generate competing patches, and propose tests. Keep those proposals distinct from the criteria authorized to promote a release. The final publication path should accept only an approval bound to the selected artifact and decision context.\\ \\ That is an architectural inference from the dependency we just measured. We are not presenting a multi-agent benchmark or claiming that changing model temperature is a security control.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut APPLY THIS TO YOUR OWN DEPLOYMENT};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut Inspect four concrete decisions outside the worker.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut A deployment review checklist; each control still requires validation in your environment.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 11};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=0.9359999999999999cm,align=left,font=\ttfamily\fontsize{10.866}{12.713}\selectfont] at (0.6,2.19) {\strut 01};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=3.5999999999999996cm,align=left,font=\sffamily\bfseries\fontsize{11.339}{13.266}\selectfont] at (1.65,2.19) {\strut Credential};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=9.395999999999999cm,align=left,font=\sffamily\fontsize{10.394}{12.161}\selectfont] at (4.89,2.19) {\strut What else can its token read or change?};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.2834645669012338pt] (1.65,2.87) -- (12.72,2.87);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=0.9359999999999999cm,align=left,font=\ttfamily\fontsize{10.866}{12.713}\selectfont] at (0.6,3.08) {\strut 02};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=3.5999999999999996cm,align=left,font=\sffamily\bfseries\fontsize{11.339}{13.266}\selectfont] at (1.65,3.08) {\strut Filesystem};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=9.395999999999999cm,align=left,font=\sffamily\fontsize{10.394}{12.161}\selectfont] at (4.89,3.08) {\strut Whose state is writable or carried forward?};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.2834645669012338pt] (1.65,3.7600000000000002) -- (12.72,3.7600000000000002);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=0.9359999999999999cm,align=left,font=\ttfamily\fontsize{10.866}{12.713}\selectfont] at (0.6,3.9699999999999998) {\strut 03};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=3.5999999999999996cm,align=left,font=\sffamily\bfseries\fontsize{11.339}{13.266}\selectfont] at (1.65,3.9699999999999998) {\strut Outbound action};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=9.395999999999999cm,align=left,font=\sffamily\fontsize{10.394}{12.161}\selectfont] at (4.89,3.9699999999999998) {\strut Who chooses destination, account and body?};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.2834645669012338pt] (1.65,4.6499999999999995) -- (12.72,4.6499999999999995);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=0.9359999999999999cm,align=left,font=\ttfamily\fontsize{10.866}{12.713}\selectfont] at (0.6,4.859999999999999) {\strut 04};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=3.5999999999999996cm,align=left,font=\sffamily\bfseries\fontsize{11.339}{13.266}\selectfont] at (1.65,4.859999999999999) {\strut Release};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=9.395999999999999cm,align=left,font=\sffamily\fontsize{10.394}{12.161}\selectfont] at (4.89,4.859999999999999) {\strut Who owns criteria, approval and published bytes?};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.2834645669012338pt] (1.65,5.539999999999999) -- (12.72,5.539999999999999);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{10.866}{12.713}\selectfont] at (0.6,6.03) {\strut After every denial, prove that the legitimate task still completes.};
-\end{scope}
-\end{tikzpicture}
-\note{For your own deployment, start with one real task and record four answers.
 
-Which identity does the worker receive, and which resources will accept it? Look at scope, audience and lifetime together.
-
-Which state can it write? Include shared workspaces, snapshots, caches and files that another worker later treats as instructions or truth.
-
-For each outbound action, who selects the destination and content? Check whether the worker can bypass the component that is supposed to make that decision.
-
-Finally, who owns the acceptance criteria and the release capability? Trace configuration, imports, expected outputs and other dependencies, not just the top-level checker file. Verify that the bytes released are the ones evaluated.
-
-For each control, run the unwanted action and then the legitimate task. Keep both observations. That is how we distinguish an enforcing boundary from a broken workflow that happens to return an error.}
+\begin{frame}[t,fragile]
+\frametitle{Four tests to run on your own deployment.}
+\kicker{TAKE-HOME CHECKLIST}
+\vspace{2mm}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Boundary & \color{acid}\bfseries Try the unauthorized action & \color{acid}\bfseries Keep this working \\ \midrule
+Credential & Read a different project & Task input \\
+Filesystem & Write outside task output & Legitimate patch \\
+Egress & Change recipient or body & Authorized report \\
+Acceptance & Change cases or swap bytes & Verified artifact \\
+\end{tabular}}
+\takeaway{For every denial, require a positive control that still completes the task.}
+\vspace{1mm}\scope{Scope credentials; narrow mounts; enforce broker-only egress; bind independent acceptance to bytes.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/RUNBOOK.md
+\note{These are the four tests I would take back to a deployment review.\\ \\ Use the worker's credential to ask for another project's data. The resource should deny it while the real task input remains available.\\ \\ Attempt a write outside the task's output area. Confirm the shared input stays unchanged and the legitimate patch still appears.\\ \\ Try to change the recipient or body of the permitted report. Verify both that the broker refuses the request and that the worker cannot bypass the broker. Inspect the receiving system rather than trusting a worker log.\\ \\ Finally, change an input that determines success. Then try to substitute bytes under a fresh approval. The acceptance decision must use criteria outside worker write authority, and publication must bind to the bytes that were evaluated.\\ \\ Each denial should come from a component the worker cannot rewrite. Each test needs a positive control. Otherwise a completely broken system can look perfectly secure because nothing ever completes. The repository contains the fixtures, raw observations, source hashes, and reproduction commands so you can inspect exactly what each test means.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut THE QUESTION TO TAKE HOME};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut The release decision needs its own boundary.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Source, evidence, exact commands and limitations: github.com/zozo123/nyc-talk};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 12};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{19.843}{23.216}\selectfont] at (0.6,2) {\strut What can this worker\\ \strut make the rest of\\ \strut your system believe?};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.399999999999999cm,align=left,font=\sffamily\bfseries\fontsize{11.811}{13.819}\selectfont] at (0.6,5.35) {\strut Keep the release decision outside its write authority.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=14.28cm,align=left,font=\ttfamily\fontsize{9.449}{11.055}\selectfont] at (0.6,6.29) {\href{https://github.com/zozo123/nyc-talk}{\strut github.com/zozo123/nyc-talk}};
-\end{scope}
-\end{tikzpicture}
-\note{We have seen a token read another project, a mounted file change another job, an allowed service receive the wrong upload, and an unchanged checker accept worker-edited expectations.
 
-Each result follows an interface the system provided. The release case is especially important because the worker's output can become the evidence used to authorize the next action.
+\begin{frame}[t,fragile,plain]
+\kicker{KEEP EXECUTION AND ACCEPTANCE AS SEPARATE AUTHORITIES}
+\vspace{2mm}
+\vspace{4mm}
+{\fontsize{20}{24}\selectfont\bfseries The worker may propose the artifact.\\ It must not define why that artifact\\ is eligible for release.\par}
+\vspace{5mm}
+{\color{acid}\ttfamily\large github.com/zozo123/nyc-talk\par}
+\begin{lstlisting}
+make test
+make demo
+make factory-isolated
+\end{lstlisting}
+\takeaway{Source. Evidence. Counterexamples. Positive controls.}
+% Source: https://github.com/zozo123/nyc-talk
+\note{The four failures used interfaces we intentionally gave the worker: a token, a mount, a permitted service, and an answer key. The useful question is not only whether the process can leave its sandbox. It is which decisions the process can cause while it remains inside.\\ \\ Let the worker propose code, tests, and explanations. Keep the authority that defines acceptance outside its write boundary, and bind the release to the exact artifact that authority evaluated.\\ \\ The source and recorded evidence are at github dot com, zozo one two three, nyc dash talk. Thank you.}
+\end{frame}
 
-The repository contains the fixtures, recorded observations, corrected gate and limitations. You can reproduce the cases without a model account or a cloud key.
+\begin{frame}[t,fragile]
+\frametitle{Appendix / What the evidence actually establishes}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Evidence class & \color{acid}\bfseries Execution & \color{acid}\bfseries Limit \\ \midrule
+Isolation lab & Linux namespaces + mounts & 29 assertions, not 29 vulnerabilities \\
+Checker experiment & Read-only checker + mutable key & Deterministic scripts; five-case model \\
+Protocol regressions & Local controller tests & No OS isolation claim \\
+Multi-agent / snapshots & Architectural implications & Not measured attack trials \\
+\end{tabular}}
+\takeaway{No vendor zero-day, customer incident, model success rate, or general sandbox certification.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+\note{Use this slide to answer scope questions. The documented baseline API flaw is ours. Kernel compromise, malicious controllers, timing channels and full application correctness are outside the experiments. The lab uses loopback HTTP for credentials and upload; the admin policy is a CLI status-code model.}
+\end{frame}
 
-When you review an agent system, ask: what can this worker make the rest of your system believe?
+\begin{frame}[t,fragile]
+\frametitle{Appendix / The five policy cases}
+\vspace{1mm}{\fontsize{10.2}{12}\selectfont\renewcommand{\arraystretch}{1.20}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.34\textwidth}>{\raggedright\arraybackslash}p{.36\textwidth}@{}}
+\color{acid}\bfseries Input & \color{acid}\bfseries Expected & \color{acid}\bfseries Always-200 candidate \\ \midrule
+admin:none & 401 & 200: mismatch \\
+admin:admin & 200 & 200: match \\
+admin:user & 403 & 200: mismatch \\
+public:none & 200 & 200: match \\
+admin:expired & 401 & 200: mismatch \\
+\end{tabular}}
+\takeaway{CLI fixture: python3 handler.py admin:none. These are modeled status codes.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\note{Three of the five outputs differ for the broken candidate. These tests establish only the five stated criteria. The corrected handler covers them; the experiment does not prove authentication correctness for an actual service.}
+\end{frame}
 
-Then keep the release decision outside its write authority. Thank you.}
+\begin{frame}[t,fragile]
+\frametitle{Appendix / We audited our own reference gate.}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{PINNED BASELINE: 4b06c51}
+\begin{lstlisting}
+frozen.files["handler.py"] = BAD
+frozen.digest stays unchanged
+
+gate says PUBLISHED
+manifest no longer matches bytes
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{CORRECTED PROTOCOL}
+\begin{lstlisting}
+immutable byte entries
+derived manifest + digest
+fresh substitution test
+atomic nonce + byte publication
+concurrent replay regression
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{Internal API integrity flaw. No demonstrated worker-to-controller exploit path.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+% Source: https://github.com/zozo123/nyc-talk/blob/main/research/baseline/core.py
+% Source: https://github.com/zozo123/nyc-talk/blob/main/tests/test_factory.py
+\note{At the pinned baseline, a caller with controller Python-object access could mutate files without updating the stored digest. The original publish function logged a marker, not candidate bytes. We reproduce those facts and do not describe them as a proven production exploit. The fix makes the bytes immutable, derives digests, and records exact bytes transactionally.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut APPENDIX A / EXACT SCOPE};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut The experiments prove bounded properties.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Synthetic fixtures. Recorded observations; no live model call.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 13};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,2.09) {\strut Isolation lab};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,2.09) {\strut Real Linux user/PID/mount/network namespaces and bind mounts; synthetic HTTP on host loopback.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,3.3499999999999996) {\strut Admin factory};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,3.3499999999999996) {\strut Five CLI policy cases; local committed fixtures. Python -I is not an OS security boundary.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,4.609999999999999) {\strut Trusted base};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,4.609999999999999) {\strut Controller code, reference cases, keys, store and OS. No worker reachability into controller memory is claimed.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,5.87) {\strut Out of scope};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,5.87) {\strut Model attack rate, kernel/cgroup/seccomp coverage, side channels, arbitrary uploads, production deployment and universal correctness.};
-\end{scope}
-\end{tikzpicture}
-\note{Use for scope questions. Isolation cases and local factory logic are separate experiments. Boat is optional and not re-run in this revision. The local executor is for committed deterministic fixtures only.}
+
+\begin{frame}[t,fragile]
+\frametitle{Appendix / Reproduce without cloud credentials.}
+\begin{lstlisting}
+make test                 # controller protocol regressions
+make factory              # local fixture logic
+make demo                 # Linux namespace / mount lab
+make factory-isolated     # read-only checker / answer key
+make record-all            # refresh evidence after edits
+make snapshot              # compile the Beamer PDF
+\end{lstlisting}
+\takeaway{Linux + bubblewrap for isolated runs. Python standard library for experiments. TeX Live for the deck.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/Makefile
+% Source: https://github.com/zozo123/nyc-talk/blob/main/.github/workflows/verify.yml
+\note{A failure to create a namespace is an infrastructure failure, not a successful defense. CI runs the isolated experiments on Ubuntu. The stage presentation uses the saved PDF and recorded transcript; it does not require venue Wi-Fi or cloud provisioning. make record-all intentionally runs isolated experiments and must succeed before refreshing evidence.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut APPENDIX B / EVIDENCE LEDGER};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut Separate observations, inferences and open work.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Synthetic fixtures. Recorded observations; no live model call.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 14};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,2.09) {\strut Observed};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,2.09) {\strut 29 isolated-lab assertions; six local factory checks; 26 gate/criteria regression tests. Weak cases deliberately create false accepts.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,3.3499999999999996) {\strut Inferred};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,3.3499999999999996) {\strut Shared expectations can contaminate several reviewers. Snapshot state can propagate. No multi-model or snapshot benchmark is presented.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,4.609999999999999) {\strut Audit fixes};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,4.609999999999999) {\strut Fresh-swap test ordering; byte revalidation; stored-object checks; atomic nonce plus payload publication; measured checker hashes.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,5.87) {\strut Still required};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,5.87) {\strut Production publisher integration, an isolated hostile-candidate executor, dependency-complete environment attestation and broader policy coverage.};
-\end{scope}
-\end{tikzpicture}
-\note{Counts refer to tests and assertions, not discovered vulnerabilities. Audit findings are in our reference implementation. Claims of novelty and cross-product exploitation are deliberately excluded.}
+
+\begin{frame}[t,fragile]
+\frametitle{Appendix / Tamper evidence is not a verdict.}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{HISTORY CHECK}
+\begin{lstlisting}
+head = H(previous || event)
+
+rewrite events
+recompute chain
+compare to controller anchor
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.482\textwidth}
+\begin{beamercolorbox}[wd=\linewidth,sep=2.8mm]{codepanel}
+\kicker{ACCEPTANCE CHECK}
+\begin{lstlisting}
+frozen candidate
+controller-owned policy
+independent comparison
+scoped approval
+exact-byte publication
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\takeaway{The chain detects a rewrite only against an independently retained trusted anchor.}
+% Source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% Source: https://slsa.dev/spec/v1.2/verifying-artifacts
+\note{An attacker who can rewrite the log and its trusted anchor can recompute a consistent chain. The lab checks disagreement with a controller-held head; it does not deploy a transparency service. Neither a chain nor a signature establishes that the application satisfies its task. Those mechanisms authenticate evidence and decisions under explicit trust assumptions.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut APPENDIX C / APPROVAL BINDING};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut The approval binds the evaluated context.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Synthetic fixtures. Recorded observations; no live model call.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 15};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,2.09) {\strut Subject};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,2.09) {\strut artifact\_manifest\_digest; task\_id; run\_id; schema\_version};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,3.3499999999999996) {\strut Decision inputs};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,3.3499999999999996) {\strut verifier\_bundle\_digest; expected\_results\_digest; policy\_digest};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,4.609999999999999) {\strut Execution context};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,4.609999999999999) {\strut acceptance\_environment\_manifest\_digest; decision; nonce; controller MAC};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,5.87) {\strut Caveat};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,5.87) {\strut A declared environment hash is not remote attestation. This reference bundle does not pin every interpreter or OS dependency.};
-\end{scope}
-\end{tikzpicture}
-\note{The gate key lives with the trusted controller. SHA-256 gives identity; the MAC authenticates the approval to that gate. Do not call the MAC a public signature or the metadata a complete reproducibility proof.}
+
+\begin{frame}[t,fragile]
+\frametitle{Appendix / Prior work and source map}
+{\color{acid}\fontsize{8.8}{10}\selectfont Primary experiments}\par
+{\fontsize{9.5}{12}\selectfont github.com/zozo123/nyc-talk}\par\vspace{0mm}
+{\color{acid}\fontsize{8.8}{10}\selectfont Sandbox policy is caller-defined}\par
+{\fontsize{9.5}{12}\selectfont github.com/containers/bubblewrap}\par\vspace{0mm}
+{\color{acid}\fontsize{8.8}{10}\selectfont Provenance verification + artifact binding}\par
+{\fontsize{9.5}{12}\selectfont slsa.dev/spec/v1.2/verifying-artifacts}\par\vspace{0mm}
+{\color{acid}\fontsize{8.8}{10}\selectfont Reward hacking in programming tasks}\par
+{\fontsize{9.5}{12}\selectfont Anthropic, Nov 21, 2025: emergent misalignment}\par\vspace{0mm}
+{\color{acid}\fontsize{8.8}{10}\selectfont Event / date}\par
+{\fontsize{9.5}{12}\selectfont Zenity AI Agent Security Summit 2026: Oct 21, NYC}\par\vspace{0mm}
+\takeaway{A reproducible boundary demonstration, with explicit limits.}
+% Source: https://github.com/zozo123/nyc-talk
+% Source: https://github.com/containers/bubblewrap#sandbox-security
+% Source: https://slsa.dev/spec/v1.2/verifying-artifacts
+% Source: https://www.anthropic.com/research/emergent-misalignment-reward-hacking
+% Source: https://zenity.io/resources/events/ai-agent-security-summit-2026
+\note{The Anthropic work is related motivation, not evidence that our deterministic scripts represent any deployed model. The SLSA reference motivates artifact and trusted-identity binding; this repository does not claim SLSA certification. Bubblewrap documents that security depends on its supplied policy. The event page verifies the NYC date; it does not independently confirm this speaker slot length.}
 \end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut APPENDIX D / COLD REPRODUCTION};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut Reproduce each layer without a cloud account.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Synthetic fixtures. Recorded observations; no live model call.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 16};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,2.09) {\strut Factory + tests};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,2.09) {\strut make factory\\ \strut make test};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,3.3499999999999996) {\strut Real isolation};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,3.3499999999999996) {\strut make demo   \# disposable Linux + bubblewrap\\ \strut make verify \# require recorded sources and expected checks};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,4.609999999999999) {\strut Deck};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,4.609999999999999) {\strut npm install --ignore-scripts\\ \strut make snapshot  \# editable PPTX + Beamer PDF};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,5.87) {\strut Stage backup};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,5.87) {\strut python3 tools/replay.py verifier\\ \strut Recorded evidence is labeled; it is not a live attack.};
-\end{scope}
-\end{tikzpicture}
-\note{Use the exact commit in the CI artifact COMMIT.txt and the artifact SHA256SUMS. A denied namespace launch is infrastructure failure, not successful isolation evidence. The PDF and offline replay do not need a network connection.}
-\end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut APPENDIX E / PRIOR WORK};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut The contribution is a reproducible boundary audit.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Synthetic fixtures. Recorded observations; no live model call.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 17};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.399999999999999cm,align=left,font=\sffamily\bfseries\fontsize{9.449}{11.055}\selectfont] at (0.6,2.11) {\strut Bubblewrap: guarantees depend on the selected policy};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=14.52cm,align=left,font=\sffamily\fontsize{6.614}{7.739}\selectfont] at (0.6,2.58) {\href{https://github.com/containers/bubblewrap}{\strut https://github.com/containers/bubblewrap}};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.399999999999999cm,align=left,font=\sffamily\bfseries\fontsize{9.449}{11.055}\selectfont] at (0.6,3.2399999999999998) {\strut SLSA: verify artifact identity and provenance expectations};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=14.52cm,align=left,font=\sffamily\fontsize{6.614}{7.739}\selectfont] at (0.6,3.71) {\href{https://slsa.dev/spec/v1.2/verifying-artifacts}{\strut https://slsa.dev/spec/v1.2/verifying-artifacts}};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.399999999999999cm,align=left,font=\sffamily\bfseries\fontsize{9.449}{11.055}\selectfont] at (0.6,4.369999999999999) {\strut Anthropic: reward hacking in programming-task training};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=14.52cm,align=left,font=\sffamily\fontsize{6.614}{7.739}\selectfont] at (0.6,4.839999999999999) {\href{https://www.anthropic.com/research/emergent-misalignment-reward-hacking}{\strut https://www.anthropic.com/research/emergent-misalignment-reward-hacking}};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.399999999999999cm,align=left,font=\sffamily\bfseries\fontsize{9.449}{11.055}\selectfont] at (0.6,5.5) {\strut This repository: implementation, evidence and claim limits};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=14.52cm,align=left,font=\sffamily\fontsize{6.614}{7.739}\selectfont] at (0.6,5.97) {\href{https://github.com/zozo123/nyc-talk}{\strut https://github.com/zozo123/nyc-talk}};
-\end{scope}
-\end{tikzpicture}
-\note{Credit the established ideas: least authority, trusted verification and subject-bound provenance. Anthropic is prior empirical work on reward hacking, not a source of attack-success rates for this lab. This presentation does not claim invention of these principles or discovery of a product zero-day.}
-\end{frame}
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay,x=1.2cm,y=-1.2cm]
-\begin{scope}[shift={(current page.north west)}]
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=14.16cm,align=left,font=\sffamily\bfseries\fontsize{5.669}{6.633}\selectfont] at (0.6,0.36) {\strut APPENDIX F / FAST Q\&A};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=14.52cm,align=left,font=\sffamily\bfseries\fontsize{16.063}{18.794}\selectfont] at (0.6,0.92) {\strut Answers to the questions this demo should invite.};
-\draw[draw={rgb,255:red,64;green,81;blue,91},line width=0.33070866138477273pt] (0.6,6.93) -- (12.7,6.93);
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=13.139999999999999cm,align=left,font=\sffamily\fontsize{4.724}{5.528}\selectfont] at (0.6,7.08) {\strut Synthetic fixtures. Recorded observations; no live model call.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,172;green,185;blue,194},text width=0.864cm,align=right,font=\sffamily\fontsize{5.669}{6.633}\selectfont] at (11.95,7.06) {\strut 18};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,2.09) {\strut Why no live LLM?};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,2.09) {\strut The deterministic fixture isolates an authority failure. Model discovery, frequency and transfer would require a separate evaluation.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,3.3499999999999996) {\strut Why not another VM?};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,3.3499999999999996) {\strut The verifier must also stop trusting worker-controlled criteria. Execution separation and decision independence are distinct requirements.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,4.609999999999999) {\strut Does the chain stop it?};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,4.609999999999999) {\strut A separately retained head exposes history disagreement. The judge and publication gate enforce acceptance.};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,143;green,227;blue,203},text width=3.6959999999999997cm,align=left,font=\sffamily\bfseries\fontsize{8.976}{10.502}\selectfont] at (0.6,5.87) {\strut What is new here?};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text={rgb,255:red,242;green,243;blue,238},text width=10.584cm,align=left,font=\sffamily\fontsize{8.504}{9.950}\selectfont] at (3.91,5.87) {\strut A repeatable four-boundary audit and concrete corrections to our own reference gate. No vendor incident or new cryptographic primitive is claimed.};
-\end{scope}
-\end{tikzpicture}
-\note{Give the narrow answer first. The method is useful even when the underlying principle is familiar. Never turn unavailable evidence into a claim of universal security.}
-\end{frame}
+
 \end{document}
