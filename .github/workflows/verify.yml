@@ -1,39 +1,99 @@
-name: Verify talk experiments
+name: Verify and package the October 21 talk
 on:
   push:
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
+defaults:
+  run:
+    shell: bash
 jobs:
-  linux-boundaries:
+  verify:
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Capture the exact source for cold reproduction
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Capture the exact source commit
         run: |
           mkdir -p build/release
           git archive --format=tar HEAD > build/release/source.tar
           git rev-parse HEAD > build/release/COMMIT.txt
-          sha256sum build/release/source.tar > build/release/SHA256SUMS
-      - name: Install isolated lab runtime
-        run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
-      - name: Run actual namespace and mount experiments
-        run: python3 lab/run.py --mode isolated --output build/evidence
-      - name: Run factory freeze/judge/gate (no cloud)
-        run: python3 -m factory.run --output build/factory
-      - name: Compile deck against checked-in evidence
-        run: make deck
+      - name: Install the isolated lab and presentation runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
+          if test -f package-lock.json; then npm ci --ignore-scripts; else npm install --ignore-scripts; fi
+      - name: Record real namespace and mount experiments
+        run: make record 2>&1 | tee build/lab.log
+      - name: Record the corrected factory cases
+        run: make record-factory 2>&1 | tee build/factory.log
+      - name: Run regression tests and verify evidence provenance
+        run: make verify 2>&1 | tee build/verify.log
+      - name: Build the PDF, editable PPTX and offline replay
+        run: make snapshot 2>&1 | tee build/deck.log
+      - name: Package verified outputs
+        run: |
+          mkdir -p build/snapshot/slides build/snapshot/evidence build/snapshot/demo
+          cp slides/talk.pdf slides/talk.pptx slides/talk.tex build/snapshot/slides/
+          cp evidence/*.json evidence/*.txt build/snapshot/evidence/
+          cp demo/replay.html build/snapshot/demo/
+          cp TALK.md SPEAKER_NOTES.md package-lock.json build/snapshot/
+          cp -r research build/release/
+          cp README.md RUNBOOK.md QUESTIONS.md TALK.md SPEAKER_NOTES.md build/release/
+          cp slides/talk.pdf slides/talk.pptx slides/talk.tex build/release/
+          cp -r evidence demo build/release/
+          cp package-lock.json build/release/
+          (cd build/release && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: isolated-lab-evidence
+          name: talk-evidence-and-release
           path: |
+            build/release
             build/evidence
             build/factory
-            build/release
-            slides/talk.pdf
+            build/*.log
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-talk-snapshots
+          path: build/snapshot
+          if-no-files-found: error
+  publish-snapshots:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/final/oct21-evidence-backed-talk'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: final/oct21-evidence-backed-talk
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-talk-snapshots
+          path: generated
+      - name: Publish only verified generated files on the trusted branch
+        env:
+          VERIFIED_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$VERIFIED_SHA"
+          test "$(git ls-remote origin refs/heads/final/oct21-evidence-backed-talk | cut -f1)" = "$VERIFIED_SHA"
+          cp generated/slides/talk.pdf generated/slides/talk.pptx generated/slides/talk.tex slides/
+          cp generated/evidence/*.json generated/evidence/*.txt evidence/
+          mkdir -p demo
+          cp generated/demo/replay.html demo/
+          cp generated/TALK.md generated/SPEAKER_NOTES.md generated/package-lock.json .
+          git add slides/talk.pdf slides/talk.pptx slides/talk.tex evidence demo/replay.html TALK.md SPEAKER_NOTES.md package-lock.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Publish verified October 21 presentation snapshots'
+          git push origin HEAD:refs/heads/final/oct21-evidence-backed-talk
