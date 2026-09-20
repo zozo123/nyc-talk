@@ -44,3 +44,57 @@ jobs:
             build/evidence
             build/factory
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-presentation-snapshots
+          path: |
+            slides/talk.pdf
+            slides/talk.pptx
+            slides/talk.tex
+            slides/evidence.tex
+            TALK.md
+            SPEAKER_NOTES.md
+            package-lock.json
+            evidence/results.json
+            evidence/transcript.txt
+            evidence/factory-results.json
+            evidence/factory-transcript.txt
+          if-no-files-found: error
+  publish-snapshots:
+    needs: linux-boundaries
+    if: github.event_name == 'push' && github.ref == 'refs/heads/final/oct21-verified-stage-package'
+    permissions:
+      contents: write
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-presentation-snapshots
+          path: ${{ runner.temp }}/verified-snapshots
+      - name: Commit only generated presentation and evidence snapshots
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          BRANCH_NAME: final/oct21-verified-stage-package
+        run: |
+          test "$(git ls-remote origin "refs/heads/$BRANCH_NAME" | cut -f1)" = "$SOURCE_SHA"
+          cp "$RUNNER_TEMP/verified-snapshots/slides/talk.pdf" slides/talk.pdf
+          cp "$RUNNER_TEMP/verified-snapshots/slides/talk.pptx" slides/talk.pptx
+          cp "$RUNNER_TEMP/verified-snapshots/slides/talk.tex" slides/talk.tex
+          cp "$RUNNER_TEMP/verified-snapshots/slides/evidence.tex" slides/evidence.tex
+          cp "$RUNNER_TEMP/verified-snapshots/TALK.md" TALK.md
+          cp "$RUNNER_TEMP/verified-snapshots/SPEAKER_NOTES.md" SPEAKER_NOTES.md
+          cp "$RUNNER_TEMP/verified-snapshots/package-lock.json" package-lock.json
+          cp "$RUNNER_TEMP/verified-snapshots/evidence/results.json" evidence/results.json
+          cp "$RUNNER_TEMP/verified-snapshots/evidence/transcript.txt" evidence/transcript.txt
+          cp "$RUNNER_TEMP/verified-snapshots/evidence/factory-results.json" evidence/factory-results.json
+          cp "$RUNNER_TEMP/verified-snapshots/evidence/factory-transcript.txt" evidence/factory-transcript.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add slides/talk.pdf slides/talk.pptx slides/talk.tex slides/evidence.tex TALK.md SPEAKER_NOTES.md package-lock.json evidence/results.json evidence/transcript.txt evidence/factory-results.json evidence/factory-transcript.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Publish verified October 21 deck, manuscript and isolated evidence'
+          git push origin "HEAD:refs/heads/$BRANCH_NAME"
