@@ -8,11 +8,17 @@ permissions:
 jobs:
   linux-boundaries:
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Capture the exact source for cold reproduction
+        run: |
+          mkdir -p build/release
+          git archive --format=tar HEAD > build/release/source.tar
+          git rev-parse HEAD > build/release/COMMIT.txt
+          sha256sum build/release/source.tar > build/release/SHA256SUMS
       - name: Install isolated lab runtime
         run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
       - name: Run actual namespace and mount experiments
@@ -25,5 +31,9 @@ jobs:
         if: always()
         with:
           name: isolated-lab-evidence
-          path: build/evidence
+          path: |
+            build/evidence
+            build/factory
+            build/release
+            slides/talk.pdf
           if-no-files-found: error
