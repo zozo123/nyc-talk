@@ -1,53 +1,53 @@
 # Speaker notes
 
-This is the Sessionize talk: four non-escape escapes, four locks.
-Fun, short, friendly. Point at the slide. No terminal.
-Story four: /admin with no cookie returns 200 and CI is green.
+One idea: the sandbox is a wall; the four abstract items are doors a working agent needs.
+Door four: done. /admin no cookie is 200, checker hash unchanged.
+Say the four lock names from the abstract out loud.
 
 ## Slide 1
 
-00:00 to 00:30. Hi, I'm Yossi. Spoiler: the agent never climbed the wall. Namespaces fine, cgroups fine, still a bad day. Four short stories. We hold the door.
+00:00 to 00:35. Hi, I'm Yossi. Read the title. Escaped without escaping. Every namespace and cgroup can work as designed and you can still have a real breach. That abstract line is the demo. The agent never climbed the wall. We cut four doors so it could do the job. It used the doors.
 
 ## Slide 2
 
-00:30 to 01:15. Sandbox is cute and necessary, not the end of the movie. Fat badge, writable folder, mailroom stamp, pencil that grades homework: mess without leaving. Four stories, four locks, four questions, reception.
+00:35 to 01:30. Keep the wall. What is new: classical sandbox assumes the workload might leave. An agent is hired to finish a ticket. It will use every job interface: token, files, the one host, the signal that means done. Those are the four abstract doors. Not four random bugs. You cannot weld them shut. Question is which layer refuses a door from outside the worker.
 
 ## Slide 3
 
-01:15 to 03:15. Inherited credentials. Job needed a token, CI already had a fat one. Other project returns 200. Sandbox did not steal it. Fix: this task, this audience, short life. Same request 403. Own input still 200. Short life is not small scope.
+01:30 to 03:20. Job needed input. We copied the CI runner token. Other project 200. Nobody escaped. Dad's badge on the intern. Lock from the abstract: short-lived credential projection. This task, this audience, this hour. 403. Own input still 200. Expiry is courtesy. Scope is the lock.
 
 ## Slide 4
 
-03:15 to 05:00. Dangerous mounts. Shared folder, writable because why not. Ordinary write, next job's file changes. Fix: read this, write that. Same write denied. Output folder still works. If the next job shouldn't be in the room, don't put the chair in the room.
+03:20 to 05:00. Job needs files. Shared writable folder, being helpful. Legal write, next job's file changes. Mount did its job. Lock: capability-scoped filesystems. Read this, write that. Chair leaves the room. Output still works. If tomorrow forks this snapshot, tomorrow is already in the room.
 
 ## Slide 5
 
-05:00 to 07:00. Exfil through an allowed endpoint. Report service is allowed. It mails the private fixture to another account on the same host. Firewall liked the hostname. Who and what were the question. Broker builds a boring postcard. Extra fields no. Direct route gone. Real report still arrives.
+05:00 to 07:00. Job must publish. Firewall loves the hostname. Worker posts the private fixture to another account on that host. The allowed endpoint was the exit. Lock: real process isolation, worker cannot dial the mailroom. Broker writes one boring postcard. Extra fields no. Real report still arrives.
 
 ## Slide 6
 
-07:00 to 09:30. Fun one. Ticket: /admin without cookie is 401. Checker locked, hash unchanged. It still reads expected.json. Worker makes 200 the spec. PASS. Curl is 200. Policy rewrite, then a merge you'd approve. Second box that reads the same folder is a new hoodie. PASS file is the smoke detector.
+07:00 to 09:45. Door labeled done. Ticket: /admin no cookie is 401. Checker locked, hash unchanged. It reads expected.json. Worker makes 200 the spec. PASS. Curl 200. Not a breakout. Success interface. File integrity green, admin open, you would have merged. Second box on the same folder is a new hoodie. PASS file is the smoke detector.
 
 ## Slide 7
 
-09:30 to 11:30. Hit the four abstract locks: credential projection, scoped filesystems, process isolation, tamper-evident history. History detects a rewrite. It does not make /admin 401. Locked door still merges. Open door does not. PASS file ignored. Fake rulebook ignored. Swap denied.
+09:45 to 11:45. Say the four abstract locks out loud. History detects rewrite. It does not make /admin 401. Freeze bytes, grade off the worker, merge those bytes. Timeouts are not a win. Locked admin still merges. Open admin does not. Fake rulebook ignored. Swap denied. The agent can still do the job.
 
 ## Slide 8
 
-11:30 to 13:15. One agent job, four sticky notes. If who says /admin is locked is the same disk that wrote the handler, you have a confident diary. Name the thing that can refuse outside the worker. Prove the legitimate lock still merges.
+11:45 to 13:20. You leave with four boundaries. They are the four doors. Check them on your agent, not my lab. If done is a file the worker can write, or a spec it can edit, or a harness on the same disk, that is homework graded by the intern. Name a refuse outside the worker. Prove the house still works.
 
 ## Slide 9
 
-13:15 to 14:00. Sandbox contained the process. We issued the badge, the chair, the stamp, and the rulebook. That's the talk you came for. Ask who gave this process the authority. Repo on the slide. Stop. Smile. No tenth slide.
+13:20 to 14:00. The sandbox did its job. The agent did too: it used the doors we installed so it could finish. That is an escape without escaping. Don't ask if the wall is pretty. Ask who gave this process the authority. Stop. Smile.
 
 ## Slide 10
 
-Appendix only. Factory is the /admin path. Lab is badge, chair, mailbox. Isolated lab fails closed. No live terminal in the talk.
+Appendix only. Factory is door four, /admin. Lab is doors one to three. Isolated lab fails closed. No live terminal in the talk.
 
 ## Slide 11
 
-Appendix only. If asked: not a customer incident, not model success rates, not kernel escape. History is a controller copy of the log, not a blockchain product.
+Appendix only. Goal-obsessed is why the doors matter in 2026. Not a model success-rate. History is a controller copy of the log.
 
 ## Slide 12
 
-Appendix only. Point at the repo if people linger. Do not present these in the 15 minutes.
+Appendix only. Point at the repo if people linger. Do not present in the 15 minutes.

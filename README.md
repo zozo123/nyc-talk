@@ -11,18 +11,16 @@ NYC · AI Agent Security Summit · October 21, 2026
 
 ## What this talk is
 
-The Sessionize talk. Four non-escape escapes, four locks, four questions. Friendly 15 minutes.
+The Sessionize talk. **A sandbox is a wall. A working agent needs doors.** The four non-escape escapes are those doors, not four random bugs.
 
-The process never leaves. A decision you care about still moves:
+1. Inherited credentials → short-lived credential projection
+2. Dangerous mounts → capability-scoped filesystems
+3. Allowed endpoint → real process isolation
+4. Verifier tampering → tamper-evident history, and grade **done** off the worker (`/admin` no cookie is 401, not 200)
 
-1. **Dad’s badge** — inherited credentials → mint a tiny, short-lived task token
-2. **Next job’s chair** — dangerous mounts → read this, write that
-3. **Allowed door** — exfil through an allowed host → broker the envelope
-4. **The test said yes** — verifier / `expected.json` → freeze bytes, grade off the worker. `/admin` with no cookie is 401, not 200.
+You cannot weld the doors shut or the agent cannot work. You lock each at the layer that can refuse **while it is still inside, still being helpful.**
 
-Then: real process isolation, capability-scoped filesystems, short-lived credential projection, tamper-evident history.
-
-`lab/` is stories 1–3. `factory/` is story 4 (`/admin`). Neither is a vendor 0-day.
+`lab/` is doors 1–3. `factory/` is door 4. Neither is a vendor 0-day.
 
 ## Run it
 

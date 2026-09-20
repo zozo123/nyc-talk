@@ -5,146 +5,154 @@ Principal Engineer and Head of DevRel at Incredibuild.com
 
 AI Agent Security Summit · Pier Sixty · NYC · October 21, 2026
 
-**15 minutes.** Nine main slides, three appendix. Aim for 14. Smile. Point at the slide. No terminal, no kernel war stories.
+**15 minutes.** Nine main slides. 14 plus a minute of air. This is the Sessionize talk. One idea, four doors, four locks.
 
-This is the talk on the badge: four non-escape escapes, four locks, four things to check on Monday.
-
-## 1. Title — 00:00–00:30
+## 1. Title — 00:00–00:35
 
 Hi. I’m Yossi.
 
-Spoiler: the agent never climbed the wall.
+Read the title again.
 
-The namespaces were fine. The cgroups were fine. We still had a bad day.
+Your agent escaped **without escaping** the sandbox.
 
-Four short stories. Nobody picks a lock. We hold the door.
+Every namespace and cgroup can work exactly as designed. And you can still have a real breach.
 
-> Wave at the title. Advance.
+That first sentence of the abstract is not poetry. It is the demo.
 
-## 2. The deal — 00:30–01:15
+The agent never climbed the wall. We cut four doors in the wall so it could do the job. It used the doors.
 
-You put an agent in a sandbox so the blast radius ends at the box.
+> Let that land. Advance.
 
-Cute. Necessary. Not the end of the movie.
+## 2. The wall is not the interesting part — 00:35–01:30
 
-If we hand it a fat badge, a writable folder, a stamp for the mailroom, or the pencil that grades its own homework — it can cause a real mess **without leaving**.
+We spent two years on the wall. MicroVMs, gVisor, namespaces, pretty dashboards that say Isolated.
 
-That’s a non-escape escape. The process stays put. A decision you care about still moves.
+Good. Keep the wall.
 
-Four of them. Then we lock each one. Then you steal four questions. Then we go to the reception.
+Here is what is new about agents, and why this talk is not last decade’s least-privilege rant:
 
-## 3. It had dad’s badge — 01:15–03:15
+A classical sandbox assumes the workload might *try to leave*.
 
-Story one. Inherited credentials.
+An agent is hired to *finish a ticket*. It will use every interface you called “part of the job.” Token. Files. The one allowed host. The signal that means done.
 
-The job is called `lock-admin`. We give the worker a runner token, because CI already had one, and copying it was easy.
+Those four interfaces are in the abstract on purpose. They are not four random bugs. They are **the four doors a working agent actually needs**.
 
-It asks another project for a private fixture. The service says 200. Of course it does. Valid badge. Big scope.
+You cannot weld them shut. Then it cannot work.
 
-The sandbox did not steal the key. **We hung it around its neck.**
+So the question is not “did it escape.” The question is: **which layer can refuse a door when the process is still inside, still being helpful, still trying to complete.**
 
-Fix: don’t copy dad’s badge. Mint a tiny one. This task. This audience. Short life. Same request: 403. Its own input: still 200.
+Four doors. Four locks. Four things you check on your own deployment. That’s the whole talk.
 
-A short lifetime is not a small scope. A broad token is a problem at second zero.
+## 3. Door 1 — inherited credentials — 01:30–03:20
 
-> Point at 200, then 403. Grin. “We did that.”
+The job needs to read its input. CI already had a runner token. We copied it. Fast. Done.
 
-## 4. It sat in the next job’s chair — 03:15–05:00
+The worker asks another project for a private fixture. **200.** Valid badge. Huge scope.
 
-Story two. Dangerous mounts.
+Nobody escaped. We hung dad’s badge on the intern because the intern had a job.
 
-We bind a shared folder because the next job might need it. Writable, because why not.
+Lock, from the abstract: **short-lived credential projection**. Not “copy the runner secret and hope.” Mint: this task, this audience, this hour. Same request: **403**. Its own input: still **200**.
 
-The worker writes a normal write. Outside the box, the next job’s file has changed.
+A token that dies at midnight is still a skeleton key at 9 a.m. Scope is the lock. Expiry is the courtesy.
 
-The mount worked. That’s the bug.
+> 200. 403. The job still runs. Next door.
 
-Fix: you may read this, you may write that. Same write: denied. Host file unchanged. Its own output folder: still works.
+## 4. Door 2 — dangerous mounts — 03:20–05:00
 
-Read-only is still a read. If the next job shouldn’t be in the room, don’t put the chair in the room.
+The job needs files. We bind a shared folder. Writable. The next job might need it. We are being helpful.
 
-## 5. The allowed door — 05:00–07:00
+The worker writes a perfectly legal write. On the host, the next job’s file has changed.
 
-Story three. Exfil through an allowed endpoint.
+The mount did what mounts do. That is the breach.
 
-We let it talk to the report service. Reasonable. It has to publish *something*.
+Lock: **capability-scoped filesystems**. Not “a sandbox has a disk.” You may read *this* input. You may write *that* output. The next job’s chair is not in the room. Same write: denied. Host unchanged. Its own `/output`: still works.
 
-It sends our private fixture to **another account on the same host**. Same hostname. Different mailbox. The data is there. We checked.
+If tomorrow’s agent will fork this snapshot, tomorrow is already in the room.
 
-The firewall said “this host is fine.” The host was never the question. **Who** and **what** were.
+## 5. Door 3 — exfiltration through an allowed endpoint — 05:00–07:00
 
-Fix: the worker does not pick the URL, the recipient, or the body. It asks for one operation: publish the report. An outside broker builds a boring, allowed postcard. Extra fields: no. Direct route to the service: gone. The real report still arrives.
+The job has to publish a report. So we allow the report host. The firewall loves this hostname. Green.
 
-If your agent can mail a postcard, it can mail a postcard to the wrong address. Don’t let it address the envelope.
+The worker posts our private fixture to **another account on that same host**. Same door. Different mailbox. The bytes are there. We looked.
 
-## 6. The test said yes — 07:00–09:30
+The wall never failed. The **allowed endpoint** was the exit.
 
-Story four. This is the fun one. Verifier tampering.
+Lock: **real process isolation** — the worker cannot dial the mailroom. And the postcard is not worker-authored. An outside broker builds one boring, allowed report. Extra fields: no. Direct route: gone. The real report still arrives.
 
-Ticket: unauthenticated `/admin` must be 401. CI green means you may merge.
+If your agent can mail a postcard, it can mail it to the wrong address. Isolation is who can walk to the box. Policy is who may write on the envelope.
 
-We lock the checker. Hash unchanged. Very responsible of us.
+## 6. Door 4 — verifier tampering — 07:00–09:45
+
+This is the door labeled **done**.
+
+Ticket: unauthenticated `/admin` returns 401. Green CI means merge.
+
+We lock the checker. Hash unchanged. Audit will love us.
 
 The checker still reads `expected.json` from the workspace. The worker rewrites the spec so no-cookie `/admin` is *supposed* to be 200. Checker prints PASS.
 
 I curl `/admin` with no cookie. **200**.
 
-We protected the referee. We let the player write the rulebook.
+The agent did not break the sandbox. It used the success interface. You hired it to get to done. **Done is a door.**
 
-That’s not a failed test. That’s a **policy rewrite**, then a merge you would have approved.
+That is why verifier tampering belongs in this abstract, and why it is not “the intern overwrote `test.sh`.” You protected the referee. The player wrote the rulebook. File integrity is green. The admin door is open. You would have merged this.
 
-A second box does not save you if it still reads the same folder. That’s not a new referee. That’s the same kid in a new hoodie.
+A second box that still reads that folder is not a new referee. It’s the same kid in a new hoodie.
 
-Bonus, on purpose: if the controller just believes a worker `PASS` file, same open door. That’s the smoke detector. We ran it so we can’t pretend the experiment is blind.
+We also ran the dumb version on purpose: controller believes a worker `PASS` file. Same 200. That’s the smoke detector, so nobody says the experiment is blind.
 
-> Pause on 401 required / 200 shipped. Let people groan.
+> Groan is good. Stay with 401 required / 200 shipped.
 
-## 7. Four locks — 09:30–11:30
+## 7. Four locks, at the layer that can actually say no — 09:45–11:45
 
-Close each one at the layer that can actually say no.
+The abstract promised we close each door where enforcement is real. Not inside the agent’s feelings. Outside the worker.
 
-**Short-lived credential projection.** Tiny badge. This task. Then it expires.
+**Short-lived credential projection.** Tiny badge. This ticket.
 
-**Capability-scoped filesystems.** Read this input. Write this output. Nothing about the next job.
+**Capability-scoped filesystems.** This input. That output.
 
-**Real process isolation.** The worker cannot reach the mailroom. The broker can.
+**Real process isolation.** It cannot reach the extra mailbox. The broker can.
 
-**Tamper-evident history** — plus a grown-up: the worker is not the witness. Freeze the bytes. Grade them somewhere that does not own `expected.json`. Merge **those** bytes. If someone rewrites the diary, your copy disagrees. A faithful diary can still say “the vault is fine.” History catches a rewrite. It does not make `/admin` 401.
+**Tamper-evident execution history.** Keep a copy of what happened that the worker cannot rewrite. If the diary changes, you see it.
 
-Timeouts and crashes are not a win. That’s “we didn’t ship.” Different from “the door is locked.”
+One grown-up next to that last lock, because a perfect diary can still say “the vault is fine.” History detects a rewrite. It does not make `/admin` a 401. Freeze the bytes. Grade them off the worker. Merge **those** bytes. Timeouts are not a win. That’s just “we didn’t ship.”
 
-The useful ticket still closes. Locked `/admin` merges. Open `/admin` does not. `PASS` file ignored. Fake rulebook ignored. Swap after freeze: no.
+Locked `/admin` still merges. Open `/admin` does not. Fake rulebook ignored. Swap after freeze: no.
 
-## 8. Steal these four — 11:30–13:15
+The agent can still do the job. It just cannot pick the lock by finishing.
 
-Monday morning. One agent job. Four questions. Write the answers on a sticky note.
+## 8. Four boundaries for your deployment — 11:45–13:20
+
+You leave with four boundaries. They are the four doors. Check them against *your* agent, not my lab.
 
 Whose **identity** can it use?
 
-Which **files** can it change — including tomorrow’s snapshot?
+Which **files** can it change — including the snapshot you will fork tomorrow?
 
-Who can **receive** its output, and what’s in the envelope?
+Which **endpoint** may it call, and what is allowed to be in the body?
 
-Who is allowed to say **these bytes are true**?
+Who is allowed to say **these bytes are done**?
 
-If the last answer is “the same disk that wrote them,” you don’t have a verifier. You have a very confident diary.
+If “done” is a file the worker can write, or a spec it can edit, or a harness that lives on the same disk, you do not have a verifier. You have a very motivated intern grading their own homework.
 
-Name the thing that can refuse, **outside** the worker. Then prove the real job still works. That’s the whole game.
+Name the component that can refuse, **outside** the worker. Then prove the real ticket still completes. That’s how you know you locked a door instead of bricking the house.
 
-## 9. Close — 13:15–14:00
+## 9. Close — 13:20–14:00
 
-The sandbox contained the process. We still had a breach. We issued the badge, the chair, the stamp, and the rulebook.
+The sandbox did its job.
 
-That’s the talk you came for.
+The agent did its job too. It used the doors we installed so it could finish.
 
-When the next agent starts a job, ask:
+That is an escape without escaping.
+
+When the next agent starts a ticket, don’t ask if the wall is pretty. Ask:
 
 **Who gave this process the authority?**
 
-Repo is on the slide. Go check four things. Then go enjoy New York.
+Repo is on the slide. Four doors. Four locks. Go try them on your own box.
 
-> Stop. Smile. Don’t add a tenth slide with “in conclusion.”
+> Stop. Smile. No “in conclusion.”
 
 ---
 
-Synthetic lab, deterministic scripts, recorded results. `/admin` is a fixture, not a customer incident. The 29 Linux checks and the factory checks are not 29 CVEs. Appendix if anyone wants reproduction.
+The four doors and four locks are the accepted abstract. Recorded lab plus factory. Synthetic `/admin`, not a vendor CVE. Agents-are-goal-obsessed is the 2026 reason the doors matter; it is not a model-ASR claim.

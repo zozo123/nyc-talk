@@ -19,7 +19,7 @@
 \setlength{\parskip}{7pt}
 \lstset{basicstyle=\ttfamily\small,keywordstyle=\color{acid},commentstyle=\color{muted},stringstyle=\color{acid},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false}
 \newcommand{\kicker}[1]{{\color{acid}\ttfamily\small #1}\par}
-\newcommand{\bigline}[1]{{\fontsize{27}{32}\selectfont\bfseries #1\par}}
+\newcommand{\bigline}[1]{{\fontsize{26}{30}\selectfont\bfseries #1\par}}
 \newcommand{\subline}[1]{\par{\color{muted}\normalsize #1}\par}
 \newcommand{\evidence}{\vfill{\color{muted}\scriptsize\evidencescope}}
 \input{slides/evidence.tex}
@@ -37,22 +37,22 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{00:00 to 00:30. Hi, I'm Yossi. Spoiler: the agent never climbed the wall. Namespaces fine, cgroups fine, still a bad day. Four short stories. We hold the door.}
+\note{00:00 to 00:35. Hi, I'm Yossi. Read the title. Escaped without escaping. Every namespace and cgroup can work as designed and you can still have a real breach. That abstract line is the demo. The agent never climbed the wall. We cut four doors so it could do the job. It used the doors.}
 \end{frame}
 
-\begin{frame}{Nobody climbed the wall}
-\bigline{Four non-escape escapes.}
-\vspace{4mm}
-\textcolor{acid}{Badge}\hspace{3mm}
-\textcolor{acid}{Chair}\hspace{3mm}
-\textcolor{acid}{Mailbox}\hspace{3mm}
-\textcolor{acid}{Rulebook}
+\begin{frame}{The wall is not the interesting part}
+\bigline{A sandbox is a wall.\\A working agent needs doors.}
 \vspace{3mm}
-\subline{The process stays put. A decision you care about still moves.}
-\note{00:30 to 01:15. Sandbox is cute and necessary, not the end of the movie. Fat badge, writable folder, mailroom stamp, pencil that grades homework: mess without leaving. Four stories, four locks, four questions, reception.}
+\textcolor{acid}{credentials}\quad
+\textcolor{acid}{mounts}\quad
+\textcolor{acid}{allowed endpoint}\quad
+\textcolor{acid}{done}
+\vspace{3mm}
+\subline{You cannot weld them shut. So which layer can refuse while it is still being helpful?}
+\note{00:35 to 01:30. Keep the wall. What is new: classical sandbox assumes the workload might leave. An agent is hired to finish a ticket. It will use every job interface: token, files, the one host, the signal that means done. Those are the four abstract doors. Not four random bugs. You cannot weld them shut. Question is which layer refuses a door from outside the worker.}
 \end{frame}
 
-\begin{frame}[fragile]{01 / It had dad's badge}
+\begin{frame}[fragile]{Door 1 / inherited credentials}
 \begin{lstlisting}
 GET /projects/other/private
 
@@ -60,85 +60,85 @@ runner token     200
 task token       403
 its own input    200
 \end{lstlisting}
-\subline{We hung the key around its neck. Mint a tiny one.}
+\subline{Short-lived credential projection. Scope is the lock.}
 \evidence
-\note{01:15 to 03:15. Inherited credentials. Job needed a token, CI already had a fat one. Other project returns 200. Sandbox did not steal it. Fix: this task, this audience, short life. Same request 403. Own input still 200. Short life is not small scope.}
+\note{01:30 to 03:20. Job needed input. We copied the CI runner token. Other project 200. Nobody escaped. Dad's badge on the intern. Lock from the abstract: short-lived credential projection. This task, this audience, this hour. 403. Own input still 200. Expiry is courtesy. Scope is the lock.}
 \end{frame}
 
-\begin{frame}[fragile]{02 / It sat in the next job's chair}
+\begin{frame}[fragile]{Door 2 / dangerous mounts}
 \begin{lstlisting}
-worker writes /shared/next-job.json
+write /shared/next-job.json
 
-writable bind   host file changes
-read-only bind  write denied
-/output         still works
+writable bind    host file changes
+scoped bind      write denied
+/output          still works
 \end{lstlisting}
-\subline{The mount worked. That was the bug.}
+\subline{Capability-scoped filesystems. Tomorrow's snapshot is already in the room.}
 \evidence
-\note{03:15 to 05:00. Dangerous mounts. Shared folder, writable because why not. Ordinary write, next job's file changes. Fix: read this, write that. Same write denied. Output folder still works. If the next job shouldn't be in the room, don't put the chair in the room.}
+\note{03:20 to 05:00. Job needs files. Shared writable folder, being helpful. Legal write, next job's file changes. Mount did its job. Lock: capability-scoped filesystems. Read this, write that. Chair leaves the room. Output still works. If tomorrow forks this snapshot, tomorrow is already in the room.}
 \end{frame}
 
-\begin{frame}[fragile]{03 / The allowed door}
+\begin{frame}[fragile]{Door 3 / allowed endpoint}
 \begin{lstlisting}
 same host, wrong mailbox
 
-team/reports     intended
-other/uploads    gets the private fixture
+team/reports      intended
+other/uploads     gets the private fixture
 \end{lstlisting}
-\subline{Don't let it address the envelope.}
+\subline{Real process isolation. The worker does not address the envelope.}
 \evidence
-\note{05:00 to 07:00. Exfil through an allowed endpoint. Report service is allowed. It mails the private fixture to another account on the same host. Firewall liked the hostname. Who and what were the question. Broker builds a boring postcard. Extra fields no. Direct route gone. Real report still arrives.}
+\note{05:00 to 07:00. Job must publish. Firewall loves the hostname. Worker posts the private fixture to another account on that host. The allowed endpoint was the exit. Lock: real process isolation, worker cannot dial the mailroom. Broker writes one boring postcard. Extra fields no. Real report still arrives.}
 \end{frame}
 
-\begin{frame}[fragile]{04 / The test said yes}
+\begin{frame}[fragile]{Door 4 / verifier tampering}
 \begin{lstlisting}
-checker.py              hash unchanged
-expected.json           worker-written
-CI / merge              PASS
+checker.py               hash unchanged
+expected.json            worker-written
+CI / merge               PASS
 
-GET /admin  (no cookie) 401 required
-shipped                 200
+GET /admin  (no cookie)  401 required
+shipped                  200
 \end{lstlisting}
-\subline{We protected the referee. The player wrote the rulebook.}
+\subline{You hired it to get to done. Done is a door.}
 \evidence
-\note{07:00 to 09:30. Fun one. Ticket: /admin without cookie is 401. Checker locked, hash unchanged. It still reads expected.json. Worker makes 200 the spec. PASS. Curl is 200. Policy rewrite, then a merge you'd approve. Second box that reads the same folder is a new hoodie. PASS file is the smoke detector.}
+\note{07:00 to 09:45. Door labeled done. Ticket: /admin no cookie is 401. Checker locked, hash unchanged. It reads expected.json. Worker makes 200 the spec. PASS. Curl 200. Not a breakout. Success interface. File integrity green, admin open, you would have merged. Second box on the same folder is a new hoodie. PASS file is the smoke detector.}
 \end{frame}
 
-\begin{frame}{Four locks}
+\begin{frame}{Close each door where it can actually refuse}
 \begin{tabular}{@{}ll@{}}
-\color{acid}Story & \color{acid}Who can actually say no\\[8pt]
-Dad's badge & Tiny, short-lived task token\\[8pt]
-Next job's chair & Read this, write that\\[8pt]
-Allowed door & Broker + no direct route\\[8pt]
-The test said yes & Freeze bytes. Grade off the worker.
+\color{acid}Door & \color{acid}Layer from the abstract\\[8pt]
+Inherited credentials & Short-lived credential projection\\[8pt]
+Dangerous mounts & Capability-scoped filesystems\\[8pt]
+Allowed endpoint & Real process isolation\\[8pt]
+Verifier tampering & Tamper-evident execution history
 \end{tabular}\par
 \vspace{2mm}
-\subline{A diary can still say the vault is fine. Keep a copy it cannot rewrite.}
+\subline{History catches a rewrite. Freeze and grade off the worker so /admin stays 401.}
 \evidence
-\note{09:30 to 11:30. Hit the four abstract locks: credential projection, scoped filesystems, process isolation, tamper-evident history. History detects a rewrite. It does not make /admin 401. Locked door still merges. Open door does not. PASS file ignored. Fake rulebook ignored. Swap denied.}
+\note{09:45 to 11:45. Say the four abstract locks out loud. History detects rewrite. It does not make /admin 401. Freeze bytes, grade off the worker, merge those bytes. Timeouts are not a win. Locked admin still merges. Open admin does not. Fake rulebook ignored. Swap denied. The agent can still do the job.}
 \end{frame}
 
-\begin{frame}{Steal these four}
+\begin{frame}{Four boundaries. Your deployment.}
 \begin{tabular}{@{}ll@{}}
-\color{acid}Ask Monday & \color{acid}If the answer is the box...\\[8pt]
-Whose identity? & You handed dad's badge over\\[8pt]
-Which files, including tomorrow? & The next job's chair is still there\\[8pt]
-Which mailbox, which letter? & The allowed host was the wrong question\\[8pt]
-Who says /admin is locked? & That's a diary, not a verifier
+\color{acid}Door & \color{acid}Ask Monday\\[8pt]
+Identity & Whose badge, how small, how brief?\\[8pt]
+Files & What can it change, including tomorrow?\\[8pt]
+Endpoint & Who gets the envelope, what is inside?\\[8pt]
+Done & Who is allowed to say these bytes are true?
 \end{tabular}\par
 \vspace{2mm}
-\subline{Name a no outside the worker. Then prove the real job still works.}
-\note{11:30 to 13:15. One agent job, four sticky notes. If who says /admin is locked is the same disk that wrote the handler, you have a confident diary. Name the thing that can refuse outside the worker. Prove the legitimate lock still merges.}
+\subline{Refuse outside the worker. Then prove the real ticket still completes.}
+\note{11:45 to 13:20. You leave with four boundaries. They are the four doors. Check them on your agent, not my lab. If done is a file the worker can write, or a spec it can edit, or a harness on the same disk, that is homework graded by the intern. Name a refuse outside the worker. Prove the house still works.}
 \end{frame}
 
 \begin{frame}[plain]
-\kicker{THE PROCESS NEVER LEFT}
+\kicker{THE WALL HELD. THE DOORS DID NOT.}
 \vspace{5mm}
 \bigline{Who gave this process\\the authority?}
 \vspace{7mm}
 {\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
-\subline{Then go enjoy New York.}
-\note{13:15 to 14:00. Sandbox contained the process. We issued the badge, the chair, the stamp, and the rulebook. That's the talk you came for. Ask who gave this process the authority. Repo on the slide. Stop. Smile. No tenth slide.}
+\subline{Four doors. Four locks. Try them on your box.}
+\note{13:20 to 14:00. The sandbox did its job. The agent did too: it used the doors we installed so it could finish. That is an escape without escaping. Don't ask if the wall is pretty. Ask who gave this process the authority. Stop. Smile.}
 \end{frame}
 
 \begin{frame}[fragile]{Appendix / Steal the repo}
@@ -148,23 +148,22 @@ make demo        # Linux isolation lab
 make deck        # this PDF
 \end{lstlisting}
 \subline{\evidencecount.}
-\note{Appendix only. Factory is the /admin path. Lab is badge, chair, mailbox. Isolated lab fails closed. No live terminal in the talk.}
+\note{Appendix only. Factory is door four, /admin. Lab is doors one to three. Isolated lab fails closed. No live terminal in the talk.}
 \end{frame}
 
-\begin{frame}{Appendix / What we are not claiming}
-This is a friendly lab, not a vendor 0-day.
+\begin{frame}{Appendix / What this is not}
+Not a vendor 0-day. Not a kernel talk. Not last decade's least privilege with extra slides.
 
-Deterministic scripts. Synthetic /admin. Finite cases.
+Agents finish tickets. The four doors are the job. That is why the title works.
 
 \subline{Twenty-nine checks are not twenty-nine CVEs.}
-\note{Appendix only. If asked: not a customer incident, not model success rates, not kernel escape. History is a controller copy of the log, not a blockchain product.}
+\note{Appendix only. Goal-obsessed is why the doors matter in 2026. Not a model success-rate. History is a controller copy of the log.}
 \end{frame}
 
-\begin{frame}{Appendix / If someone wants homework}
+\begin{frame}{Appendix / You are here}
 \href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}
 \subline{Script, slides, recorded results}
 \href{https://zenity.io/resources/events/ai-agent-security-summit-nyc}{AI Agent Security Summit, NYC}
-\subline{You are here}
-\note{Appendix only. Point at the repo if people linger. Do not present these in the 15 minutes.}
+\note{Appendix only. Point at the repo if people linger. Do not present in the 15 minutes.}
 \end{frame}
 \end{document}
