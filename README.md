@@ -11,7 +11,11 @@ NYC · AI Agent Security Summit · October 21, 2026
 
 ## What this talk is
 
-An agent can stay inside its sandbox and still cause a real release of the wrong work. The interesting boundary is not the VM. It is **what makes a candidate eligible for release**, and how much of that decision the worker can influence.
+**Containment is not attestation.** Isolation answers whether a process can touch the host. Release answers whether we should believe these bytes. Agent factories are collapsing those questions because the harness already lives in the box.
+
+The sting is not a kernel escape and not a writable checker. We lock `checker.py`. The hash is unchanged. The checker still reads worker-written `expected.json`. PASS. The bug ships. The control you would audit is green.
+
+The spine is a **reference software factory** in `factory/`:
 
 The spine is a **reference software factory** in `factory/`:
 

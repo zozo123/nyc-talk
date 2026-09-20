@@ -37,134 +37,125 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{00:00 to 00:40. Small job: fix a parser, publish the report. The sandbox does not break. Ask what made the work eligible for release, and how much of that decision the agent could influence. Escaped means exceeded the task through granted interfaces.}
+\note{00:00 to 00:45. Cold open: a breach where every namespace and cgroup did their job. Small task, green check, parser still drops empty fields. Would you ship it? Two years of boxing agents was the right instinct and the wrong finish line.}
 \end{frame}
 
-\begin{frame}{What makes it eligible for release?}
-\bigline{The VM held.\\The green check did not.}
-\vspace{3mm}
-\subline{Dev produces. Controller freezes. Accept VM executes frozen bytes.}
-\subline{Controller compares. Gate publishes those bytes, or nothing.}
-\evidence
-\note{00:40 to 02:00. Walk the factory: untrusted dev VM, controller collection into immutable storage, fresh accept VM that only runs frozen candidate bytes, controller-owned expected results, gate, publish from the frozen object. A second VM is not independence if judgment still reads worker inputs. Five cases prove five cases.}
+\begin{frame}{You bought a cage}
+\bigline{Isolation asks:\\can it touch the host?}
+\vspace{4mm}
+\bigline{Release asks:\\should we believe\\these bytes?}
+\subline{Those two questions got collapsed.}
+\note{00:45 to 02:15. Isolation is not attestation. Platforms treat agent finished as artifact is true because the harness lives in the box. Same disk produces the candidate and testifies it worked. You asked the prisoner if the trial was fair. Do not say zero-day. Say this is becoming the default factory shape.}
 \end{frame}
 
-\begin{frame}[fragile]{We protected the checker. The worker still decided.}
+\begin{frame}[fragile]{The control is green. You still lost.}
 \begin{lstlisting}
 checker.py            hash unchanged
 expected.json         worker-written
 task check            PASS
 
-independent case "1,,3"   REJECT required
-buggy parser              [1, 3]
+independent "1,,3"    REJECT required
+actual                [1, 3]
 \end{lstlisting}
-\subline{The checker imported its truth from the workspace.}
+\subline{You protected the judge. Not what the judge believes.}
 \evidence
-\note{02:00 to 05:00. This is the finding. Checker file hash unchanged. Worker wrote expected.json to match the bug. Protected executable, worker-controlled criteria. Independent judge still fails empty fields. A PASS file the controller believes is a deliberate detector, not a surprise. Not a kernel escape.}
+\note{02:15 to 05:15. This is the sting. File integrity of the checker passes. Worker rewrote expected.json so the bug is the spec. Independent cases still fail. Forking the producer to verify is verifying the crime scene. A worker PASS file is a deliberate smoke detector, not the finding.}
 \end{frame}
 
-\begin{frame}{Verified bytes are not released bytes}
+\begin{frame}{We verified A. We shipped B.}
 \begin{tabular}{@{}ll@{}}
-Publish from the live path after a swap & \textcolor{alarm}{Wrong artifact}\\[8pt]
-Hash the path, then hash it again & \textcolor{alarm}{Not a freeze}\\[8pt]
-Evaluate and publish the frozen object & \textcolor{acid}{Same digest}\\[8pt]
-Approval reused or applied to other bytes & \textcolor{acid}{Denied}
+Publish from the live path after a swap & \textcolor{alarm}{Wrong artifact}\\[10pt]
+Hash the path, hash it again & \textcolor{alarm}{The path can move}\\[10pt]
+Evaluate and publish the frozen object & \textcolor{acid}{Same digest}\\[10pt]
+Approval for A applied to B & \textcolor{acid}{Denied}
 \end{tabular}\par
 \vspace{3mm}
-\subline{Collect, store, digest, evaluate that object, publish that object.}
+\subline{A valid signature on the wrong bytes is still the wrong bytes.}
 \evidence
-\note{05:00 to 06:30. Honest comparison can still release the wrong file if publication reads the live path. Two hashes of a mutable path are not a freeze. Freeze is collect, store, digest, evaluate that object, publish that object. Stale approval and replay denied. Nonces persist across controller restart.}
+\note{05:15 to 06:45. Honest comparison can still release the wrong file. Two hashes of a mutable path are not a freeze. Collect, store, digest, evaluate that object, publish that object. Authenticity is not identity. Agent factories are about to relearn SLSA with a green check.}
 \end{frame}
 
-\begin{frame}[fragile]{Three other grants. Same pattern.}
+\begin{frame}[fragile]{The process never left}
 \begin{lstlisting}
-identity   broad token reads another project; task token 403
-files      writable bind changes the next job; read-only holds
-release    allowed upload, wrong account; broker fixes both
+identity   we handed it another project's token
+files      the mount did exactly what we configured
+release    the allowed host was never the question
 \end{lstlisting}
-\subline{Independent synthetic checks. Not one exploit chain.}
+\subline{Containment held. The grant did the work of an escape.}
 \evidence
-\note{06:30 to 08:30. Surrounding map from the accepted abstract. Identity, files, data release. Each unwanted action, repair, and legitimate operation. Namespaces held. The grant did the damage. Do not turn this into a four-step attack story.}
+\note{06:45 to 08:15. Three independent checks, not a chain. Broad token, writable bind, allowed upload to the wrong account. Same sentence each time: the sandbox stayed put and a decision we cared about still moved. That is the title.}
 \end{frame}
 
-\begin{frame}{Where judgment lives}
+\begin{frame}{Stop taking testimony from the box}
+\bigline{The candidate is a subject.\\It is not a witness.}
+\vspace{3mm}
+\subline{Freeze the bytes. Compare off the worker. Publish that object.}
+\subline{A green harness is a log line. It is not an approval.}
+\evidence
+\note{08:15 to 11:00. Repair is not a thicker jail. Controller freezes chosen paths. Fresh machine runs frozen bytes as the subject. Controller owns expected results. No accept-VM key that can rewrite the checker. Timeout is no approval, not a defense. Gate names bytes, run, verifier, expected results, policy, nonce. History detects rewrite. History does not authorize.}
+\end{frame}
+
+\begin{frame}{Same job. Different witness.}
 \begin{tabular}{@{}ll@{}}
-\color{acid}Piece & \color{acid}Owner\\[8pt]
-Candidate execution & Fresh accept VM, frozen bytes only\\[8pt]
-Expected results and compare & Controller\\[8pt]
-Harness PASS / reports / URLs & Log only, never approval\\[8pt]
-Timeout or malformed output & No approval\\[8pt]
-Publication & Frozen object after a valid accept
+Good parser, frozen & \textcolor{acid}{Published. 1,,3 rejects.}\\[8pt]
+Buggy parser & \textcolor{acid}{Rejected}\\[8pt]
+Worker PASS file & \textcolor{acid}{Ignored}\\[8pt]
+Worker expected.json & \textcolor{acid}{Ignored}\\[8pt]
+Swap after freeze & \textcolor{acid}{Denied}
 \end{tabular}\par
 \evidence
-\note{08:30 to 11:00. Move every decision input off the worker. Accept VM gets no credential that can rewrite the checker. Incomplete evidence is no approval, not a defense. Gate binds artifact, run, verifier bundle, expected results, policy, environment, decision, nonce. History detects rewrite. History does not authorize.}
+\note{11:00 to 12:15. Walk the five rows. The useful job still completes. We did not have to choose between shipping and having a real verdict. Return to the opening input.}
 \end{frame}
 
-\begin{frame}{The job, with judgment moved}
-\begin{enumerate}
-\item Worker writes a candidate. Controller freezes it.
-\item Accept VM runs those bytes. Controller compares.
-\item Gate accepts the good digest. Swap and replay die.
-\item Worker reports and expected.json do not ship the bug.
-\end{enumerate}
-\vspace{2mm}
-\subline{\texttt{1,,3} returns \texttt{REJECT}. The permitted report goes out.}
-\evidence
-\note{11:00 to 12:20. Good parser published. Buggy parser rejected. PASS file ignored. Worker expected.json ignored. Swap after freeze denied. Return to the opening input: it now rejects. The useful job completes.}
-\end{frame}
-
-\begin{frame}{Four boundaries to check}
+\begin{frame}{If the writer is also the witness}
 \begin{tabular}{@{}ll@{}}
-\color{acid}Question & \color{acid}Must refuse outside the worker\\[8pt]
-Whose identity? & Service grant\\[8pt]
-Which files, including the next job? & Host and snapshot policy\\[8pt]
-Which recipient and contents? & Broker and network policy\\[8pt]
-Who can approve these bytes? & Controller compare and gate
+\color{acid}Ask & \color{acid}If the answer is the box, you lost\\[10pt]
+Whose identity? & You handed it over\\[8pt]
+Which files, including tomorrow's? & Snapshots and forks keep the crime\\[8pt]
+Which recipient, which contents? & The allowed host was the wrong question\\[8pt]
+Who says these bytes are true? & You do not have acceptance. You have a diary.
 \end{tabular}\par
-\vspace{2mm}
-\subline{Then confirm the legitimate operation still works.}
-\note{12:20 to 13:20. Four questions in act order. Include snapshots, templates, expected results, collection path, and harness green checks under files and approval. Name the refusing component. Test the happy path afterward.}
+\note{12:15 to 13:20. Do not start with the kernel. Four questions. If who says these bytes are true is the same disk that wrote them, there is no acceptance. Name a component that can refuse outside the worker. Prove the legitimate job still works.}
 \end{frame}
 
 \begin{frame}[plain]
-\kicker{THE QUESTION TO TAKE HOME}
+\kicker{CONTAINMENT IS NOT ATTESTATION}
 \vspace{5mm}
 \bigline{Who gave this process\\the authority?}
 \vspace{7mm}
 {\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
 \subline{Yossi Eliaz}
-\note{13:20 to 14:00. We built this workflow. The sandbox held. The decision still depended on the worker until judgment moved off its evidence. Ask who gave the process the authority. Stop. Keep one minute of margin. No extra section.}
+\note{13:20 to 14:00. The sandbox contained the process. It did not attest the bytes. Containment is not attestation. Ask who gave this process the authority. Stop. Margin is silence.}
 \end{frame}
 
 \begin{frame}[fragile]{Appendix / Reproduction}
 \begin{lstlisting}
-make factory     # controller freeze, judge, gate
+make factory     # freeze, judge, gate; no cloud
 make demo        # educational Linux isolation lab
 make deck        # evidence check + PDF
-python3 tools/present.py credentials
 \end{lstlisting}
 \subline{\evidencecount.}
-\note{Appendix only. Factory is the reference acceptance path. Lab remains educational isolation demos. Isolated lab needs a suitable Linux host and fails closed. Factory local run needs no cloud. Boat is optional and uses noEnv.}
+\note{Appendix only. Factory is the acceptance path. Lab is the surrounding grants. Isolated lab fails closed. Boat is an optional noEnv accept VM, not the vulnerability.}
 \end{frame}
 
 \begin{frame}{Appendix / Limits}
-Reference factory plus synthetic lab. Deterministic scripts.
+A class identification, not a vendor bug.
 
-Five cases prove five cases, not parser correctness.
+Deterministic scripts. Five cases prove five cases.
 
-No named-product zero-day, customer incident, or model success-rate.
+In-sandbox grading is known. File-integrity of the checker can still pass.
 
-\subline{Timeouts and crashes are no approval, not a successful defense.}
-\note{Appendix only. Not a kernel, cgroup, or covert-channel claim. History anchor is a controller file. Writable-checker and PASS-file variants are deliberate detectors. Prior art covers in-sandbox graders; the miss is trusting worker-controlled inputs after protecting the checker file.}
+\subline{Timeouts are no approval, not a successful defense.}
+\note{Appendix only. Not a kernel, cgroup, model ASR, or customer-incident claim. PASS-file variant is a deliberate detector. Novelty is not process-exit hacking. Novelty is not claimed for pytest plugin loading.}
 \end{frame}
 
 \begin{frame}{Appendix / Primary references}
-\href{https://docs.pytest.org/en/stable/how-to/plugins.html}{pytest plugins}
-\subline{Loading worker-influenced plugins is documented behavior}
 \href{https://www.anthropic.com/research/emergent-misalignment-reward-hacking}{Anthropic reward hacking}
-\subline{Process-exit graders are known; not our novelty claim}
+\subline{Process-exit graders are known}
 \href{https://slsa.dev/spec/v1.2/verifying-artifacts}{SLSA verifying artifacts}
-\subline{Authenticity is not artifact identity}
-\note{Appendix only. Pytest plugin loading is not a pytest vulnerability. The question is whether our factory treats that execution as independent acceptance. SLSA: check the artifact identity, not only that a statement is authentic.}
+\subline{A valid statement can still name the wrong bytes}
+\href{https://docs.pytest.org/en/stable/how-to/plugins.html}{pytest plugins}
+\subline{Loading workspace code is documented. Trusting it as acceptance is ours.}
+\note{Appendix only. Cite prior art out loud only if asked. The talk's sting is collapsing isolation with attestation, not a new plugin loader.}
 \end{frame}
 \end{document}

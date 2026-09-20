@@ -4,26 +4,26 @@ Deliver nine main slides in 14 minutes. Slides 10–12 are appendix. Script: [TA
 
 ## Delivery
 
-PDF on screen. No live terminal. One finding gets the middle of the talk: protected checker, worker-controlled expected results. Three other grants are one slide, not a chain.
+PDF on screen. No live terminal. One idea: containment is not attestation. The sting is a green checker hash and a still-wrong release. Three other grants are one slide, not a chain. Margin is silence.
 
 ## Timing
 
 | Clock | Slide | Beat |
 |---|---|---|
-| 00:00–00:40 | 1 | Question: what made it eligible for release? |
-| 00:40–02:00 | 2 | Factory: freeze, execute, judge, gate |
-| 02:00–05:00 | 3 | Finding: checker hash unchanged, expected.json worker-written |
-| 05:00–06:30 | 4 | Freeze is an operation; swap and replay die |
-| 06:30–08:30 | 5 | Identity, files, release — independent, short |
-| 08:30–11:00 | 6 | Judgment lives on the controller |
-| 11:00–12:20 | 7 | Restricted path: good ships, bug does not |
-| 12:20–13:20 | 8 | Four questions |
-| 13:20–14:00 | 9 | Close, then stop |
+| 00:00–00:45 | 1 | Cold open: namespaces held, still a breach |
+| 00:45–02:15 | 2 | Cage vs belief: isolation is not attestation |
+| 02:15–05:15 | 3 | Checker hash unchanged, expected.json worker-written |
+| 05:15–06:45 | 4 | Verified A, shipped B |
+| 06:45–08:15 | 5 | Process never left: token, mount, allowed host |
+| 08:15–11:00 | 6 | Subject, not witness |
+| 11:00–12:15 | 7 | Same job, different witness |
+| 12:15–13:20 | 8 | If the writer is also the witness |
+| 13:20–14:00 | 9 | Containment is not attestation. Stop. |
 | 14:00–15:00 | — | Margin |
 
 ## Overrun cuts
 
-Shorten slide 5 to the three-line listing. On slide 6 skip the nonce list: “Incomplete evidence is no approval. The gate names the bytes we checked.” Never cut slide 3 or the close.
+Drop the three-grant examples to one sentence. On slide 6 skip nonce fields: “Timeout is no approval. The gate names the bytes we checked.” Never cut slide 3 or the close.
 
 ## Reproduction
 
