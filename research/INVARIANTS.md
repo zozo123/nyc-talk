@@ -1,13 +1,15 @@
-# Invariants and assumptions
+# Invariants and trusted boundary
 
-**Acceptance integrity:** within the reference's fixed five-case policy, a worker report or proposed expected-results file cannot cause the controller to approve a failing candidate.
+**Acceptance integrity:** for the five fixed task cases, worker-authored expectations and reports cannot cause the intended controller to accept a candidate that fails the controller-owned reference criteria.
 
-**Release integrity:** the artifact manifest of the actual released file must match the manifest bound into an authenticated unused approval for the same task, run, verifier bundle, expected results, policy and execution-environment manifest.
+**Release identity:** a publication contains the exact payload whose manifest digest was authorized for the same task, run, verifier source, expected results, policy and declared acceptance environment.
 
-**Useful work:** every restriction has a positive control. The correct candidate must still be released and behave correctly under the stated cases.
+**Single use:** the publication bytes and approval nonce commit in one transaction. Concurrent attempts using the same approval produce at most one publication.
 
-**Evidence completeness:** malformed, timed-out, missing, skipped or source-mismatched evidence does not authorize release. Testing this fail-closed behavior is distinct from claiming an attack was successfully defended.
+**Positive controls:** the correct candidate must publish. A rejected fresh swap must not consume the original valid approval. Replay is tested only after a successful original publication.
 
-The reference assumes one trusted controller, a protected store, and committed deterministic fixture programs. Local Python isolated mode is not an operating-system sandbox. A production implementation needs strong executor/controller isolation, protected keys and storage, transactional nonce consumption, crash recovery and more comprehensive policy coverage.
+**Uncertainty:** missing, malformed or incomplete results produce no approval. An infrastructure failure is inconclusive, not a successful security defense.
 
-A second VM alone does not establish independent criteria. A digest label alone does not establish byte identity. Hash-chain detection requires a trusted anchor outside worker control. Five cases establish those five observations, not complete security.
+The controller process, keys, policy, reference cases, filesystem and database are trusted. Worker code is untrusted. The local executor runs committed deterministic fixtures and provides no OS containment for arbitrary programs. The separate Linux lab exercises actual namespaces and bind mounts. For hostile submissions, place the candidate behind a separately enforced execution boundary and transport only bounded results to the controller.
+
+A second machine is independent only with respect to the state and capabilities actually separated. Shared worker-writable criteria remain a decision dependency. A declared environment digest is not hardware attestation or a complete dependency pin. Finite passing cases do not prove universal application correctness.

@@ -1,0 +1,406 @@
+{
+  "title": "Your Agent Escaped Without Escaping the Sandbox",
+  "slides": [
+    {
+      "layout": "title",
+      "kicker": "Opening",
+      "heading": "Your Agent Escaped Without Escaping the Sandbox",
+      "timing": "00:00-00:30",
+      "notes": "I am Yossi Eliaz. Here is the result I want you to remember: the checker prints PASS, its file hash has not changed, and the candidate still allows the unauthenticated admin request.\n\nWe will walk through four small, reproducible boundary failures. The final one explains how a worker can influence the evidence used to approve its own work. Everything on screen comes from synthetic fixtures in this repository. The examples use deterministic scripts so the mechanism is repeatable.",
+      "cue": "Start with the result. Do not introduce products, architecture history or a CV. Pause after \"its file hash has not changed.\"",
+      "sources": [
+        "factory/core.py: WEAK_CHECKER, WORKER_EXPECTED, CASES",
+        "evidence/factory-results.json",
+        "https://zenity.io/resources/events/ai-agent-security-summit-2026"
+      ]
+    },
+    {
+      "layout": "boundaries",
+      "kicker": "The threat model",
+      "heading": "The sandbox gives a worker useful permissions.",
+      "timing": "00:30-01:20",
+      "notes": "Assume the worker can execute the code we allow inside its sandbox. It can use its injected token, write its mounted output and submit a publish request. In the weakened verifier configuration, it can also write the expected-results file.\n\nThe controller, its keys, its reference cases and its storage are trusted. We are not trying to compromise that controller or exploit the kernel.\n\nThere are four interfaces to inspect: credentials, mounted files, network operations and the inputs to the release decision. Each connects a contained process to something valuable outside its task.\n\nOur Linux lab exercises real namespaces, real bind mounts and a loopback HTTP service. The final admin example is a five-case command-line policy model. Keeping those scopes distinct matters when we interpret the results.",
+      "cue": "Point from the worker to each consequence. State the trusted controller assumption once. The admin example is a CLI policy model.",
+      "sources": [
+        "lab/run.py: Runner, Service, experiments",
+        "factory/core.py: CASES",
+        "research/INVARIANTS.md"
+      ]
+    },
+    {
+      "layout": "pair",
+      "kicker": "01 / Inherited credentials",
+      "heading": "The injected token can read another project.",
+      "timing": "01:20-02:35",
+      "leftLabel": "Runner credential / observed HTTP",
+      "left": "Bearer fixture-runner\n\nGET /projects/other/private\n200\n\nSYNTHETIC-PRIVATE-FIXTURE",
+      "rightLabel": "Task credential / observed HTTP",
+      "right": "Bearer fixture-task\n\nGET /projects/other/private\n403\n\nGET /input/parser-fix   200",
+      "takeaway": "Project scope blocks the read. Expiry limits how long the token works.",
+      "scope": "Recorded Linux lab: credentials.before / after / positive / expired / wrong-audience",
+      "notes": "The job needs an input file. We give the worker the token that the runner already has. The request on the left uses that token to read another project's private fixture. The service returns 200.\n\nThe worker used the credential through its intended interface. The permission was broader than the job.\n\nOn the right we replace it with a task-scoped credential. The other-project read returns 403. The input for the actual task still returns 200. The service also rejects the expired and wrong-audience fixtures.\n\nThat positive control is important. We did not obtain a safe-looking result by disabling the job. For a real deployment, ask the issuer for the task's audience and minimum scope, then bound its lifetime. A short lifetime alone still permits an over-scoped request while the token is valid.",
+      "cue": "Read only the two paths and status codes. Say \"synthetic fixture.\" Finish with the positive control.",
+      "sources": [
+        "lab/run.py: Service, credentials experiments",
+        "evidence/results.json: credentials.*"
+      ]
+    },
+    {
+      "layout": "pair",
+      "kicker": "02 / Dangerous mounts",
+      "heading": "A permitted write changes the next job.",
+      "timing": "02:35-03:40",
+      "leftLabel": "Writable bind / observed",
+      "left": "/shared/next-job.json\n\nwrite_text(...)\nWRITE_SUCCEEDED\n\nHost fixture changed.",
+      "rightLabel": "Read-only bind / observed",
+      "right": "/shared/next-job.json\n\nwrite_text(...)\nWRITE_DENIED\n\n/output/patch.txt still works.",
+      "takeaway": "Mount only the task input and output; omit the next job's state.",
+      "scope": "Recorded Linux lab: mount.before / mount.after / mount.positive",
+      "notes": "The next example uses an ordinary file write. We bind another job's directory into the worker and leave it writable. Writing the file changes the host fixture exactly as the mount configuration permits.\n\nThen we run the same write with a read-only bind. The write is denied and the host fixture is unchanged. The worker can still write its legitimate patch to the output directory.\n\nIn a deployment I would usually remove the next job's directory entirely. The read-only experiment is a controlled comparison, not a reason to expose unnecessary data.\n\nAlso inspect the state you snapshot. A file carried into a later worker can become that worker's input. Our lab demonstrates the shared mount; snapshot propagation is an architectural consequence to check separately, not an extra experiment we claim to have run.",
+      "cue": "One normal write, two mount configurations, one positive control. Snapshot statement is a deployment implication.",
+      "sources": [
+        "lab/run.py: mount experiments",
+        "evidence/results.json: mount.*",
+        "https://github.com/containers/bubblewrap"
+      ]
+    },
+    {
+      "layout": "pair",
+      "kicker": "03 / Allowed endpoint",
+      "heading": "An allowed service can receive the wrong upload.",
+      "timing": "03:40-05:00",
+      "leftLabel": "Worker chooses the upload / HTTP",
+      "left": "POST /accounts/other/uploads\n\n{\"data\": \"SYNTHETIC-...\"}\n\n201\nStored under other account.",
+      "rightLabel": "Broker fixes the envelope",
+      "right": "operation: publish_report\ntask: parser-fix\n\nExtra fields -> DENIED\nDirect route -> UNREACHABLE\nTeam report -> DELIVERED",
+      "codeSize": 18,
+      "takeaway": "The broker owns the destination and payload; isolation removes bypass.",
+      "scope": "Recorded Linux lab: egress.*; the service is loopback-only, not a public SaaS test.",
+      "notes": "The worker needs to publish a report. The allowed service accepts uploads for more than one account. The worker posts our private fixture to the other account's path, and the receiving service records it.\n\nChecking a service name does not answer who selected the account, the operation or the body. Our lab models that service boundary on loopback; it does not claim to test a particular firewall or SaaS product.\n\nThe restricted worker can request one fixed report operation. The controller-side broker rejects extra recipient, payload and URL fields. It constructs the team destination and the report body itself. The worker's separate network namespace cannot reach the host service directly.\n\nThe team report still arrives. For this operation the body has no worker-selected free text. That restriction is why this fixture cannot carry arbitrary bytes through the report. A general-purpose text publishing tool needs a separate information-flow decision. Process isolation and the broker's semantic policy have different jobs here.",
+      "cue": "Read the account path. Distinguish semantic mediation from network isolation. Do not claim a universal exfiltration defense.",
+      "sources": [
+        "lab/run.py: broker, Service.do_POST, egress experiments",
+        "evidence/results.json: egress.*"
+      ]
+    },
+    {
+      "layout": "setup",
+      "kicker": "04 / Verifier tampering / Setup",
+      "heading": "The checker stays unchanged throughout the test.",
+      "timing": "05:00-06:20",
+      "code": "expected = json.loads(Path(\"expected.json\").read_text())\n# Compare candidate output against each expected result.",
+      "scope": "Factory policy model: admin:none is a CLI input, not a deployed HTTP request.",
+      "notes": "Now the interface is the answer to a more consequential question: may this work be accepted?\n\nThe policy says an unauthenticated admin request must return 401. Our small handler represents that request as the command-line input admin colon none. The bad candidate returns 200. We are modeling the authorization decision rather than deploying a web application.\n\nThe checker executes the candidate and compares its outputs against expected.json. We measure the checker's bytes before and after execution. They are identical.\n\nThere is one fact I have not shown yet: the expected-results file comes from the worker's workspace. Before looking at the next slide, decide what the unchanged hash actually tells us about the decision this checker will make.",
+      "cue": "Pause for three seconds at the question. The CLI label stays visible. Do not say the local checker is OS-protected.",
+      "sources": [
+        "factory/core.py: execute_weak_checker, WEAK_CHECKER, CASES",
+        "evidence/factory-results.json: local.weakened_deps"
+      ]
+    },
+    {
+      "layout": "reveal",
+      "kicker": "04 / Verifier tampering / Result",
+      "heading": "The worker changes the expected result.",
+      "timing": "06:20-07:40",
+      "code": "[\n  {\"input\": \"admin:none\",\n   \"output\": 200},\n  ...\n]\n\n# Worker expects 200\n# for every test case.",
+      "scope": "Recorded factory result: unchanged checker PASS; controller-owned criteria reject.",
+      "notes": "The worker writes expectations that allow every request. The bad handler returns 200 for every case. The checker therefore prints PASS.\n\nThe checker has done exactly what its code says. Its own integrity check tells us nothing about whether the worker was allowed to redefine the expected answers.\n\nOur independent comparison still requires 401 for an unauthenticated or expired request and 403 for an ordinary user accessing admin. It rejects the same candidate. The legitimate admin and public cases still pass.\n\nWe also include the simpler worker-written PASS-file configuration as a detector. It confirms that the experiment can recognize a false accept. The dependency case is the useful reveal: changing the trusted input is enough while the checker code remains unchanged.\n\nBoth weak configurations were constructed deliberately. We are reproducing an authority failure, not reporting a vendor zero-day or measuring how often a model discovers it.",
+      "cue": "Reveal PASS, then 200. Let the contradiction sit. Make the deliberate-configuration classification explicit.",
+      "sources": [
+        "factory/core.py: WORKER_EXPECTED, WEAK_CHECKER, judge",
+        "factory/run.py: weakened_deps, weakened_report",
+        "evidence/factory-results.json"
+      ]
+    },
+    {
+      "layout": "multi",
+      "kicker": "The multi-agent consequence",
+      "heading": "More reviewers can inherit the same bad rulebook.",
+      "timing": "07:40-08:40",
+      "scope": "Architectural inference from the shared dependency; no multi-model experiment is claimed.",
+      "notes": "This is where the result connects to multi-agent systems. Imagine a writer, a reviewer and a tester. They have different prompts, different models, or different sampling temperatures. They all load the same worker-writable expected-results file.\n\nEach can reach agreement using the altered criterion. Agreement does not remove the writer's ability to set that criterion.\n\nThe same applies to a second machine that consumes the same contaminated dependency. Moving execution changes the process boundary; the trust dependency still needs inspection.\n\nI would draw a write-authority graph. Starting at every worker-controlled object, follow what reads it and what ultimately influences release. The property we need is that a worker cannot modify the authoritative cases, policy or approval state. This slide is an architectural inference from the demonstrated dependency, not a measured claim about any particular multi-agent framework.",
+      "cue": "Do not introduce annealing, a new framework, or model benchmarks. Point to the shared file.",
+      "sources": [
+        "factory/core.py: WEAK_CHECKER dependency",
+        "research/INVARIANTS.md",
+        "research/DOSSIER.md"
+      ]
+    },
+    {
+      "layout": "pipeline",
+      "kicker": "The enforcement design",
+      "heading": "Approve fixed bytes under controller-owned criteria.",
+      "timing": "08:40-10:15",
+      "code": "artifact + task/run + verifier + expected results + policy\n+ declared acceptance environment + one-use nonce",
+      "scope": "Reference gate: SQLite transaction records exact artifact bytes and consumes the nonce.",
+      "notes": "The corrected path has four steps. First, collect the candidate into controller-owned storage and compute a manifest over the actual bytes. Second, execute those bytes and compare the results against controller-owned cases. Third, bind the decision to the artifact, task, run, verifier, expected results, policy, environment description and a one-use nonce. Finally, publish the exact bytes that were authorized.\n\nIn this repository publication means writing the bytes and consumed nonce in one SQLite transaction. It is a reference gate, not a production deployment service. A real publisher needs the equivalent guarantee at its own release boundary.\n\nThe gate recomputes the payload identity. A cached digest label is insufficient. It also checks the stored bytes before committing publication. The worker never holds the gate key.\n\nWe retain a controller-held history anchor in the isolation lab to detect a rewritten event history. That detects disagreement with the retained record. The acceptance comparison and publication gate are what enforce this release decision. Missing or malformed results produce no approval and must be investigated, rather than celebrated as proof of a successful defense.",
+      "cue": "Point left to right. Say exactly what publication means in the demo. Separate anchored history from enforcement.",
+      "sources": [
+        "factory/core.py: freeze, validate_frozen, judge, Gate",
+        "tests/test_factory.py",
+        "lab/run.py: history.rewrite",
+        "https://slsa.dev/spec/v1.2/verifying-artifacts"
+      ]
+    },
+    {
+      "layout": "matrix",
+      "kicker": "The control experiments",
+      "heading": "A rejected swap preserves the original approval.",
+      "timing": "10:15-11:30",
+      "rows": [
+        [
+          "Correct candidate under fixed criteria",
+          "PUBLISHED"
+        ],
+        [
+          "Original bytes after rejected fresh swap",
+          "PUBLISHED"
+        ],
+        [
+          "Incorrect candidate under fixed criteria",
+          "NOT PUBLISHED"
+        ],
+        [
+          "Different artifact / fresh approval",
+          "DENIED"
+        ],
+        [
+          "Already-consumed approval",
+          "DENIED"
+        ],
+        [
+          "Missing or malformed result",
+          "NO APPROVAL"
+        ]
+      ],
+      "takeaway": "Change one condition at a time. Preserve a working positive control.",
+      "scope": "6 factory checks + 26 regression tests. Counts are assertions/tests, not vulnerabilities.",
+      "notes": "These are the distinctions I want in a convincing demo. The correct candidate publishes. The incorrect candidate fails the fixed criteria. A fresh approval for the correct candidate rejects a different artifact. The original bytes can still publish with that approval. Only after that publication do we test replay.\n\nThe order matters. During this audit, the previous swap test ran after the approval had already been consumed. That result could not tell us whether the digest check or replay check rejected it. We changed the order and added a regression test.\n\nWe also hardened the reference artifact object and checked mutation of the stored bytes. Those are robustness tests at the trusted controller API; they are not evidence that a sandboxed worker can write controller memory.\n\nThe suite exercises eight concurrent publication attempts and expects exactly one recorded publication. A timeout or missing result gets no approval. It remains incomplete evidence, not a demonstrated attack rejection.",
+      "cue": "Explain the ordering flaw clearly. Do not present controller mutation regressions as sandbox exploits.",
+      "sources": [
+        "factory/run.py: intended, run_local",
+        "tests/test_factory.py",
+        "research/AUDIT.md"
+      ]
+    },
+    {
+      "layout": "checklist",
+      "kicker": "Apply this to your own deployment",
+      "heading": "Inspect four concrete decisions outside the worker.",
+      "timing": "11:30-13:00",
+      "rows": [
+        [
+          "Credential",
+          "What else can its token read or change?"
+        ],
+        [
+          "Filesystem",
+          "Whose state is writable or carried forward?"
+        ],
+        [
+          "Outbound action",
+          "Who chooses destination, account and body?"
+        ],
+        [
+          "Release",
+          "Who owns criteria, approval and published bytes?"
+        ]
+      ],
+      "scope": "A deployment review checklist; each control still requires validation in your environment.",
+      "notes": "For your own deployment, start with one real task and record four answers.\n\nWhich identity does the worker receive, and which resources will accept it? Look at scope, audience and lifetime together.\n\nWhich state can it write? Include shared workspaces, snapshots, caches and files that another worker later treats as instructions or truth.\n\nFor each outbound action, who selects the destination and content? Check whether the worker can bypass the component that is supposed to make that decision.\n\nFinally, who owns the acceptance criteria and the release capability? Trace configuration, imports, expected outputs and other dependencies, not just the top-level checker file. Verify that the bytes released are the ones evaluated.\n\nFor each control, run the unwanted action and then the legitimate task. Keep both observations. That is how we distinguish an enforcing boundary from a broken workflow that happens to return an error.",
+      "cue": "Slow down. These are the four takeaways from the accepted abstract. Keep the positive-control sentence.",
+      "sources": [
+        "lab/run.py: positive controls",
+        "factory/core.py: Gate",
+        "research/DOSSIER.md"
+      ]
+    },
+    {
+      "layout": "close",
+      "kicker": "The question to take home",
+      "heading": "The release decision needs its own boundary.",
+      "timing": "13:00-14:00",
+      "scope": "Source, evidence, exact commands and limitations: github.com/zozo123/nyc-talk",
+      "notes": "We have seen a token read another project, a mounted file change another job, an allowed service receive the wrong upload, and an unchanged checker accept worker-edited expectations.\n\nEach result follows an interface the system provided. The release case is especially important because the worker's output can become the evidence used to authorize the next action.\n\nThe repository contains the fixtures, recorded observations, corrected gate and limitations. You can reproduce the cases without a model account or a cloud key.\n\nWhen you review an agent system, ask: what can this worker make the rest of your system believe?\n\nThen keep the release decision outside its write authority. Thank you.",
+      "cue": "End here. Do not advance into the appendix. Leave the question and repository visible.",
+      "sources": [
+        "evidence/results.json",
+        "evidence/factory-results.json",
+        "research/DOSSIER.md"
+      ]
+    },
+    {
+      "layout": "appendix",
+      "kicker": "Appendix A / Exact scope",
+      "heading": "The experiments prove bounded properties.",
+      "blocks": [
+        [
+          "Isolation lab",
+          "Real Linux user/PID/mount/network namespaces and bind mounts; synthetic HTTP on host loopback."
+        ],
+        [
+          "Admin factory",
+          "Five CLI policy cases; local committed fixtures. Python -I is not an OS security boundary."
+        ],
+        [
+          "Trusted base",
+          "Controller code, reference cases, keys, store and OS. No worker reachability into controller memory is claimed."
+        ],
+        [
+          "Out of scope",
+          "Model attack rate, kernel/cgroup/seccomp coverage, side channels, arbitrary uploads, production deployment and universal correctness."
+        ]
+      ],
+      "notes": "Use for scope questions. Isolation cases and local factory logic are separate experiments. Boat is optional and not re-run in this revision. The local executor is for committed deterministic fixtures only.",
+      "sources": [
+        "lab/run.py: limitations",
+        "factory/core.py: execute_frozen",
+        "research/DOSSIER.md"
+      ]
+    },
+    {
+      "layout": "appendix",
+      "kicker": "Appendix B / Evidence ledger",
+      "heading": "Separate observations, inferences and open work.",
+      "blocks": [
+        [
+          "Observed",
+          "29 isolated-lab assertions; six local factory checks; 26 gate/criteria regression tests. Weak cases deliberately create false accepts."
+        ],
+        [
+          "Inferred",
+          "Shared expectations can contaminate several reviewers. Snapshot state can propagate. No multi-model or snapshot benchmark is presented."
+        ],
+        [
+          "Audit fixes",
+          "Fresh-swap test ordering; byte revalidation; stored-object checks; atomic nonce plus payload publication; measured checker hashes."
+        ],
+        [
+          "Still required",
+          "Production publisher integration, an isolated hostile-candidate executor, dependency-complete environment attestation and broader policy coverage."
+        ]
+      ],
+      "notes": "Counts refer to tests and assertions, not discovered vulnerabilities. Audit findings are in our reference implementation. Claims of novelty and cross-product exploitation are deliberately excluded.",
+      "sources": [
+        "research/AUDIT.md",
+        "research/RESULTS.md",
+        "tests/test_factory.py"
+      ]
+    },
+    {
+      "layout": "appendix",
+      "kicker": "Appendix C / Approval binding",
+      "heading": "The approval binds the evaluated context.",
+      "blocks": [
+        [
+          "Subject",
+          "artifact_manifest_digest; task_id; run_id; schema_version"
+        ],
+        [
+          "Decision inputs",
+          "verifier_bundle_digest; expected_results_digest; policy_digest"
+        ],
+        [
+          "Execution context",
+          "acceptance_environment_manifest_digest; decision; nonce; controller MAC"
+        ],
+        [
+          "Caveat",
+          "A declared environment hash is not remote attestation. This reference bundle does not pin every interpreter or OS dependency."
+        ]
+      ],
+      "notes": "The gate key lives with the trusted controller. SHA-256 gives identity; the MAC authenticates the approval to that gate. Do not call the MAC a public signature or the metadata a complete reproducibility proof.",
+      "sources": [
+        "factory/core.py: Gate.issue, Gate.authorize",
+        "https://slsa.dev/spec/v1.2/verifying-artifacts"
+      ]
+    },
+    {
+      "layout": "appendix",
+      "kicker": "Appendix D / Cold reproduction",
+      "heading": "Reproduce each layer without a cloud account.",
+      "blocks": [
+        [
+          "Factory + tests",
+          "make factory\nmake test"
+        ],
+        [
+          "Real isolation",
+          "make demo   # disposable Linux + bubblewrap\nmake verify # require recorded sources and expected checks"
+        ],
+        [
+          "Deck",
+          "npm install --ignore-scripts\nmake snapshot  # editable PPTX + Beamer PDF"
+        ],
+        [
+          "Stage backup",
+          "python3 tools/replay.py verifier\nRecorded evidence is labeled; it is not a live attack."
+        ]
+      ],
+      "notes": "Use the exact commit in the CI artifact COMMIT.txt and the artifact SHA256SUMS. A denied namespace launch is infrastructure failure, not successful isolation evidence. The PDF and offline replay do not need a network connection.",
+      "sources": [
+        "Makefile",
+        "RUNBOOK.md",
+        ".github/workflows/verify.yml",
+        "tools/replay.py"
+      ]
+    },
+    {
+      "layout": "sources",
+      "kicker": "Appendix E / Prior work",
+      "heading": "The contribution is a reproducible boundary audit.",
+      "blocks": [
+        [
+          "Bubblewrap: guarantees depend on the selected policy",
+          "https://github.com/containers/bubblewrap"
+        ],
+        [
+          "SLSA: verify artifact identity and provenance expectations",
+          "https://slsa.dev/spec/v1.2/verifying-artifacts"
+        ],
+        [
+          "Anthropic: reward hacking in programming-task training",
+          "https://www.anthropic.com/research/emergent-misalignment-reward-hacking"
+        ],
+        [
+          "This repository: implementation, evidence and claim limits",
+          "https://github.com/zozo123/nyc-talk"
+        ]
+      ],
+      "notes": "Credit the established ideas: least authority, trusted verification and subject-bound provenance. Anthropic is prior empirical work on reward hacking, not a source of attack-success rates for this lab. This presentation does not claim invention of these principles or discovery of a product zero-day.",
+      "sources": [
+        "https://github.com/containers/bubblewrap",
+        "https://slsa.dev/spec/v1.2/verifying-artifacts",
+        "https://www.anthropic.com/research/emergent-misalignment-reward-hacking"
+      ]
+    },
+    {
+      "layout": "appendix",
+      "kicker": "Appendix F / Fast Q&A",
+      "heading": "Answers to the questions this demo should invite.",
+      "blocks": [
+        [
+          "Why no live LLM?",
+          "The deterministic fixture isolates an authority failure. Model discovery, frequency and transfer would require a separate evaluation."
+        ],
+        [
+          "Why not another VM?",
+          "The verifier must also stop trusting worker-controlled criteria. Execution separation and decision independence are distinct requirements."
+        ],
+        [
+          "Does the chain stop it?",
+          "A separately retained head exposes history disagreement. The judge and publication gate enforce acceptance."
+        ],
+        [
+          "What is new here?",
+          "A repeatable four-boundary audit and concrete corrections to our own reference gate. No vendor incident or new cryptographic primitive is claimed."
+        ]
+      ],
+      "notes": "Give the narrow answer first. The method is useful even when the underlying principle is familiar. Never turn unavailable evidence into a claim of universal security.",
+      "sources": [
+        "research/DOSSIER.md",
+        "QUESTIONS.md"
+      ]
+    }
+  ]
+}

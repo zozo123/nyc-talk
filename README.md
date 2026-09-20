@@ -1,53 +1,61 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
-**Yossi Eliaz**  
-Principal Engineer and Head of DevRel / Incredibuild  
-**AI Agent Security Summit, New York / 21 October 2026 / 15 minutes**
+**Yossi Eliaz, PhD | Incredibuild**  
+**AI Agent Security Summit | New York | October 21, 2026**
 
-> The checker passed. An unauthenticated HTTP request to `/admin` still returned `200`.
-> The checker bytes had not changed. The worker changed the expected-results file it loaded.
+**12 main slides, six appendix slides, 15-minute slot.** The 1,614-word manuscript targets 14 minutes including pauses. That is a delivery plan, not a measured rehearsal.
 
-**11 main slides + 5 Q&A appendices.** A 1,651-word spoken script targets 14 minutes including pauses, with one minute of margin. Timings are rehearsal targets, not an already measured performance.
+[Stage PDF](slides/talk.pdf) | [Editable PowerPoint](slides/talk.pptx) | [Beamer source](slides/talk.tex) | [Manuscript](TALK.md) | [Stage cues](SPEAKER_NOTES.md) | [Runbook](RUNBOOK.md) | [Offline replay](demo/replay.html)
 
-[Stage PDF](slides/talk.pdf) | [Editable PowerPoint](slides/talk.pptx) | [Beamer source](slides/talk.tex) | [Spoken script](TALK.md) | [Speaker notes and sources](SPEAKER_NOTES.md) | [Runbook](RUNBOOK.md) | [Skeptical Q&A](QUESTIONS.md) | [Research dossier](research/DOSSIER.md)
+## The reveal
 
-## What the talk demonstrates
+The checker prints **PASS**. Its file hash is unchanged. The candidate still produces **200** for `admin:none`, where the controller's policy requires **401**. The worker changed `expected.json`, which the unchanged checker trusted.
 
-| Interface | Unwanted observation | Restriction and positive control |
-|---|---|---|
-| Inherited credential | Fixture runner token reads another project: `200` | Task-scoped token: `403` there, `200` on its own input |
-| Writable mount | Ordinary write changes a host-side next-job file | Read-only bind denies it; legitimate patch output still works |
-| Allowed endpoint | Same service accepts the private canary for another account | Direct route removed; narrow broker owns recipient/body; team report still arrives |
-| Verifier dependency | Same checker and handler change from `FAIL` to `PASS` after worker expectations change | Controller-owned five-case policy rejects the open handler and releases the correct file |
+The talk follows the four cases in the accepted abstract: inherited credentials, dangerous mounts, an allowed endpoint, and verifier tampering. Every case includes an unwanted result, a restricted configuration and a positive control that still completes legitimate work.
 
-The final sequence follows actual bytes: freeze, compare under controller-owned criteria, authenticate approval, rehash the stored object, release that file, and request it over HTTP. An **unused** approval rejects a swapped artifact and then accepts the correct artifact; replay is tested separately.
+The multi-agent consequence is a dependency argument: several reviewers can share the same worker-writable criteria. It is explicitly labeled an architectural inference, not a multi-model experiment.
 
-## Reproduce
+## Run it
 
 ```sh
-make verify       # 25 unit tests, 6 factory assertions, 11 HTTP assertions, evidence check
-make demo         # 29 isolated Linux assertions; requires bubblewrap
-make deck         # validate source-bound records; compile Beamer PDF
-npm install --ignore-scripts
-make pptx         # native editable presentation, same content and notes
+make factory        # six local reference-factory checks; committed fixtures only
+make test           # 26 regression tests, including fresh swap and concurrent publish
+make demo           # 29 real Linux namespace/mount/HTTP assertions; needs bubblewrap
+make verify         # tests + exact source/evidence inventories, no skipped isolation record
+npm install --ignore-scripts  # pinned PptxGenJS; use npm ci once lockfile is present
+make snapshot       # editable PPTX, Beamer PDF, script, cues, offline evidence replay
+python3 tools/replay.py verifier
 ```
 
-Python 3.10+ standard library. `make verify` uses only committed deterministic fixtures and loopback HTTP. It requires permission to bind a local port. It does **not** require cloud credentials or a model API. `make demo` needs disposable Linux with user namespaces and bubblewrap. See [RUNBOOK.md](RUNBOOK.md) for packages, commands, recording, and stage fallback.
+Python 3.10+ standard library. Real isolation needs disposable Linux with bubblewrap. The deck needs Node and TeX Live with Beamer, TikZ and Latin Modern. The stage PDF and replay require no network connection, model account or cloud key.
 
-`slides/content.json` is the shared content source. `tools/build_deck.py` generates Beamer, `TALK.md` and `SPEAKER_NOTES.md`; `tools/build_deck.js` generates editable PowerPoint. The workflow reruns experiments and generates release artifacts. After successful verification on `main`, a separate narrowly permitted job commits the generated stage files, notes, dependency lockfile and fresh evidence; experiment sources are not rewritten by that job.
+`slides/deck.json` owns the narrative, code excerpts, sources, cues and script. `tools/build_deck.js` generates both editable PowerPoint and Beamer from the same layout. CI reruns the experiments and tests before rendering. On the finalization branch, a separate trusted job commits the generated snapshots only after verification succeeds; source races fail rather than force-push.
 
-## Evidence and limits
+## What is actually established
 
-The [stage-16 decision](research/DOSSIER.md#16-decision-finalize-a-methodology-talk) approves an evidence-backed methodology talk, not a vendor zero-day claim. There are 29 Linux assertions, six local-factory assertions, eleven HTTP assertions and 25 regression tests. These are **not vulnerability counts** or a model attack-success rate.
+| Evidence | Interpretation |
+|---|---|
+| 29 isolated-lab assertions | Real namespace, mount and loopback HTTP behavior on synthetic fixtures |
+| Six factory checks | Deliberate false accepts; controller-owned criteria; exact-byte publication; fresh swap; replay |
+| 26 regression tests | Protocol/API robustness, stored-object validation, malformed evidence and concurrent nonce consumption |
+| Shared-criteria multi-agent diagram | Architectural inference from the demonstrated dependency |
 
-The Linux lab and the local acceptance fixture are separate demonstrations. Python isolated mode is not an operating-system sandbox; never feed arbitrary hostile source to `factory/`. The HTTP wrapper uses synthetic authorization credentials, not a production identity provider. Five cases do not establish complete application security. The reference assumes one trusted controller; atomic concurrent publication, crash consistency, durable keys and strong executor isolation remain deployment requirements.
+These are **assertions and tests, not vulnerability counts**. The admin example is a five-case CLI policy model, not a deployed HTTP application. Its local executor runs committed fixtures and is not an OS sandbox. Publication records exact bytes in a SQLite transaction; it does not deploy production software.
 
-This review also found and fixed a defect in **our own** baseline reference API: mutable payload bytes could retain an old digest label, and publication logged a digest without releasing a file. The prerequisite was access to a controller-side object; no remote-worker exploit path was established. The [dossier](research/DOSSIER.md#11-a-defect-found-in-our-own-reference-api) and regression tests preserve that distinction.
+[Research dossier](research/DOSSIER.md) | [Pinned baseline](research/BASELINE.md) | [Invariants](research/INVARIANTS.md) | [Results](research/RESULTS.md) | [Audit corrections](research/AUDIT.md) | [Q&A](QUESTIONS.md)
 
-Active results are in `evidence/`; earlier factory/Boat observations are clearly archived under `evidence/archive/`. The optional cloud adapter is not part of the final fresh evidence. Source hashes detect stale source/record combinations; they do not authenticate a record's author. Keep the workflow's commit ID, source archive and evidence together.
+## Corrections earned by the audit
 
-## Speaker framing
+The prior swap test ran after approval consumption. The corrected experiment attempts a swap with an **unconsumed approval**, then verifies the original can still publish, then tests replay. The gate now revalidates payload and stored-object digests and commits publication bytes and nonce consumption together. Tests of controller-object mutation are robustness tests, not a claim that a sandboxed worker can modify trusted controller memory.
 
-The accepted title and four interfaces are preserved. The final delivery describes synthetic policy violations, actual namespace/mount observations and real loopback HTTP. It makes no cgroup or kernel-escape-resistance claim. History detects a rewrite against a trusted anchor; the gate separately enforces release.
+The checker hash is measured before and after execution. The slide describes it as **unchanged**, not as an OS-enforced read-only boundary in the local factory. The isolated lab is a separate experiment. Missing results, timeouts and infrastructure failure give no approval; they are not counted as successful security defenses.
 
-[Event page](https://zenity.io/resources/events/ai-agent-security-summit-2026)
+## Limits and prior work
+
+This is a reproducible security-engineering talk, not a vendor zero-day or a customer incident. No model attack-success rate, universal correctness, cgroup/seccomp validation, kernel-escape resistance, general-purpose exfiltration prevention or complete environment attestation is claimed. Source hashes identify bytes; they do not authenticate execution. Fresh CI artifacts supply the run record.
+
+Related primary sources are in the appendix and presenter notes: [Bubblewrap](https://github.com/containers/bubblewrap), [SLSA verification](https://slsa.dev/spec/v1.2/verifying-artifacts), and [Anthropic's programming-task reward-hacking research](https://www.anthropic.com/research/emergent-misalignment-reward-hacking).
+
+Optional `make factory-boat` uses a credentialed accept VM. **Boat was not rerun for this revision** and is not required for the talk.
+
+[Organizer's 2026 event series](https://zenity.io/resources/events/ai-agent-security-summit-2026)

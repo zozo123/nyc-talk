@@ -9,8 +9,8 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
-import os
 import secrets
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -26,7 +26,7 @@ SUBJECT = "handler.py"
 MAX_FILE = 64_000
 ALLOWED = {SUBJECT}
 
-# Synthetic HTTP front door. argv is "route:auth". Prints a status code.
+# CLI authorization-policy model. argv is "route:auth". Prints a status code.
 GOOD = """import json, sys
 route, auth = sys.argv[1].split(":", 1)
 if route == "public":
@@ -41,7 +41,7 @@ elif route == "admin":
 else:
     print(json.dumps(404))
 """
-# Always 200: unauthenticated /admin is open. This is the shipped bug.
+# Deliberately faulty policy: every fixture request returns 200.
 BAD = """import json, sys
 sys.argv[1].split(":", 1)
 print(json.dumps(200))
@@ -85,9 +85,8 @@ def expected_digest(cases=CASES) -> str:
 
 
 def verifier_bundle_digest(launch: dict) -> str:
-    sources = {p.name: digest(p.read_bytes())
-               for p in sorted(Path(__file__).parent.glob("*.py"))}
-    return digest(canonical({"sources": sources, "launch": launch}))
+    source = Path(__file__).read_bytes()
+    return digest(canonical({"source": digest(source), "launch": launch}))
 
 
 @dataclass(frozen=True)
@@ -99,8 +98,8 @@ class Frozen:
 
 def freeze(files: dict[str, bytes]) -> Frozen:
     """Collect, bound, store as an immutable object, then hash the manifest."""
-    if set(files) != ALLOWED:
-        raise ValueError("artifact must contain exactly handler.py")
+    if not files:
+        raise ValueError("empty artifact")
     entries = []
     stored = {}
     for name in sorted(files):
@@ -109,8 +108,8 @@ def freeze(files: dict[str, bytes]) -> Frozen:
         if "/" in name or name.startswith(".") or ".." in name:
             raise ValueError(f"illegal path: {name}")
         data = files[name]
-        if not isinstance(data, bytes):
-            raise ValueError("artifact content must be immutable bytes")
+        if type(data) is not bytes:
+            raise ValueError("artifact values must be immutable bytes")
         if len(data) > MAX_FILE:
             raise ValueError(f"file too large: {name}")
         stored[name] = data
@@ -125,63 +124,45 @@ def freeze(files: dict[str, bytes]) -> Frozen:
     return Frozen(digest=digest(canonical(manifest)), manifest=manifest, files=MappingProxyType(stored))
 
 
-def validate_frozen(frozen: Frozen) -> bool:
-    """A digest label is not evidence about the bytes currently attached to it."""
+def validate_frozen(artifact: Frozen) -> bool:
+    """Recompute both payload and manifest. Never trust a cached digest label."""
     try:
-        rebuilt = freeze(dict(frozen.files))
-        return (rebuilt.digest == frozen.digest
-                and canonical(rebuilt.manifest) == canonical(frozen.manifest))
-    except (AttributeError, KeyError, TypeError, ValueError):
+        actual = freeze(dict(artifact.files))
+        return (actual.digest == artifact.digest
+                and canonical(actual.manifest) == canonical(artifact.manifest))
+    except (ValueError, TypeError, AttributeError, KeyError):
         return False
 
 
-def load_frozen(store: Path, artifact_digest: str) -> Frozen:
-    """Read and rehash the controller-owned object; reject corruption or symlinks."""
-    if (len(artifact_digest) != 64
-            or any(c not in "0123456789abcdef" for c in artifact_digest)):
-        raise ValueError("invalid object digest")
-    root = store / artifact_digest
-    paths = [root, root / "manifest.json", root / "files", root / "files" / SUBJECT]
-    if any(path.is_symlink() for path in paths):
-        raise ValueError("object contains a symlink")
-    if set(p.name for p in (root / "files").iterdir()) != ALLOWED:
-        raise ValueError("object file set changed")
-    source = root / "files" / SUBJECT
-    if source.stat().st_size > MAX_FILE:
-        raise ValueError("stored object is too large")
-    frozen = freeze({SUBJECT: source.read_bytes()})
-    if (frozen.digest != artifact_digest
-            or canonical(frozen.manifest) != (root / "manifest.json").read_bytes()):
-        raise ValueError("stored object digest mismatch")
-    return frozen
-
-
 def persist(frozen: Frozen, store: Path) -> Path:
-    """The store belongs to the controller, never a producer-writable mount."""
+    """Controller-owned teaching CAS. Existing objects must match exactly."""
     if not validate_frozen(frozen):
-        raise ValueError("invalid frozen object")
-    store.mkdir(parents=True, exist_ok=True)
+        raise ValueError("artifact does not match its digest")
     dest = store / frozen.digest
-    if dest.exists() or dest.is_symlink():
-        load_frozen(store, frozen.digest)
-        return dest
-    # A single controller owns this reference store. There is no claim of a
-    # concurrent, crash-consistent production publication protocol here.
-    dest.mkdir(mode=0o700)
-    (dest / "manifest.json").write_bytes(canonical(frozen.manifest))
-    files = dest / "files"
-    files.mkdir(mode=0o700)
-    for name, data in frozen.files.items():
-        (files / name).write_bytes(data)
-    load_frozen(store, frozen.digest)
+    if dest.is_symlink():
+        raise ValueError("symlink in controller store")
+    dest.mkdir(parents=True, exist_ok=True)
+    payloads = {"manifest.json": canonical(frozen.manifest)}
+    payloads.update({"files/" + name: data for name, data in frozen.files.items()})
+    for relative, data in payloads.items():
+        path = dest / relative
+        if path.parent.is_symlink() or path.is_symlink():
+            raise ValueError("symlink in controller store")
+        path.parent.mkdir(exist_ok=True)
+        try:
+            with path.open("xb") as handle:
+                handle.write(data)
+        except FileExistsError:
+            if path.read_bytes() != data:
+                raise ValueError("stored object was changed")
     return dest
 
 
 def execute_frozen(candidate: bytes, timeout: float = 5.0) -> list[dict]:
-    """Execute committed fixtures locally. Python -I is NOT an OS sandbox.
+    """Run committed fixtures locally; this function is NOT an OS sandbox.
 
-    Do not pass arbitrary hostile code here. The isolated Linux lab supplies
-    kernel boundaries separately. Timeout/malformed output yields no approval.
+    A disposable isolated executor is required for arbitrary submissions.
+    Timeout/malformed output cannot yield an approval.
     """
     outputs = []
     with tempfile.TemporaryDirectory(prefix="factory-accept-") as tmp:
@@ -209,7 +190,7 @@ def execute_frozen(candidate: bytes, timeout: float = 5.0) -> list[dict]:
 
 
 def execute_weak_checker(candidate: bytes, expected_doc) -> dict:
-    """Measure the checker bytes before and after using worker-owned criteria."""
+    """Unchanged checker file, worker-controlled expected.json in the same cwd."""
     with tempfile.TemporaryDirectory(prefix="factory-weak-") as tmp:
         root = Path(tmp)
         (root / SUBJECT).write_bytes(candidate)
@@ -224,8 +205,8 @@ def execute_weak_checker(candidate: bytes, expected_doc) -> dict:
         return {
             "exit": proc.returncode,
             "stdout": proc.stdout.strip(),
-            "checker_sha256_before": checker_before,
-            "checker_sha256": digest((root / "checker.py").read_bytes()),
+            "checker_sha256": checker_before,
+            "checker_after_sha256": digest((root / "checker.py").read_bytes()),
             "expected_sha256": digest(canonical(expected_doc)),
         }
 
@@ -234,11 +215,9 @@ def judge(outputs: list[dict]) -> dict:
     """Controller-owned comparison. Incomplete evidence yields no approval."""
     if len(outputs) != len(CASES):
         return {"kind": "no_approval", "reason": "incomplete"}
-    if any(not isinstance(item, dict) or item.get("status") != "ok" for item in outputs):
+    if any(not isinstance(item, dict) or item.get("status") != "ok"
+           or type(item.get("value")) is not int for item in outputs):
         return {"kind": "no_approval", "reason": "timeout_or_malformed"}
-    if any(set(item) != {"status", "value"} or type(item["value"]) is not int
-           for item in outputs):
-        return {"kind": "no_approval", "reason": "malformed_value"}
     matches = [item["value"] == expected for item, (_, expected) in zip(outputs, CASES)]
     return {
         "kind": "verdict",
@@ -253,22 +232,13 @@ class Gate:
         self.run = secrets.token_hex(16)
         self.store = store
         self.store.mkdir(parents=True, exist_ok=True)
-        self.used_path = store / "used-nonces.json"
-        self.pub_path = store / "publication.jsonl"
-        if not self.used_path.exists():
-            self.used_path.write_text("[]\n")
-
-    def _used(self) -> set[str]:
-        return set(json.loads(self.used_path.read_text()))
-
-    def _remember(self, nonce: str) -> None:
-        used = self._used()
-        used.add(nonce)
-        self.used_path.write_text(json.dumps(sorted(used)) + "\n")
+        self.db_path = store / "publications.sqlite3"
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute("CREATE TABLE IF NOT EXISTS publications ("
+                         "nonce TEXT PRIMARY KEY, run TEXT NOT NULL, "
+                         "artifact TEXT NOT NULL, payload BLOB NOT NULL)")
 
     def issue(self, *, artifact: Frozen, accepted: bool, launch: dict, env_manifest: dict) -> dict:
-        if not validate_frozen(artifact) or type(accepted) is not bool:
-            raise ValueError("invalid controller decision or artifact")
         value = {
             "schema_version": SCHEMA,
             "task_id": TASK,
@@ -284,58 +254,50 @@ class Gate:
         return {"value": value, "mac": hmac.new(self.key, canonical(value), "sha256").hexdigest()}
 
     def authorize(self, approval: dict, artifact: Frozen, launch: dict, env_manifest: dict) -> bool:
-        """Validate an unconsumed approval. Only publish consumes the nonce."""
-        if not validate_frozen(artifact):
-            return False
+        """Validate without consuming. publish() commits consumption and bytes together."""
         try:
+            if not validate_frozen(artifact):
+                return False
             value = approval["value"]
             expected_mac = hmac.new(self.key, canonical(value), "sha256").hexdigest()
-            return bool(
-                hmac.compare_digest(expected_mac, approval["mac"])
-                and value["schema_version"] == SCHEMA
-                and value["task_id"] == TASK
-                and value["run_id"] == self.run
-                and value["artifact_manifest_digest"] == artifact.digest
-                and value["verifier_bundle_digest"] == verifier_bundle_digest(launch)
-                and value["expected_results_digest"] == expected_digest()
-                and value["policy_digest"] == policy_digest()
-                and value["acceptance_environment_manifest_digest"] == digest(canonical(env_manifest))
-                and value["decision"] == "accept"
-                and value["nonce"] not in self._used()
-            )
-        except (KeyError, TypeError, ValueError):
+            expected_fields = {
+                "schema_version": SCHEMA, "task_id": TASK, "run_id": self.run,
+                "artifact_manifest_digest": artifact.digest,
+                "verifier_bundle_digest": verifier_bundle_digest(launch),
+                "expected_results_digest": expected_digest(),
+                "policy_digest": policy_digest(),
+                "acceptance_environment_manifest_digest": digest(canonical(env_manifest)),
+                "decision": "accept",
+            }
+            return (set(value) == set(expected_fields) | {"nonce"}
+                    and isinstance(value["nonce"], str) and len(value["nonce"]) == 16
+                    and hmac.compare_digest(expected_mac, approval["mac"])
+                    and all(value[k] == v for k, v in expected_fields.items()))
+        except (TypeError, KeyError, ValueError, AttributeError):
             return False
 
     def publish(self, approval: dict, artifact: Frozen, launch: dict, env_manifest: dict) -> str:
-        """Release rehashed stored bytes, not a caller's label or live workspace.
-
-        Single-controller educational protocol. Keys are ephemeral; restarting
-        fails closed. A production service also needs atomic consumption,
-        crash recovery, access control and a strongly isolated executor.
-        """
         if not self.authorize(approval, artifact, launch, env_manifest):
             return "DENIED"
+        # Read the controller's copy, rehash those exact bytes, publish those bytes.
+        # The controller store and Python process are trusted in this reference model.
         try:
-            stored = load_frozen(self.store, artifact.digest)
-        except (OSError, ValueError):
+            root = self.store / artifact.digest
+            paths = [root, root / "files", root / "manifest.json", root / "files" / SUBJECT]
+            if any(path.is_symlink() for path in paths):
+                return "DENIED"
+            payload = (root / "files" / SUBJECT).read_bytes()
+            stored = freeze({SUBJECT: payload})
+            if (stored.digest != artifact.digest
+                    or (root / "manifest.json").read_bytes() != canonical(stored.manifest)):
+                return "DENIED"
+            # One transaction binds exact publication bytes to single-use approval.
+            # A competing call can only lose the UNIQUE nonce insert.
+            with sqlite3.connect(self.db_path, timeout=5) as conn:
+                conn.execute("INSERT INTO publications VALUES (?, ?, ?, ?)",
+                             (approval["value"]["nonce"], self.run, stored.digest, payload))
+        except (OSError, ValueError, sqlite3.Error):
             return "DENIED"
-        nonce = approval["value"]["nonce"]
-        release = self.store / "releases" / (self.run + "-" + nonce)
-        release.mkdir(parents=True, exist_ok=False)
-        (release / SUBJECT).write_bytes(stored.files[SUBJECT])
-        # The actual released file, not merely an entry in a publication log.
-        released = freeze({SUBJECT: (release / SUBJECT).read_bytes()})
-        if released.digest != artifact.digest:
-            return "DENIED"
-        self._remember(nonce)
-        record = {
-            "artifact": released.digest,
-            "run": self.run,
-            "nonce": nonce,
-            "released_file": str(release / SUBJECT),
-        }
-        with self.pub_path.open("a") as handle:
-            handle.write(json.dumps(record) + "\n")
         return "PUBLISHED"
 
     def replay_or_swap(self, approval: dict, artifact: Frozen, launch: dict, env_manifest: dict) -> str:

@@ -1,72 +1,73 @@
-name: Verify and build the final talk
+name: Verify and package the October 21 talk
 on:
   push:
-    paths-ignore:
-      - 'slides/talk.pdf'
-      - 'slides/talk.pptx'
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
+defaults:
+  run:
+    shell: bash
 jobs:
   verify:
-    if: "!contains(github.event.head_commit.message, '[generated-talk]')"
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Capture the exact source commit
-        run: |
-          mkdir -p build/source
-          git archive --format=tar HEAD > build/source/source.tar
-          git rev-parse HEAD > build/source/COMMIT.txt
-          sha256sum build/source/source.tar > build/source/SHA256SUMS
-      - name: Install isolated Linux runtime and Beamer
-        run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install the pinned PowerPoint generator
+      - name: Capture the exact source commit
         run: |
-          if test -f package-lock.json; then
-            npm ci --ignore-scripts --no-audit --no-fund
-          else
-            npm install --ignore-scripts --no-audit --no-fund
-          fi
-      - name: Run regression tests
-        shell: bash
+          mkdir -p build/release
+          git archive --format=tar HEAD > build/release/source.tar
+          git rev-parse HEAD > build/release/COMMIT.txt
+      - name: Install the isolated lab and presentation runtime
         run: |
-          set -o pipefail
-          python3 -m unittest discover -s tests -v 2>&1 | tee evidence/regression-transcript.txt
-      - name: Reproduce actual Linux namespace and mount observations
-        run: make record
-      - name: Reproduce reference protocol and real HTTP observations
-        run: make record-factory record-http
-      - name: Validate evidence and build both presentation formats
-        run: make snapshot
-      - name: Package source, fresh records, notes and stage files
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
+          if test -f package-lock.json; then npm ci --ignore-scripts; else npm install --ignore-scripts; fi
+      - name: Record real namespace and mount experiments
+        run: make record 2>&1 | tee build/lab.log
+      - name: Record the corrected factory cases
+        run: make record-factory 2>&1 | tee build/factory.log
+      - name: Run regression tests and verify evidence provenance
+        run: make verify 2>&1 | tee build/verify.log
+      - name: Build the PDF, editable PPTX and offline replay
+        run: make snapshot 2>&1 | tee build/deck.log
+      - name: Package verified outputs
         run: |
-          python3 tools/package.py
-          mkdir -p build/updates
-          cp --parents slides/talk.pdf slides/talk.pptx slides/talk.tex slides/evidence.tex slides/snippets/*.txt TALK.md SPEAKER_NOTES.md package-lock.json evidence/results.json evidence/transcript.txt evidence/factory-results.json evidence/factory-transcript.txt evidence/http-results.json evidence/http-transcript.txt evidence/regression-transcript.txt build/updates/
+          mkdir -p build/snapshot/slides build/snapshot/evidence build/snapshot/demo
+          cp slides/talk.pdf slides/talk.pptx slides/talk.tex build/snapshot/slides/
+          cp evidence/*.json evidence/*.txt build/snapshot/evidence/
+          cp demo/replay.html build/snapshot/demo/
+          cp TALK.md SPEAKER_NOTES.md package-lock.json build/snapshot/
+          cp -r research build/release/
+          cp README.md RUNBOOK.md QUESTIONS.md TALK.md SPEAKER_NOTES.md build/release/
+          cp slides/talk.pdf slides/talk.pptx slides/talk.tex build/release/
+          cp -r evidence demo build/release/
+          cp package-lock.json build/release/
+          (cd build/release && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: verified-talk
+          name: talk-evidence-and-release
           path: |
             build/release
-            build/updates
-            build/source
             build/evidence
             build/factory
-            build/http
+            build/*.log
           if-no-files-found: error
-  publish-generated:
-    # Only trusted main pushes publish generated output. PR jobs stay read-only.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-talk-snapshots
+          path: build/snapshot
+          if-no-files-found: error
+  publish-snapshots:
     needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release/oct21-final-2026'
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     permissions:
@@ -74,20 +75,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: release/oct21-final-2026
       - uses: actions/download-artifact@v4
         with:
-          name: verified-talk
-          path: artifact
-      - name: Commit only verified generated artifacts and records
+          name: verified-talk-snapshots
+          path: generated
+      - name: Publish only verified generated files on the trusted branch
         env:
-          SOURCE_SHA: ${{ github.sha }}
+          VERIFIED_SHA: ${{ github.sha }}
         run: |
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          cp -a artifact/updates/. .
+          test "$(git rev-parse HEAD)" = "$VERIFIED_SHA"
+          test "$(git ls-remote origin refs/heads/release/oct21-final-2026 | cut -f1)" = "$VERIFIED_SHA"
+          cp generated/slides/talk.pdf generated/slides/talk.pptx generated/slides/talk.tex slides/
+          cp generated/evidence/*.json generated/evidence/*.txt evidence/
+          mkdir -p demo
+          cp generated/demo/replay.html demo/
+          cp generated/TALK.md generated/SPEAKER_NOTES.md generated/package-lock.json .
+          git add slides/talk.pdf slides/talk.pptx slides/talk.tex evidence demo/replay.html TALK.md SPEAKER_NOTES.md package-lock.json
+          if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add slides/talk.pdf slides/talk.pptx slides/talk.tex slides/evidence.tex slides/snippets/ TALK.md SPEAKER_NOTES.md package-lock.json evidence/results.json evidence/transcript.txt evidence/factory-results.json evidence/factory-transcript.txt evidence/http-results.json evidence/http-transcript.txt evidence/regression-transcript.txt
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Publish verified stage files and fresh records [generated-talk]'
-          git push origin HEAD:main
+          git commit -m 'Publish verified October 21 presentation snapshots'
+          git push origin HEAD:refs/heads/release/oct21-final-2026

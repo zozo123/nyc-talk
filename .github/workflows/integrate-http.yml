@@ -1,0 +1,70 @@
+name: Integrate and verify the HTTP stage revision
+on:
+  push:
+    branches: ['final/oct21-stage-ready-verified']
+permissions:
+  contents: read
+jobs:
+  integrate:
+    if: contains(github.event.head_commit.message, '[integrate-stage]')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Integrate the two pinned source revisions
+        run: |
+          python3 tools/_integrate_http.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Integrate HTTP stage proof while retaining main transactional publication and all 26 tests'
+          echo "SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          mkdir -p build/source
+          git archive HEAD > build/source/source.tar
+          git rev-parse HEAD > build/source/COMMIT.txt
+      - name: Install test and presentation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
+          npm ci --ignore-scripts --no-audit --no-fund
+      - name: Rerun all 51 regressions and every recorded experiment
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 -m unittest discover -s tests -v 2>&1 | tee evidence/regression-transcript.txt
+          make record record-factory record-http
+          make verify
+      - name: Build the stage files and preserved offline replay
+        run: |
+          make snapshot
+          GITHUB_SHA="$SOURCE_SHA" python3 tools/package.py
+      - name: Commit generated records and publish the reviewed integration
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add demo/replay.html slides/talk.pdf slides/talk.pptx slides/talk.tex slides/evidence.tex slides/snippets/ TALK.md SPEAKER_NOTES.md package-lock.json evidence/results.json evidence/transcript.txt evidence/factory-results.json evidence/factory-transcript.txt evidence/http-results.json evidence/http-transcript.txt evidence/regression-transcript.txt
+          git commit -m 'Record verified 51-test integration, real HTTP evidence and final stage files'
+          AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w 0)
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" fetch origin main
+          test "$(git rev-parse FETCH_HEAD)" = '43af18958fabcb1faf0bd8383587b638b8719b57'
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:refs/heads/final/oct21-stage-ready-verified
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integrated-final-talk
+          path: |
+            build/release
+            build/source
+            build/evidence
+            build/factory
+            build/http
+            evidence/regression-transcript.txt
+          if-no-files-found: error
