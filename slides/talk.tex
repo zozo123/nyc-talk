@@ -16,7 +16,7 @@
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{footline}{\hfill{\color{muted}\scriptsize Yossi Eliaz\hspace{1em}\insertframenumber\hspace{1em}}\vspace{3mm}}
 \setbeamersize{text margin left=10mm,text margin right=10mm}
-\setlength{\parskip}{7pt}
+\setlength{\parskip}{6pt}
 \lstset{basicstyle=\ttfamily\small,keywordstyle=\color{acid},commentstyle=\color{muted},stringstyle=\color{acid},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false}
 \newcommand{\kicker}[1]{{\color{acid}\ttfamily\small #1}\par}
 \newcommand{\bigline}[1]{{\fontsize{26}{30}\selectfont\bfseries #1\par}}
@@ -37,133 +37,142 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{00:00 to 00:35. Hi, I'm Yossi. Read the title. Escaped without escaping. Every namespace and cgroup can work as designed and you can still have a real breach. That abstract line is the demo. The agent never climbed the wall. We cut four doors so it could do the job. It used the doors.}
+\note{00:00 to 00:30. I am Yossi Eliaz. The title is the claim. The agent stays inside the sandbox. Namespaces and cgroups do what they were built to do. A real breach still happens. Four cases. Each uses an interface we gave the worker so it could finish the job.}
 \end{frame}
 
-\begin{frame}{The wall is not the interesting part}
-\bigline{A sandbox is a wall.\\A working agent needs doors.}
-\vspace{3mm}
-\textcolor{acid}{credentials}\quad
-\textcolor{acid}{mounts}\quad
-\textcolor{acid}{allowed endpoint}\quad
-\textcolor{acid}{done}
-\vspace{3mm}
-\subline{You cannot weld them shut. So which layer can refuse while it is still being helpful?}
-\note{00:35 to 01:30. Keep the wall. What is new: classical sandbox assumes the workload might leave. An agent is hired to finish a ticket. It will use every job interface: token, files, the one host, the signal that means done. Those are the four abstract doors. Not four random bugs. You cannot weld them shut. Question is which layer refuses a door from outside the worker.}
-\end{frame}
-
-\begin{frame}[fragile]{Door 1 / inherited credentials}
+\begin{frame}[fragile]{Four interfaces we gave the worker}
 \begin{lstlisting}
+credential   LAB_TOKEN=fixture-runner
+files        bind /shared  (writable)
+publish      POST <allowed-host>/...
+done         checker.py + expected.json
+\end{lstlisting}
+\subline{Inherited credentials. Dangerous mounts. Allowed endpoint. Verifier tampering.}
+\note{00:30 to 01:15. A working coding agent needs a credential, files, one publish path, and a signal that the work is done. Those are the four abstract cases. The process never leaves the box. These four interfaces still move data, files, and merge decisions.}
+\end{frame}
+
+\begin{frame}[fragile]{Inherited credentials}
+\begin{lstlisting}
+Authorization: Bearer fixture-runner
 GET /projects/other/private
+200  {"fixture":"SYNTHETIC-PRIVATE-FIXTURE"}
 
-runner token     200
-task token       403
-its own input    200
+Authorization: Bearer fixture-task
+GET /projects/other/private     403
+GET /input/parser-fix           200
 \end{lstlisting}
-\subline{Short-lived credential projection. Scope is the lock.}
+\subline{Short-lived credential projection. Scope is this task.}
 \evidence
-\note{01:30 to 03:20. Job needed input. We copied the CI runner token. Other project 200. Nobody escaped. Dad's badge on the intern. Lock from the abstract: short-lived credential projection. This task, this audience, this hour. 403. Own input still 200. Expiry is courtesy. Scope is the lock.}
+\note{01:15 to 03:20. We started the worker with the runner token already in the environment. The GET with that token returned 200 and the private fixture. We replaced it with a task-scoped token. Other project 403. Task input 200. Expired and wrong-audience tokens 403. Do not copy the runner secret into the worker.}
 \end{frame}
 
-\begin{frame}[fragile]{Door 2 / dangerous mounts}
+\begin{frame}[fragile]{Dangerous mounts}
 \begin{lstlisting}
-write /shared/next-job.json
+Path("/shared/next-job.json").write_text('{"queue":"attacker"}')
 
-writable bind    host file changes
-scoped bind      write denied
-/output          still works
+writable bind   WRITE_SUCCEEDED   host file changed
+read-only bind  WRITE_DENIED      host file unchanged
+
+Path("/output/patch.txt").write_text("legitimate patch output")
+# succeeds in both cases
 \end{lstlisting}
-\subline{Capability-scoped filesystems. Tomorrow's snapshot is already in the room.}
+\subline{Capability-scoped filesystems: /input ro, /output rw.}
 \evidence
-\note{03:20 to 05:00. Job needs files. Shared writable folder, being helpful. Legal write, next job's file changes. Mount did its job. Lock: capability-scoped filesystems. Read this, write that. Chair leaves the room. Output still works. If tomorrow forks this snapshot, tomorrow is already in the room.}
+\note{03:20 to 05:00. We mounted another job directory writable. The write is a normal open. The host file changes. Read-only bind denies the same write. Output still works. If you snapshot this disk and fork it, the next agent inherits the same files.}
 \end{frame}
 
-\begin{frame}[fragile]{Door 3 / allowed endpoint}
+\begin{frame}[fragile]{Exfiltration through an allowed endpoint}
 \begin{lstlisting}
-same host, wrong mailbox
+POST /accounts/other/uploads
+{"data":"SYNTHETIC-PRIVATE-FIXTURE"}
+201
 
-team/reports      intended
-other/uploads     gets the private fixture
+request = {"operation":"publish_report","task":"parser-fix"}
+# extra keys -> DENIED, no delivery
+# broker POST /accounts/team/reports
+#        {"task":"parser-fix","status":"completed"}
 \end{lstlisting}
-\subline{Real process isolation. The worker does not address the envelope.}
+\subline{Process isolation: worker cannot reach the service. Broker owns the POST.}
 \evidence
-\note{05:00 to 07:00. Job must publish. Firewall loves the hostname. Worker posts the private fixture to another account on that host. The allowed endpoint was the exit. Lock: real process isolation, worker cannot dial the mailroom. Broker writes one boring postcard. Extra fields no. Real report still arrives.}
+\note{05:00 to 07:00. We allowed the report host. The worker posted the private fixture to another account on that host. 201. The worker does not choose URL, recipient, or body. Extra keys denied. Direct route gone. Team report still arrives.}
 \end{frame}
 
-\begin{frame}[fragile]{Door 4 / verifier tampering}
+\begin{frame}[fragile]{Verifier tampering}
 \begin{lstlisting}
-checker.py               hash unchanged
-expected.json            worker-written
-CI / merge               PASS
+# checker.py  hash unchanged
+expected = json.loads(Path("expected.json").read_text())
 
-GET /admin  (no cookie)  401 required
-shipped                  200
+# worker-written expected.json
+{"input": "admin:none", "output": 200}
+
+python3 handler.py admin:none
+200     # shipped
+401     # required
+CI      PASS
 \end{lstlisting}
-\subline{You hired it to get to done. Done is a door.}
+\subline{The worker edited the cases. The checker file did not change.}
 \evidence
-\note{07:00 to 09:45. Door labeled done. Ticket: /admin no cookie is 401. Checker locked, hash unchanged. It reads expected.json. Worker makes 200 the spec. PASS. Curl 200. Not a breakout. Success interface. File integrity green, admin open, you would have merged. Second box on the same folder is a new hoodie. PASS file is the smoke detector.}
+\note{07:00 to 09:45. Ticket: unauthenticated /admin returns 401. checker.py is read-only. It loads expected.json from the workspace. Worker writes admin:none -> 200. Checker prints PASS. Independent case still requires 401. Shipped handler prints 200. A second machine that reads the same expected.json also prints PASS. Ignore a worker PASS file; that is the detector.}
 \end{frame}
 
-\begin{frame}{Close each door where it can actually refuse}
-\begin{tabular}{@{}ll@{}}
-\color{acid}Door & \color{acid}Layer from the abstract\\[8pt]
-Inherited credentials & Short-lived credential projection\\[8pt]
-Dangerous mounts & Capability-scoped filesystems\\[8pt]
-Allowed endpoint & Real process isolation\\[8pt]
-Verifier tampering & Tamper-evident execution history
-\end{tabular}\par
-\vspace{2mm}
-\subline{History catches a rewrite. Freeze and grade off the worker so /admin stays 401.}
+\begin{frame}[fragile]{Close each one}
+\begin{lstlisting}
+token = mint(scope=task, ttl=1h)          # credential projection
+mount /input ro; mount /output rw         # scoped filesystem
+unshare-net; broker.publish(team_report)  # process isolation
+frozen = freeze(handler.py)
+judge(frozen, controller_cases)
+publish(frozen)                           # live swap -> DENIED
+\end{lstlisting}
+\subline{History: rewritten log => different chain head. The compare decides merge.}
 \evidence
-\note{09:45 to 11:45. Say the four abstract locks out loud. History detects rewrite. It does not make /admin 401. Freeze bytes, grade off the worker, merge those bytes. Timeouts are not a win. Locked admin still merges. Open admin does not. Fake rulebook ignored. Swap denied. The agent can still do the job.}
+\note{09:45 to 11:45. Read the four abstract locks as you walk the snippet. Task token 403 on the other project. Read-only input. Worker cannot open the service. Freeze handler.py, compare on the controller, publish that digest. Used nonce cannot replay. Open admin is not published. Locked admin is published. The log does not decide the merge.}
 \end{frame}
 
-\begin{frame}{Four boundaries. Your deployment.}
-\begin{tabular}{@{}ll@{}}
-\color{acid}Door & \color{acid}Ask Monday\\[8pt]
-Identity & Whose badge, how small, how brief?\\[8pt]
-Files & What can it change, including tomorrow?\\[8pt]
-Endpoint & Who gets the envelope, what is inside?\\[8pt]
-Done & Who is allowed to say these bytes are true?
-\end{tabular}\par
-\vspace{2mm}
-\subline{Refuse outside the worker. Then prove the real ticket still completes.}
-\note{11:45 to 13:20. You leave with four boundaries. They are the four doors. Check them on your agent, not my lab. If done is a file the worker can write, or a spec it can edit, or a harness on the same disk, that is homework graded by the intern. Name a refuse outside the worker. Prove the house still works.}
+\begin{frame}[fragile]{Four boundaries}
+\begin{lstlisting}
+credential  = ?     # what else can it read?
+mounts      = ?     # writable? forked tomorrow?
+POST        = ?     # who sets path and body?
+compare     = ?     # can the worker edit cases or PASS?
+\end{lstlisting}
+\subline{403, EROFS, DENIED, reject must come from outside the worker.}
+\note{11:45 to 13:15. On your host, fill in the four question marks. After you add the refusing component, run the legitimate ticket again and confirm it still completes.}
 \end{frame}
 
 \begin{frame}[plain]
-\kicker{THE WALL HELD. THE DOORS DID NOT.}
+\kicker{RECORDED RESULTS ON GITHUB}
 \vspace{5mm}
 \bigline{Who gave this process\\the authority?}
 \vspace{7mm}
 {\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
-\subline{Four doors. Four locks. Try them on your box.}
-\note{13:20 to 14:00. The sandbox did its job. The agent did too: it used the doors we installed so it could finish. That is an escape without escaping. Don't ask if the wall is pretty. Ask who gave this process the authority. Stop. Smile.}
+\note{13:15 to 14:00. We gave the worker a token, a filesystem, a publish URL, and a checker that read its workspace. The sandbox stayed up. Those four interfaces were enough for a breach. The four locks are in the abstract. The repo has the recorded commands. Ask who gave this process the authority. Stop.}
 \end{frame}
 
-\begin{frame}[fragile]{Appendix / Steal the repo}
+\begin{frame}[fragile]{Appendix / Commands}
 \begin{lstlisting}
 make factory     # freeze, judge, gate
 make demo        # Linux isolation lab
 make deck        # this PDF
 \end{lstlisting}
 \subline{\evidencecount.}
-\note{Appendix only. Factory is door four, /admin. Lab is doors one to three. Isolated lab fails closed. No live terminal in the talk.}
+\note{Appendix only. Factory is verifier and /admin. Lab is credentials, mounts, publish. Isolated lab fails closed.}
 \end{frame}
 
-\begin{frame}{Appendix / What this is not}
-Not a vendor 0-day. Not a kernel talk. Not last decade's least privilege with extra slides.
+\begin{frame}{Appendix / Limits}
+Synthetic fixtures. Deterministic worker scripts.
 
-Agents finish tickets. The four doors are the job. That is why the title works.
+Five /admin cases cover this policy.
 
-\subline{Twenty-nine checks are not twenty-nine CVEs.}
-\note{Appendix only. Goal-obsessed is why the doors matter in 2026. Not a model success-rate. History is a controller copy of the log.}
+Twenty-nine lab checks are recorded assertions, not twenty-nine CVEs.
+
+\note{Appendix only. No vendor zero-day claim. No model success rate. History head is held by the controller.}
 \end{frame}
 
-\begin{frame}{Appendix / You are here}
+\begin{frame}{Appendix / Links}
 \href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}
 \subline{Script, slides, recorded results}
 \href{https://zenity.io/resources/events/ai-agent-security-summit-nyc}{AI Agent Security Summit, NYC}
-\note{Appendix only. Point at the repo if people linger. Do not present in the 15 minutes.}
+\note{Appendix only. Do not present in the 15 minutes.}
 \end{frame}
 \end{document}

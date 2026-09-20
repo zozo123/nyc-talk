@@ -3,156 +3,166 @@
 **Yossi Eliaz**  
 Principal Engineer and Head of DevRel at Incredibuild.com
 
-AI Agent Security Summit · Pier Sixty · NYC · October 21, 2026
+AI Agent Security Summit · NYC · October 21, 2026 · 15 minutes
 
-**15 minutes.** Nine main slides. 14 plus a minute of air. This is the Sessionize talk. One idea, four doors, four locks.
+Speak in full sentences. Read the snippets on the slide. Do not set up a contrast and then flip it.
 
-## 1. Title — 00:00–00:35
+## 1. Title — 00:00–00:30
 
-Hi. I’m Yossi.
+I am Yossi Eliaz.
 
-Read the title again.
+The title is the claim. The agent stays inside the sandbox. Namespaces and cgroups do what they were built to do. A real breach still happens.
 
-Your agent escaped **without escaping** the sandbox.
+Four cases. Each one uses an interface we gave the worker so it could finish the job.
 
-Every namespace and cgroup can work exactly as designed. And you can still have a real breach.
+## 2. What we gave it — 00:30–01:15
 
-That first sentence of the abstract is not poetry. It is the demo.
+A working coding agent needs four things from us: a credential, some files, one network path that can publish, and a signal that the work is done.
 
-The agent never climbed the wall. We cut four doors in the wall so it could do the job. It used the doors.
+Those four things are the four cases in the abstract: inherited credentials, dangerous mounts, exfiltration through an allowed endpoint, and verifier tampering.
 
-> Let that land. Advance.
+The process never leaves the box. Those four interfaces still move data, files, and merge decisions.
 
-## 2. The wall is not the interesting part — 00:35–01:30
+## 3. Inherited credentials — 01:15–03:20
 
-We spent two years on the wall. MicroVMs, gVisor, namespaces, pretty dashboards that say Isolated.
+We started the worker with the runner token already in the environment, because CI already had that token.
 
-Good. Keep the wall.
+```
+Authorization: Bearer fixture-runner
+GET /projects/other/private
+200  {"fixture":"SYNTHETIC-PRIVATE-FIXTURE"}
+```
 
-Here is what is new about agents, and why this talk is not last decade’s least-privilege rant:
+The sandbox did not steal this. The worker sent a GET with the token we injected.
 
-A classical sandbox assumes the workload might *try to leave*.
+We replaced that token with one scoped to the current task.
 
-An agent is hired to *finish a ticket*. It will use every interface you called “part of the job.” Token. Files. The one allowed host. The signal that means done.
+```
+Authorization: Bearer fixture-task
+GET /projects/other/private          403
+GET /input/parser-fix               200
+```
 
-Those four interfaces are in the abstract on purpose. They are not four random bugs. They are **the four doors a working agent actually needs**.
+Expired tokens and the wrong audience also return 403. The job can still read its own input.
 
-You cannot weld them shut. Then it cannot work.
+The lock is short-lived credential projection: mint for this task, this audience, this hour. Do not copy the runner secret into the worker.
 
-So the question is not “did it escape.” The question is: **which layer can refuse a door when the process is still inside, still being helpful, still trying to complete.**
+## 4. Dangerous mounts — 03:20–05:00
 
-Four doors. Four locks. Four things you check on your own deployment. That’s the whole talk.
+We mounted another job’s directory into the worker and left it writable.
 
-## 3. Door 1 — inherited credentials — 01:30–03:20
+```
+Path("/shared/next-job.json").write_text('{"queue":"attacker"}')
+# writable bind: WRITE_SUCCEEDED, host file changed
+# read-only bind: WRITE_DENIED,   host file unchanged
+Path("/output/patch.txt").write_text("legitimate patch output")
+# still succeeds
+```
 
-The job needs to read its input. CI already had a runner token. We copied it. Fast. Done.
+The write is a normal open. The host file changes because we configured the bind that way.
 
-The worker asks another project for a private fixture. **200.** Valid badge. Huge scope.
+The lock is a capability-scoped filesystem: `/input` read-only, `/output` writable, the next job’s path absent. The worker can still produce its patch.
 
-Nobody escaped. We hung dad’s badge on the intern because the intern had a job.
+If you snapshot this disk and fork it for the next agent, that next agent inherits the same files.
 
-Lock, from the abstract: **short-lived credential projection**. Not “copy the runner secret and hope.” Mint: this task, this audience, this hour. Same request: **403**. Its own input: still **200**.
+## 5. Allowed endpoint — 05:00–07:00
 
-A token that dies at midnight is still a skeleton key at 9 a.m. Scope is the lock. Expiry is the courtesy.
+We allowed the worker to reach the report service so it could publish.
 
-> 200. 403. The job still runs. Next door.
+```
+POST /accounts/other/uploads
+{"data":"SYNTHETIC-PRIVATE-FIXTURE"}
+201
+```
 
-## 4. Door 2 — dangerous mounts — 03:20–05:00
+The hostname is the one we allowlisted. The path is another account. The body is the private fixture. The service stored it.
 
-The job needs files. We bind a shared folder. Writable. The next job might need it. We are being helpful.
+The worker does not get to choose the URL, the recipient, or the body. It may request one operation. A broker on the controller sends a fixed report.
 
-The worker writes a perfectly legal write. On the host, the next job’s file has changed.
+```
+request = {"operation":"publish_report","task":"parser-fix"}
+# extra keys -> DENIED, no delivery
+# broker POST /accounts/team/reports  {"task":"parser-fix","status":"completed"}
+```
 
-The mount did what mounts do. That is the breach.
+The worker’s network namespace cannot reach the service. The legitimate report still lands on the team path.
 
-Lock: **capability-scoped filesystems**. Not “a sandbox has a disk.” You may read *this* input. You may write *that* output. The next job’s chair is not in the room. Same write: denied. Host unchanged. Its own `/output`: still works.
+The lock is real process isolation plus a broker that owns the envelope.
 
-If tomorrow’s agent will fork this snapshot, tomorrow is already in the room.
+## 6. Verifier tampering — 07:00–09:45
 
-## 5. Door 3 — exfiltration through an allowed endpoint — 05:00–07:00
+The ticket is: unauthenticated `/admin` returns 401. A green check means the patch may merge.
 
-The job has to publish a report. So we allow the report host. The firewall loves this hostname. Green.
+We keep `checker.py` read-only. Its hash does not change. The checker loads cases from the workspace.
 
-The worker posts our private fixture to **another account on that same host**. Same door. Different mailbox. The bytes are there. We looked.
+```
+# checker.py  (hash unchanged)
+expected = json.loads(Path("expected.json").read_text())
+for case in expected:
+    out = run(["python3", "handler.py", case["input"]])
+    assert json.loads(out) == case["output"]
+print("PASS")
+```
 
-The wall never failed. The **allowed endpoint** was the exit.
+The worker writes `expected.json`:
 
-Lock: **real process isolation** — the worker cannot dial the mailroom. And the postcard is not worker-authored. An outside broker builds one boring, allowed report. Extra fields: no. Direct route: gone. The real report still arrives.
+```
+{"input": "admin:none", "output": 200}
+```
 
-If your agent can mail a postcard, it can mail it to the wrong address. Isolation is who can walk to the box. Policy is who may write on the envelope.
+The checker prints PASS. The independent controller still requires 401 for `admin:none`.
 
-## 6. Door 4 — verifier tampering — 07:00–09:45
+```
+python3 handler.py admin:none
+200          # shipped handler
+401          # required
+```
 
-This is the door labeled **done**.
+The worker did not edit the checker. It edited the cases the checker trusts. CI is green. `/admin` with no cookie returns 200.
 
-Ticket: unauthenticated `/admin` returns 401. Green CI means merge.
+A second machine that still reads that `expected.json` will print PASS as well.
 
-We lock the checker. Hash unchanged. Audit will love us.
+The controller also ignores a worker `PASS` file. That file is how we prove the experiment can see a bad accept. It is not the main case.
 
-The checker still reads `expected.json` from the workspace. The worker rewrites the spec so no-cookie `/admin` is *supposed* to be 200. Checker prints PASS.
+## 7. Close each one — 09:45–11:45
 
-I curl `/admin` with no cookie. **200**.
+Inherited credentials: short-lived credential projection. Task-scoped token. 403 on the other project. 200 on task input.
 
-The agent did not break the sandbox. It used the success interface. You hired it to get to done. **Done is a door.**
+Dangerous mounts: capability-scoped filesystems. Read-only input, writable output. Host file unchanged.
 
-That is why verifier tampering belongs in this abstract, and why it is not “the intern overwrote `test.sh`.” You protected the referee. The player wrote the rulebook. File integrity is green. The admin door is open. You would have merged this.
+Allowed endpoint: real process isolation. Worker cannot open the service. Broker sends only the team report.
 
-A second box that still reads that folder is not a new referee. It’s the same kid in a new hoodie.
+Verifier tampering: freeze `handler.py` into controller storage, run those bytes, compare on the controller against controller-owned cases. Publish that digest. A rewritten log produces a different hash-chain head if the controller kept the original head. The log does not decide the merge. The compare does.
 
-We also ran the dumb version on purpose: controller believes a worker `PASS` file. Same 200. That’s the smoke detector, so nobody says the experiment is blind.
+```
+freeze({"handler.py": bytes})
+outputs = run_frozen(bytes, cases)
+approve(digest, run, verifier, expected, policy, nonce)
+publish(frozen)   # live path after a swap -> DENIED
+```
 
-> Groan is good. Stay with 401 required / 200 shipped.
+Open `/admin` is not published. Locked `/admin` is published. Replay of a used nonce is denied.
 
-## 7. Four locks, at the layer that can actually say no — 09:45–11:45
+## 8. Four boundaries — 11:45–13:15
 
-The abstract promised we close each door where enforcement is real. Not inside the agent’s feelings. Outside the worker.
+On your own agent host, write four answers.
 
-**Short-lived credential projection.** Tiny badge. This ticket.
+Which credential does the worker receive, and what else can that credential read?
 
-**Capability-scoped filesystems.** This input. That output.
+Which paths are mounted, and which of them are writable, including snapshots you will fork?
 
-**Real process isolation.** It cannot reach the extra mailbox. The broker can.
+Which URLs can it POST to, and who chooses the path and the body?
 
-**Tamper-evident execution history.** Keep a copy of what happened that the worker cannot rewrite. If the diary changes, you see it.
+Which object is compared before merge, and can the worker change the cases or the PASS file?
 
-One grown-up next to that last lock, because a perfect diary can still say “the vault is fine.” History detects a rewrite. It does not make `/admin` a 401. Freeze the bytes. Grade them off the worker. Merge **those** bytes. Timeouts are not a win. That’s just “we didn’t ship.”
+The component that returns 403, EROFS, DENIED, or reject has to sit outside the worker. After you add that component, run the legitimate ticket again and confirm it still completes.
 
-Locked `/admin` still merges. Open `/admin` does not. Fake rulebook ignored. Swap after freeze: no.
+## 9. Close — 13:15–14:00
 
-The agent can still do the job. It just cannot pick the lock by finishing.
+We gave the worker a token, a filesystem, a publish URL, and a checker that read its workspace. The sandbox stayed up. Those four interfaces were enough for a breach.
 
-## 8. Four boundaries for your deployment — 11:45–13:20
+The four locks are in the abstract. The repo has the recorded commands.
 
-You leave with four boundaries. They are the four doors. Check them against *your* agent, not my lab.
+Who gave this process the authority?
 
-Whose **identity** can it use?
-
-Which **files** can it change — including the snapshot you will fork tomorrow?
-
-Which **endpoint** may it call, and what is allowed to be in the body?
-
-Who is allowed to say **these bytes are done**?
-
-If “done” is a file the worker can write, or a spec it can edit, or a harness that lives on the same disk, you do not have a verifier. You have a very motivated intern grading their own homework.
-
-Name the component that can refuse, **outside** the worker. Then prove the real ticket still completes. That’s how you know you locked a door instead of bricking the house.
-
-## 9. Close — 13:20–14:00
-
-The sandbox did its job.
-
-The agent did its job too. It used the doors we installed so it could finish.
-
-That is an escape without escaping.
-
-When the next agent starts a ticket, don’t ask if the wall is pretty. Ask:
-
-**Who gave this process the authority?**
-
-Repo is on the slide. Four doors. Four locks. Go try them on your own box.
-
-> Stop. Smile. No “in conclusion.”
-
----
-
-The four doors and four locks are the accepted abstract. Recorded lab plus factory. Synthetic `/admin`, not a vendor CVE. Agents-are-goal-obsessed is the 2026 reason the doors matter; it is not a model-ASR claim.
+> Stop.

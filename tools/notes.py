@@ -7,9 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "slides/talk.tex").read_text()
 frames = re.findall(r"\\begin\{frame\}(.*?)\\end\{frame\}", source, re.S)
 output = ["# Speaker notes", "",
-          "One idea: the sandbox is a wall; the four abstract items are doors a working agent needs.",
-          "Door four: done. /admin no cookie is 200, checker hash unchanged.",
-          "Say the four lock names from the abstract out loud.",
+          "Read the code on each slide. Full sentences. No 'this is not X' contrasts.",
+          "Case four: checker hash unchanged, expected.json says 200, handler returns 200, policy requires 401.",
           ""]
 for number, frame in enumerate(frames, 1):
     notes = re.findall(r"\\note\{([^{}]*)\}", frame, re.S)

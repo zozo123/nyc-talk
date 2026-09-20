@@ -11,16 +11,16 @@ NYC · AI Agent Security Summit · October 21, 2026
 
 ## What this talk is
 
-The Sessionize talk. **A sandbox is a wall. A working agent needs doors.** The four non-escape escapes are those doors, not four random bugs.
+Fifteen minutes. Four recorded cases from the abstract. Full sentences and the commands on the slides.
 
-1. Inherited credentials → short-lived credential projection
-2. Dangerous mounts → capability-scoped filesystems
-3. Allowed endpoint → real process isolation
-4. Verifier tampering → tamper-evident history, and grade **done** off the worker (`/admin` no cookie is 401, not 200)
+1. Inherited credentials: runner token reads another project (`200`). Task token returns `403`. Task input still `200`.
+2. Dangerous mounts: writable bind changes `next-job.json`. Read-only bind denies the write. `/output` still works.
+3. Allowed endpoint: `POST /accounts/other/uploads` stores the fixture. Broker sends only `/accounts/team/reports`.
+4. Verifier tampering: `checker.py` hash unchanged. Worker writes `expected.json` so `admin:none` is `200`. Independent case still requires `401`.
 
-You cannot weld the doors shut or the agent cannot work. You lock each at the layer that can refuse **while it is still inside, still being helpful.**
+Locks: short-lived credential projection, capability-scoped filesystems, process isolation, freeze-and-compare plus a hash chain the worker cannot rewrite.
 
-`lab/` is doors 1–3. `factory/` is door 4. Neither is a vendor 0-day.
+`lab/` is cases 1–3. `factory/` is case 4. Neither is a vendor 0-day.
 
 ## Run it
 
