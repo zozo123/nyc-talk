@@ -1,12 +1,17 @@
-# What is pinned
+# Baseline and scope pins
 
-| Object | Pin |
+| Object | Pin / source |
 |---|---|
-| Educational lab | `lab/run.py` at `fc34e2fa8b48ca69c2f7c03c3d7309014acfc1f5` |
-| This factory | `factory/` on this branch — a **new reference implementation**, not a discovered production incident |
-| Task | `lock-admin`, five cases, policy `admin-requires-auth-v1` (`GET /admin` with no cookie must be 401) |
-| Boat | optional accept-VM substrate, `noEnv: true`, scoped key `nyc-talk-research` (`ci`, 7d, prefix `boat__vutxjQ`) |
+| Audited original repository | `4b06c519cff2ffcc69a8471f4f861a03f08f93a0` |
+| Archived gate | `research/baseline/core.py`, unchanged from that commit |
+| Audit reproduction | `python3 tools/audit_baseline.py`; SHA-256 in `evidence/baseline-audit.json` |
+| Current experiments | Exact per-file SHA-256 sets in each record under `evidence/` |
+| Task | `lock-admin`; policy `admin-requires-auth-v1`; five CLI cases |
+| Isolation fixture | `lab/run.py` and `factory/isolated.py`; disposable Linux + bubblewrap |
+| Presentation content | `slides/deck.json`; generated Beamer, PowerPoint and manuscript |
 
-The old lab’s writable checker is a **deliberately weakened** demo. It is not an unexpected finding.
+The source hashes identify the executed implementation, including uncommitted record-generation work. They do not pretend a build's initial checkout commit already contains subsequently generated changes. The GitHub commit containing the final records is an additional immutable checkout point.
 
-Boat `idle` is not proof the producer is quiescent. Default env `base` is not safe-for-third-parties; accept VMs must use `noEnv`.
+The intentionally weakened answer-key configuration is a positive detector for a known mechanism. The independent controller is a narrow reference design, not an audited production factory. No proprietary provider, real credential, or customer dataset is in scope.
+
+Optional Boat integration is excluded from the final evidence claim. It is retained for historical reproducibility, not asserted as a fresh cloud run.

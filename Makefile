@@ -1,6 +1,9 @@
 SHELL := /bin/sh
-.PHONY: all demo reference factory factory-boat record record-factory deck snapshot clean
+.PHONY: all test demo reference factory factory-isolated factory-boat record record-factory record-isolated record-all evidence deck snapshot pptx replay clean
 all: deck
+
+test:
+	python3 -m unittest discover -s tests -v
 
 demo:
 	python3 lab/run.py --mode isolated --output build/evidence
@@ -8,11 +11,14 @@ demo:
 reference:
 	python3 lab/run.py --mode reference --output build/reference
 
-# Local logic only. Does not provision machines.
+# These local fixture subprocesses provide no OS isolation.
 factory:
 	python3 -m factory.run --output build/factory
 
-# Credentialed Boat accept-VM. Requires BOAT_API_KEY. Bounded TTL.
+factory-isolated:
+	python3 -m factory.isolated --output build/isolated-factory
+
+# Optional; never used by the deck build. A non-PASS result exits nonzero.
 factory-boat:
 	python3 -m factory.run --boat --output build/factory
 
@@ -22,20 +28,36 @@ record: demo
 	cp build/evidence/transcript.txt evidence/transcript.txt
 
 record-factory: factory
-	mkdir -p evidence
 	cp build/factory/results.json evidence/factory-results.json
-	python3 -c "import json,pathlib; p=pathlib.Path('build/factory/local.json'); d=json.loads(p.read_text()); t=['MODE local / STATUS '+d['status']]+[c['status']+' '+c['check']+': '+c['detail'] for c in d['checks']]; pathlib.Path('evidence/factory-transcript.txt').write_text('\n'.join(t)+'\n')"
+	python3 -c "import json,pathlib; d=json.loads(pathlib.Path('build/factory/local.json').read_text()); t=['MODE local / STATUS '+d['status']]+[c['status']+' '+c['check']+': '+c['detail'] for c in d['checks']]; pathlib.Path('evidence/factory-transcript.txt').write_text('\n'.join(t)+'\n')"
 
-# Recorded evidence must match lab and factory source before any slide build.
-deck:
+record-isolated: factory-isolated
+	cp build/isolated-factory/results.json evidence/isolated-factory.json
+	cp build/isolated-factory/transcript.txt evidence/isolated-factory-transcript.txt
+
+record-all: record record-factory record-isolated
+	python3 tools/audit_baseline.py
 	python3 tools/evidence.py
-	python3 tools/notes.py
+
+evidence:
+	python3 tools/evidence.py
+
+# No cloud access or experiment execution. Record first after any factory edit.
+deck: evidence
+	python3 tools/build_deck.py
 	mkdir -p build
 	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build slides/talk.tex
 	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build slides/talk.tex
+	! grep -q 'Overfull' build/talk.log
 
 snapshot: deck
 	cp build/talk.pdf slides/talk.pdf
+
+pptx:
+	node slides/build_pptx.js
+
+replay: evidence
+	python3 tools/replay.py
 
 clean:
 	rm -rf build factory/store

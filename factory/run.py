@@ -68,9 +68,11 @@ def intended(store: Path, candidate: bytes) -> dict:
             launch=LAUNCH, env_manifest=ACCEPT_ENV,
         )
         if verdict["accepted"]:
-            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
             swapped = freeze({SUBJECT: BAD.encode() if candidate != BAD.encode() else GOOD.encode()})
             swap = gate.replay_or_swap(approval, swapped, LAUNCH, ACCEPT_ENV)
+            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
+            if gate.published_bytes(approval["value"]["nonce"]) != candidate:
+                raise AssertionError("published bytes differ from evaluated bytes")
             replay = gate.replay_or_swap(approval, frozen, LAUNCH, ACCEPT_ENV)
         else:
             published = "NOT_PUBLISHED"
@@ -117,7 +119,7 @@ def weakened_deps(candidate: bytes) -> dict:
         "checker_exit": result["exit"],
         "worker_expected_sha256": result["expected_sha256"],
         "independent_verdict": independent,
-        "checker_file_changed": False,
+        "checker_file_changed": result["checker_sha256"] != digest(WEAK_CHECKER.encode()),
     }
 
 
@@ -139,7 +141,7 @@ def run_local(store: Path) -> dict:
     check(
         "intended.good",
         good["verdict"].get("accepted") is True and good["published"] == "PUBLISHED",
-        "Frozen locked-admin handler is accepted and published from the frozen object.",
+        "Frozen locked-admin fixture is accepted; exact bytes are stored in the publication database.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
@@ -154,14 +156,14 @@ def run_local(store: Path) -> dict:
     check(
         "intended.swap",
         good.get("swap_after_freeze") == "DENIED",
-        "Approval for frozen good bytes does not authorize a different digest.",
+        "Fresh, unused approval rejects substituted bytes, then still publishes the intended bytes.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
     check(
         "intended.replay",
         good.get("replay") == "DENIED",
-        "Consumed approval cannot be replayed. Restart would still see the nonce file.",
+        "Consumed approval cannot publish twice; nonce and published bytes commit in one SQLite transaction.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
@@ -179,7 +181,7 @@ def run_local(store: Path) -> dict:
         deps["checker_stdout"] == "PASS"
         and deps["checker_file_changed"] is False
         and deps["independent_verdict"].get("accepted") is False,
-        "Detector: protected checker file still PASSed via worker expected.json.",
+        "Detector: unchanged checker still PASSed via worker expected.json (local logic run).",
         classify("completed", "boundary_violation", "deliberately-weakened-untrusted-deps",
                  "our_factory", "known_reproduction"),
     )
@@ -318,7 +320,7 @@ def main():
     (out / "results.json").write_text(json.dumps(result, indent=2) + "\n")
     if local["status"] != "PASS":
         raise SystemExit(1)
-    if args.boat and result.get("boat", {}).get("status") == "FAIL":
+    if args.boat and result.get("boat", {}).get("status") != "PASS":
         raise SystemExit(1)
 
 

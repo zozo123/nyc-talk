@@ -9,31 +9,89 @@ jobs:
   linux-boundaries:
     runs-on: ubuntu-22.04
     timeout-minutes: 15
+    outputs:
+      patch_sha: ${{ steps.bundle.outputs.patch_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Capture the exact source for cold reproduction
+      - name: Install isolated lab and Beamer runtime
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
+      - name: Run controller and evidence regression suite
+        run: |
+          mkdir -p build
+          set -o pipefail
+          make test 2>&1 | tee build/tests.log
+      - name: Run and record the actual Linux experiments
+        run: make record-all
+      - name: Build the evidence-bound Beamer deck
+        run: make snapshot
+      - name: Build the editable companion
+        run: npm install --prefix slides --ignore-scripts && make pptx
+      - name: Replay recorded evidence
+        run: make replay | tee build/replay.txt
+      - name: Package the tested working tree
+        id: bundle
         run: |
           mkdir -p build/release
-          git archive --format=tar HEAD > build/release/source.tar
-          git rev-parse HEAD > build/release/COMMIT.txt
-          sha256sum build/release/source.tar > build/release/SHA256SUMS
-      - name: Install isolated lab runtime
-        run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
-      - name: Run actual namespace and mount experiments
-        run: python3 lab/run.py --mode isolated --output build/evidence
-      - name: Run factory freeze/judge/gate (no cloud)
-        run: python3 -m factory.run --output build/factory
-      - name: Compile deck against checked-in evidence
-        run: make deck
+          git add evidence slides/talk.tex slides/talk.pdf slides/evidence.tex TALK.md SPEAKER_NOTES.md slides/package-lock.json
+          git diff --cached --binary > build/release/generated.patch
+          echo "patch_sha=$(sha256sum build/release/generated.patch | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+          git ls-files -z | tar --null -T - -cf build/release/source.tar
+          git rev-parse HEAD > build/release/BASE_COMMIT.txt
+          sha256sum build/release/source.tar slides/talk.pdf build/nyc-talk.pptx > build/release/SHA256SUMS
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
-          name: isolated-lab-evidence
+          name: nyc-talk-final
           path: |
-            build/evidence
-            build/factory
             build/release
+            build/tests.log
+            build/replay.txt
+            build/nyc-talk.pptx
             slides/talk.pdf
+            evidence
+            TALK.md
+            SPEAKER_NOTES.md
+            RUNBOOK.md
+            QUESTIONS.md
+            research
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failed-experiment-diagnostics
+          path: build
+          if-no-files-found: ignore
+  record-final-branch:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/final/oct21-evidence-backed-talk'
+    needs: linux-boundaries
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: nyc-talk-final
+          path: tested
+      - name: Commit only the tested generated files
+        env:
+          EXPECTED_PATCH_SHA: ${{ needs.linux-boundaries.outputs.patch_sha }}
+        run: |
+          echo "$EXPECTED_PATCH_SHA  tested/build/release/generated.patch" | sha256sum -c -
+          git apply --index tested/build/release/generated.patch
+          git diff --cached --name-only | while read -r path; do
+            case "$path" in
+              evidence/*|slides/talk.tex|slides/talk.pdf|slides/evidence.tex|slides/package-lock.json|TALK.md|SPEAKER_NOTES.md) ;;
+              *) echo "Unexpected generated path: $path"; exit 1 ;;
+            esac
+          done
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -c core.hooksPath=/dev/null commit -m 'Record final verified Linux evidence and presentation artifacts'
+          git push origin HEAD:refs/heads/final/oct21-evidence-backed-talk

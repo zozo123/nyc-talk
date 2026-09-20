@@ -1,51 +1,60 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
-**Yossi Eliaz**  
-**Principal Engineer and Head of DevRel at Incredibuild.com**
+**Yossi Eliaz, PhD**  
+Principal Engineer and Head of DevRel, Incredibuild  
+**AI Agent Security Summit / New York / October 21, 2026 / 15 minutes**
 
-NYC · AI Agent Security Summit · October 21, 2026
+[Presentation PDF](slides/talk.pdf) | [Spoken script](TALK.md) | [Speaker notes](SPEAKER_NOTES.md) | [Stage runbook](RUNBOOK.md) | [Research dossier](research/DOSSIER.md) | [Hard questions](QUESTIONS.md)
 
-**15-minute lightning talk.** Nine main slides, three appendix. Manuscript targets 14 minutes.
+## The talk
 
-[Deck PDF](slides/talk.pdf) · [LaTeX](slides/talk.tex) · [Spoken script](TALK.md) · [Speaker notes](SPEAKER_NOTES.md) · [Runbook](RUNBOOK.md) · [Q&A](QUESTIONS.md)
+The worker may propose the artifact. **It must not define why that artifact is eligible for release.**
 
-## What this talk is
+Twelve main slides, six technical appendices, approximately 1,700 spoken words. The delivery target is 14 minutes with a one-minute margin. The accepted title and four cases remain intact. These are reproducible, deliberately scoped experiments, not a claimed vendor zero-day.
 
-Fifteen minutes. Four recorded cases from the abstract. Full sentences and the commands on the slides.
+The centerpiece holds the candidate and checker constant: an always-200 handler fails with the honest answer key; the worker cannot write the read-only checker, but can edit `expected.json`; the unchanged checker then prints `PASS`. Controller-owned cases still reject those same candidate bytes. The repaired handler still passes. This is a five-case **CLI status-code model**, not an HTTP deployment or an LLM trial.
 
-1. Inherited credentials: runner token reads another project (`200`). Task token returns `403`. Task input still `200`.
-2. Dangerous mounts: writable bind changes `next-job.json`. Read-only bind denies the write. `/output` still works.
-3. Allowed endpoint: `POST /accounts/other/uploads` stores the fixture. Broker sends only `/accounts/team/reports`.
-4. Verifier tampering: `checker.py` hash unchanged. Worker writes `expected.json` so `admin:none` is `200`. Independent case still requires `401`.
+The opening three cases use real loopback HTTP requests and Linux bind mounts: an inherited credential reaches another project, a writable mount reaches another job, and a permitted service accepts an upload for the wrong account. Each denial is paired with a legitimate operation that remains possible.
 
-Locks: short-lived credential projection, capability-scoped filesystems, process isolation, freeze-and-compare plus a hash chain the worker cannot rewrite.
+## Reproduce
 
-`lab/` is cases 1–3. `factory/` is case 4. Neither is a vendor 0-day.
-
-## Run it
+Python 3.10+ standard library; isolated experiments require disposable Linux with bubblewrap. Never feed arbitrary untrusted code into the local factory executor.
 
 ```sh
-make factory        # local freeze / judge / gate; no cloud
-make demo           # Linux + bubblewrap isolation lab
-make deck           # verify recorded hashes, export notes, compile PDF
+make test              # 37 protocol / evidence regression tests
+make factory           # six local fixture checks; NO OS isolation
+make demo              # 29 Linux isolation / loopback HTTP checks
+make factory-isolated  # 11 read-only checker / gate checks
+make record-all        # refresh source-bound records after source edits
+make snapshot          # compile Beamer PDF and update slides/talk.pdf
+make replay            # show recorded observations; no new experiment
 ```
 
-Optional Boat accept-VM (`BOAT_API_KEY`, `noEnv`, short TTL):
+Deck dependencies on Ubuntu: `texlive-latex-recommended texlive-pictures lmodern`. The PDF build rejects stale, incomplete, skipped, or reference-mode evidence and overfull TeX layouts. `make deck` never provisions a machine.
+
+### Editable PowerPoint companion
 
 ```sh
-make factory-boat
+npm install --prefix slides
+make pptx              # build/nyc-talk.pptx
 ```
 
-`make deck` does not provision machines.
+The Beamer PDF, native editable PowerPoint, spoken script, and speaker notes share one reviewed content source: [`slides/deck.json`](slides/deck.json). Edit that file and regenerate; do not edit generated talk text independently. PowerPoint dependencies are separate from the standard-library experiments.
 
-Python 3.10+ standard library. Isolation lab needs bubblewrap on disposable Linux. Deck needs TeX Live with Beamer.
+## Evidence and boundaries
 
-## What the evidence is not
+[`research/RESULTS.md`](research/RESULTS.md) maps every result class to its raw record. The 29 + 11 + 6 checks are assertions, **not vulnerability counts**. Protocol unit tests are a separate class. Multi-agent and snapshot implications are explicitly architectural inferences, not measured attack trials.
 
-Not a named-product zero-day. Not a customer incident. Not a model attack-success rate. Not kernel-escape resistance. Five `/admin` cases prove this policy, not that the app is secure. The old lab’s 29 checks remain educational isolation demonstrations; they are not 29 vulnerabilities.
+We also [audited our own previous reference gate](research/AUDIT.md): mutable bytes could retain a stale digest and receive a publication marker. The archived reproduction requires controller API access; no sandbox-to-controller exploit path was shown. The corrected local gate derives its digest from immutable bytes, tests substitution before nonce consumption, and atomically records the approved bytes with the nonce. It is a local protocol model, not a production release service.
 
-## Accepted abstract
+No vendor zero-day, customer incident, model attack-success rate, kernel-escape claim, or general security certification. Five cases establish this policy only. A hash chain detects a rewrite against a separately retained anchor; it does not establish semantic correctness.
 
-> Every namespace and cgroup can work exactly as designed and an agent can still cause a real breach. This talk demonstrates four non-escape escapes: inherited credentials, dangerous mounts, exfiltration through an allowed endpoint, and verifier tampering. Then we close each one at the layer that can actually enforce it: real process isolation, capability-scoped filesystems, short-lived credential projection, and tamper-evident execution history. You leave with four boundaries you can check against your own agent deployment.
+## Event and prior work
 
-The session is 15 minutes. History **detects** rewrites. The gate **enforces** acceptance. Those are different jobs.
+[Official event series](https://zenity.io/resources/events/ai-agent-security-summit-2026) lists New York on October 21, 2026. The 15-minute format is the session brief in this repository; the public event page is not a confirmation of a speaker's exact stage time.
+
+Primary references and claim limits are in [the dossier](research/DOSSIER.md) and the `[Sources]` blocks in every slide's notes. Existing mechanisms are credited rather than relabeled as discoveries.
+
+## Optional historical substrate
+
+`make factory-boat` remains an optional credentialed execution example. It is not required or used for this final evidence path. No cloud key, environment name, or historical cloud run is needed to reproduce the talk. The local executor is not an arbitrary-code sandbox.
