@@ -1,0 +1,12 @@
+{
+  "name": "nyc-talk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Editable authoring mirror for the October 21 security talk",
+  "scripts": {
+    "build": "node slides/build.js"
+  },
+  "dependencies": {
+    "pptxgenjs": "4.0.0"
+  }
+}

@@ -5,6 +5,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: talk-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   linux-boundaries:
     runs-on: ubuntu-22.04
@@ -13,27 +16,31 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Capture the exact source for cold reproduction
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated runtime and PDF dependencies
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures texlive-fonts-recommended
+      - name: Unit and concurrency regressions
+        run: make test
+      - name: Reproduce both suites and record exact source hashes
+        run: make record
+      - name: Validate fresh isolated evidence
+        run: python3 tools/evidence.py
+      - name: Compile and package the recorded stage material
         run: |
-          mkdir -p build/release
-          git archive --format=tar HEAD > build/release/source.tar
-          git rev-parse HEAD > build/release/COMMIT.txt
-          sha256sum build/release/source.tar > build/release/SHA256SUMS
-      - name: Install isolated lab runtime
-        run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
-      - name: Run actual namespace and mount experiments
-        run: python3 lab/run.py --mode isolated --output build/evidence
-      - name: Run factory freeze/judge/gate (no cloud)
-        run: python3 -m factory.run --output build/factory
-      - name: Compile deck against checked-in evidence
-        run: make deck
+          npm install --ignore-scripts --no-audit --no-fund
+          make author
+          make snapshot
+          cp build/talk.pptx slides/talk.pptx
+          python3 tools/replay.py
+          python3 tools/package.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: isolated-lab-evidence
+          name: oct21-talk-and-evidence
           path: |
+            build/release
             build/evidence
             build/factory
-            build/release
-            slides/talk.pdf
           if-no-files-found: error

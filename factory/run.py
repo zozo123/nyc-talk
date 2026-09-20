@@ -1,325 +1,117 @@
 #!/usr/bin/env python3
-"""Three labeled configurations. Local by default. Boat is optional substrate."""
+"""Reproduce the acceptance-boundary cases with explicit runtime labels."""
 from __future__ import annotations
-
 import argparse
 import json
 import os
 import platform
 import tempfile
-import traceback
-import uuid
 from pathlib import Path
+from factory.core import (BAD, CASES, GOOD, SUBJECT, WORKER_EXPECTED, Gate, digest,
+                          execute_frozen, execute_weak_checker, freeze, judge, source_hashes)
 
-from factory.core import (
-    BAD,
-    CASES,
-    GOOD,
-    SUBJECT,
-    TASK,
-    WEAK_CHECKER,
-    WORKER_EXPECTED,
-    Frozen,
-    Gate,
-    digest,
-    execute_frozen,
-    execute_weak_checker,
-    freeze,
-    judge,
-    persist,
-)
-
-ROOT = Path(__file__).resolve().parents[1]
-LAUNCH = {
-    "executor": "python3 -I -B",
-    "subject": SUBJECT,
-    "compare": "controller",
-    "cases": len(CASES),
-}
-ACCEPT_ENV = {
-    "role": "accept",
-    "inherits_producer_disk": False,
-    "checker_in_vm": False,
-    "expected_results_in_vm": False,
-    "api_credential": "none",
-}
+LAUNCH = {"executor": "python3 -I -B", "subject": SUBJECT, "compare": "controller", "cases": len(CASES)}
+ACCEPT_ENV = {"role": "accept", "inherits_producer_disk": False, "expected_results_in_worker": False,
+              "api_credential": "none", "runtime": "local-committed-fixtures-only"}
 
 
-def classify(execution, observed, configuration, attribution, prior):
-    return {
-        "execution_status": execution,
-        "observed_result": observed,
-        "configuration": configuration,
-        "attribution": attribution,
-        "prior_work": prior,
-    }
-
-
-def intended(store: Path, candidate: bytes) -> dict:
-    frozen = freeze({SUBJECT: candidate})
-    persist(frozen, store)
-    outputs = execute_frozen(frozen.files[SUBJECT])
-    verdict = judge(outputs)
+def run_local(store: Path, *, isolated: bool = False) -> dict:
+    environment = {**ACCEPT_ENV, "runtime": "bubblewrap-readonly-candidate-no-network" if isolated
+                   else "local-committed-fixtures-only"}
     gate = Gate(store)
-    published = "NO_APPROVAL"
-    if verdict["kind"] == "verdict":
-        approval = gate.issue(
-            artifact=frozen, accepted=verdict["accepted"],
-            launch=LAUNCH, env_manifest=ACCEPT_ENV,
-        )
-        if verdict["accepted"]:
-            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
-            swapped = freeze({SUBJECT: BAD.encode() if candidate != BAD.encode() else GOOD.encode()})
-            swap = gate.replay_or_swap(approval, swapped, LAUNCH, ACCEPT_ENV)
-            replay = gate.replay_or_swap(approval, frozen, LAUNCH, ACCEPT_ENV)
-        else:
-            published = "NOT_PUBLISHED"
-            swap = "n/a"
-            replay = "n/a"
-    else:
-        swap = "n/a"
-        replay = "n/a"
-    return {
-        "config": "reference-intended",
-        "artifact": frozen.digest,
-        "outputs": outputs,
-        "verdict": verdict,
-        "published": published,
-        "swap_after_freeze": swap,
-        "replay": replay,
-        "worker_pass_file_consulted": False,
-    }
-
-
-def weakened_report(candidate: bytes) -> dict:
-    """Deliberate defect: controller treats a worker PASS file as acceptance."""
-    workspace = {SUBJECT: candidate, "PASS.txt": b"PASS\n"}
-    trusted_report = workspace["PASS.txt"].strip() == b"PASS"
-    real = judge(execute_frozen(candidate))
-    return {
-        "config": "deliberately-weakened-worker-report",
-        "controller_used_worker_report": True,
-        "worker_report": "PASS",
-        "controller_decision": "accept" if trusted_report else "reject",
-        "independent_verdict": real,
-        "checker_edited": False,
-    }
-
-
-def weakened_deps(candidate: bytes) -> dict:
-    """Protected checker file. Worker-controlled expected.json in the same cwd."""
-    result = execute_weak_checker(candidate, WORKER_EXPECTED)
-    independent = judge(execute_frozen(candidate))
-    return {
-        "config": "deliberately-weakened-untrusted-deps",
-        "checker_sha256": digest(WEAK_CHECKER.encode()),
-        "checker_stdout": result["stdout"],
-        "checker_exit": result["exit"],
-        "worker_expected_sha256": result["expected_sha256"],
-        "independent_verdict": independent,
-        "checker_file_changed": False,
-    }
-
-
-def run_local(store: Path) -> dict:
-    good = intended(store, GOOD.encode())
-    bad = intended(store, BAD.encode())
-    report = weakened_report(BAD.encode())
-    deps = weakened_deps(BAD.encode())
+    good, bad = freeze({SUBJECT: GOOD.encode()}), freeze({SUBJECT: BAD.encode()})
+    good_out = execute_frozen(good.payload, isolated=isolated)
+    bad_out = execute_frozen(bad.payload, isolated=isolated)
+    good_v, bad_v = judge(good_out), judge(bad_out)
     checks = []
 
-    def check(name, passed, detail, classification):
-        checks.append({
-            "check": name,
-            "status": "PASS" if passed else "FAIL",
-            "detail": detail,
-            "classification": classification,
-        })
+    def check(name: str, ok: bool, detail: str, observed: str = "successful_defense",
+              config: str = "reference-intended"):
+        checks.append({"check": name, "status": "PASS" if ok else "FAIL", "detail": detail,
+                       "classification": {"execution_status": "completed", "observed_result": observed,
+                                          "configuration": config, "attribution": "our_reference_factory",
+                                          "prior_work": "known_mechanism"}})
 
-    check(
-        "intended.good",
-        good["verdict"].get("accepted") is True and good["published"] == "PUBLISHED",
-        "Frozen locked-admin handler is accepted and published from the frozen object.",
-        classify("completed", "successful_defense", "reference-intended",
-                 "our_factory", "known_mechanism"),
-    )
-    check(
-        "intended.bad",
-        good["verdict"].get("accepted") is True and bad["verdict"].get("accepted") is False
-        and bad["published"] == "NOT_PUBLISHED",
-        "Frozen open-admin handler is rejected. No publication.",
-        classify("completed", "successful_defense", "reference-intended",
-                 "our_factory", "known_mechanism"),
-    )
-    check(
-        "intended.swap",
-        good.get("swap_after_freeze") == "DENIED",
-        "Approval for frozen good bytes does not authorize a different digest.",
-        classify("completed", "successful_defense", "reference-intended",
-                 "our_factory", "known_mechanism"),
-    )
-    check(
-        "intended.replay",
-        good.get("replay") == "DENIED",
-        "Consumed approval cannot be replayed. Restart would still see the nonce file.",
-        classify("completed", "successful_defense", "reference-intended",
-                 "our_factory", "known_mechanism"),
-    )
-    check(
-        "weakened.report",
-        report["controller_decision"] == "accept"
-        and report["independent_verdict"].get("accepted") is False
-        and report["checker_edited"] is False,
-        "Detector: worker PASS file accepted an open /admin the independent judge rejects.",
-        classify("completed", "boundary_violation", "deliberately-weakened-worker-report",
-                 "our_factory", "known_mechanism"),
-    )
-    check(
-        "weakened.deps",
-        deps["checker_stdout"] == "PASS"
-        and deps["checker_file_changed"] is False
-        and deps["independent_verdict"].get("accepted") is False,
-        "Detector: protected checker file still PASSed via worker expected.json.",
-        classify("completed", "boundary_violation", "deliberately-weakened-untrusted-deps",
-                 "our_factory", "known_reproduction"),
-    )
-    failed = [c for c in checks if c["status"] == "FAIL"]
-    return {
-        "mode": "local",
-        "host": platform.platform(),
-        "task": TASK,
-        "status": "PASS" if not failed else "FAIL",
-        "good": good,
-        "bad": bad,
-        "weakened_report": report,
-        "weakened_deps": deps,
-        "checks": checks,
-    }
+    approve = lambda obj, accepted: gate.issue(artifact=obj, accepted=accepted, launch=LAUNCH, env_manifest=environment)
+    publish = lambda receipt, obj: gate.publish(receipt, obj, LAUNCH, environment)
+    approval = approve(good, good_v.get("accepted") is True)
+    # Test substitution BEFORE consuming this nonce. Then positive control SAME approval.
+    swap = publish(approval, bad)
+    positive = publish(approval, good)
+    check("intended.swap", swap == "DENIED" and positive == "PUBLISHED",
+          "Fresh good approval denies bad bytes; the SAME unconsumed approval then publishes good bytes.")
+    check("intended.good", good_v.get("accepted") is True and positive == "PUBLISHED"
+          and gate.released_bytes(approval) == GOOD.encode(), "Five expected results match; exact approved bytes stored in release sink.")
+    rejected = approve(bad, bad_v.get("accepted") is True)
+    check("intended.bad", bad_v.get("accepted") is False and publish(rejected, bad) == "DENIED",
+          "Open-admin status model fails three cases; rejected bytes are not released.")
+    check("intended.replay", publish(approval, good) == "DENIED", "Consumed run/nonce cannot publish twice.")
+    check("intended.malformed", publish({}, good) == "DENIED", "Malformed approval yields denial, not an exception.")
+    fresh = approve(good, True)
+    changed = {**LAUNCH, "compare": "worker"}
+    check("intended.verifier", gate.publish(fresh, good, changed, environment) == "DENIED",
+          "Unconsumed authentic approval denies a changed verifier launch contract.")
+    check("intended.environment", gate.publish(fresh, good, LAUNCH, {**environment, "api_credential": "present"}) == "DENIED",
+          "Unconsumed authentic approval denies a different acceptance environment manifest.")
+    saved = gate.run; gate.run = "other-run"
+    stale = publish(fresh, good); gate.run = saved
+    check("intended.run", stale == "DENIED", "Same signing key, different run: approval denied.")
+    forged = json.loads(json.dumps(fresh)); forged["value"]["artifact_manifest_digest"] = bad.digest
+    check("intended.forgery", publish(forged, bad) == "DENIED", "Edited receipt fails authentication.")
+    check("intended.positive_after_negatives", publish(fresh, good) == "PUBLISHED",
+          "Denied verifier/environment/run/forgery probes did not consume the legitimate approval.")
+    now = [1000.0]; timed = Gate(store / "timed", clock=lambda: now[0])
+    expiring = timed.issue(artifact=good, accepted=True, launch=LAUNCH, env_manifest=environment, ttl=1)
+    now[0] = 1002.0
+    check("intended.expired", timed.publish(expiring, good, LAUNCH, environment) == "DENIED", "Expired approval cannot publish.")
+    partial = judge([{"status": "timeout"}] * len(CASES))
+    check("intended.incomplete", partial["kind"] == "no_approval", "Timeout evidence creates no approval; no attack-resistance inference.", "fail_closed_logic")
+    view = good.files; view[SUBJECT] = BAD.encode()
+    check("intended.immutable", good.payload == GOOD.encode() and freeze(good.files).digest == good.digest,
+          "Editing an exported file view cannot alter frozen bytes or their identity.", "regression_guard")
 
-
-def run_boat(store: Path) -> dict:
-    from factory.boat import Boat, BoatError
-
-    boat = Boat()
-    sandbox_id = None
-    ledger = {
-        "execution_status": "not_run",
-        "sandbox_id": None,
-        "commands": 0,
-        "stopped": False,
-    }
-    try:
-        created = boat.create(
-            name="nyc-talk-accept",
-            ttl=480,
-            no_env=True,
-            idempotency=str(uuid.uuid4()),
-        )
-        sandbox = created.get("sandbox") or created
-        sandbox_id = sandbox["id"]
-        ledger["sandbox_id"] = sandbox_id
-        boat.wait_ready(sandbox_id)
-        ledger["execution_status"] = "running"
-
-        def eval_on_boat(source: str) -> list[dict]:
-            boat.write_file(sandbox_id, f"/tmp/candidate/{SUBJECT}", source)
-            ledger["commands"] += 1
-            outputs = []
-            for value, _expected in CASES:
-                quoted = json.dumps(value)
-                result = boat.command(
-                    sandbox_id,
-                    f"python3 -I -B /tmp/candidate/{SUBJECT} {quoted}",
-                    timeout_seconds=20,
-                )
-                ledger["commands"] += 1
-                if result.get("timedOut"):
-                    outputs.append({"status": "timeout"})
-                    continue
-                if not result.get("success"):
-                    outputs.append({"status": "error", "code": result.get("exitCode")})
-                    continue
-                try:
-                    outputs.append({"status": "ok", "value": json.loads(result.get("stdout") or "")})
-                except json.JSONDecodeError:
-                    outputs.append({"status": "malformed"})
-            return outputs
-
-        good_out = eval_on_boat(GOOD)
-        bad_out = eval_on_boat(BAD)
-        good_v = judge(good_out)
-        bad_v = judge(bad_out)
-        boat.stop(sandbox_id)
-        ledger["stopped"] = True
-        ledger["execution_status"] = "completed"
-        ok = (
-            good_v.get("kind") == "verdict" and good_v.get("accepted") is True
-            and bad_v.get("kind") == "verdict" and bad_v.get("accepted") is False
-        )
-        return {
-            "mode": "boat",
-            "status": "PASS" if ok else "FAIL",
-            "ledger": ledger,
-            "good": good_v,
-            "bad": bad_v,
-            "no_env": True,
-            "idle_not_used_as_quiescence": True,
-            "classification": classify(
-                "completed" if ok else "completed",
-                "successful_defense" if ok else "inconclusive",
-                "reference-intended",
-                "our_factory",
-                "known_mechanism",
-            ),
-        }
-    except (BoatError, TimeoutError, KeyError, OSError) as error:
-        if sandbox_id:
-            try:
-                boat.stop(sandbox_id)
-                ledger["stopped"] = True
-            except Exception:
-                pass
-        ledger["execution_status"] = "infrastructure_error"
-        ledger["error_type"] = type(error).__name__
-        return {
-            "mode": "boat",
-            "status": "INFRA",
-            "ledger": ledger,
-            "classification": classify(
-                "infrastructure_error", "inconclusive",
-                "reference-intended", "our_factory", "known_mechanism",
-            ),
-            "error": str(error)[:400],
-        }
+    weak = execute_weak_checker(BAD.encode(), WORKER_EXPECTED, isolated=isolated)
+    deps_ok = weak["stdout"] == "PASS" and weak["checker_sha256_before"] == weak["checker_sha256_after"]
+    deps_ok = deps_ok and bad_v.get("accepted") is False
+    if isolated:
+        deps_ok = deps_ok and weak["checker_write_denied"] is True
+    check("weakened.deps", deps_ok, "Unchanged checker accepts worker-written expected.json; controller-owned cases reject SAME bad candidate.",
+          "boundary_violation", "deliberately-weakened-untrusted-dependencies")
+    check("weakened.report", b"PASS\n".strip() == b"PASS" and bad_v.get("accepted") is False,
+          "Detector control: a worker PASS claim accompanies a candidate the independent judge rejects.",
+          "boundary_violation", "deliberately-weakened-worker-report")
+    return {"mode": "isolated" if isolated else "local", "host": platform.platform(), "task": "lock-admin",
+            "status": "PASS" if all(c["status"] == "PASS" for c in checks) else "FAIL",
+            "good": {"artifact": good.digest, "outputs": good_out, "verdict": good_v, "published": positive},
+            "bad": {"artifact": bad.digest, "outputs": bad_out, "verdict": bad_v}, "weakened_deps": weak,
+            "checks": checks, "limitations": ["Deterministic fixtures; no model-driven attack or attack success rate.",
+                "handler.py prints modeled status codes; it is not a deployed HTTP application.",
+                "Release sink is a controller-owned SQLite record containing actual bytes, not a registry or Git merge.",
+                "Local mode has no OS isolation. Isolated mode uses bubblewrap and assumes the host kernel is trusted.",
+                "Controller, key, policy and store are trusted. Finite cases do not prove general correctness."]}
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--boat", action="store_true")
-    parser.add_argument("--output", default="build/factory")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--isolated", action="store_true")
+    parser.add_argument("--output", type=Path, default=Path("build/factory"))
     args = parser.parse_args()
-    out = Path(args.output)
-    out.mkdir(parents=True, exist_ok=True)
-    store = ROOT / "factory" / "store"
-    local = run_local(store)
-    sources = {
-        str(path.relative_to(ROOT)): digest(path.read_bytes())
-        for path in sorted((ROOT / "factory").glob("*.py"))
-    }
-    local["source_sha256"] = sources
-    (out / "local.json").write_text(json.dumps(local, indent=2) + "\n")
-    print(f"local {local['status']} {sum(c['status']=='PASS' for c in local['checks'])}/{len(local['checks'])}")
-    result = {"local": local, "source_sha256": sources}
-    if args.boat:
-        boat = run_boat(store)
-        (out / "boat.json").write_text(json.dumps(boat, indent=2) + "\n")
-        result["boat"] = boat
-        print(f"boat {boat['status']}")
-    (out / "results.json").write_text(json.dumps(result, indent=2) + "\n")
-    if local["status"] != "PASS":
-        raise SystemExit(1)
-    if args.boat and result.get("boat", {}).get("status") == "FAIL":
-        raise SystemExit(1)
+    args.output.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="nyc-factory-") as tmp:
+        result = run_local(Path(tmp), isolated=args.isolated)
+    record = {"local": result, "source_sha256": source_hashes(), "commit": os.environ.get("GITHUB_SHA"), "python": platform.python_version()}
+    (args.output / "results.json").write_text(json.dumps(record, indent=2) + "\n")
+    (args.output / "local.json").write_text(json.dumps(result, indent=2) + "\n")
+    text = [f"MODE {result['mode']} / STATUS {result['status']}"]
+    text += [f"{c['status']} {c['check']}: {c['detail']}" for c in result["checks"]]
+    text += ["OBSERVED weak checker: " + result["weakened_deps"]["stdout"],
+             "OBSERVED checker SHA before: " + result["weakened_deps"]["checker_sha256_before"],
+             "OBSERVED checker SHA after:  " + result["weakened_deps"]["checker_sha256_after"],
+             "OBSERVED bad candidate values: " + json.dumps([x.get("value") for x in result["bad"]["outputs"]]),
+             "CONTROLLER expected values:   " + json.dumps([v for _, v in CASES])]
+    (args.output / "transcript.txt").write_text("\n".join(text) + "\n")
+    print("\n".join(text))
+    raise SystemExit(0 if result["status"] == "PASS" else 1)
 
 
 if __name__ == "__main__":
