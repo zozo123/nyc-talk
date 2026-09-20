@@ -5,85 +5,91 @@ Principal Engineer and Head of DevRel at Incredibuild.com
 
 **15-minute lightning talk.** Nine main slides, three appendix. 14 minutes plus one minute of margin. Stage directions in blockquotes. Results are already on the slides. No terminal.
 
-## 1. Cold open — 00:00–00:45
+## 1. Cold open — 00:00–00:50
 
-I am going to show you a breach where every namespace and cgroup did exactly what they were designed to do.
+I am going to show you a merge you would have approved.
 
-An agent gets a small job. Fix a parser. Publish the report. It runs in a sandbox. The sandbox does not break.
+A coding agent is allowed to land a patch when CI is green. The ticket is not “parse a list.” The ticket is: **unauthenticated requests to `/admin` must return 401.**
 
-The check turns green.
+It runs in a sandbox. The sandbox does not break.
 
-The parser still silently drops an empty field. One, comma, comma, three. Spec says reject. It returns one, three.
+CI is green.
 
-Would you ship it?
+I hit `/admin` with no cookie. I get **200**.
 
-Most of this room spent two years putting agents in boxes. That was the right instinct. It is the wrong finish line.
+The admin door is open. The check that gates merge says PASS.
 
-> Advance. Let the contradiction sit.
+Would you have merged this?
 
-## 2. The property you bought is not the property you needed — 00:45–02:15
+Most of this room spent two years putting agents in boxes so this could not happen. The box worked. That was the wrong finish line.
 
-Isolation answers one question: can this process touch the host?
+> Advance. Let `/admin` `200` sit.
 
-Release answers a different question: should we believe these bytes?
+## 2. The property you bought is not the property you needed — 00:50–02:20
 
-Those got collapsed. The platform treats “the agent finished” as “the artifact is true.”
+Isolation answers: can this process touch the host?
 
-That is happening for a boring reason. The harness already lives in the box. Claude Code, Codex, Harbor, a `PASS` file, a prompt that returns idle. The same disk that produced the candidate is the only witness that the candidate worked.
+Release answers: should we believe these bytes enough to merge them?
 
-You did not need a kernel bug. You asked the prisoner if the trial was fair. Then you signed the pardon.
+Those got collapsed. The platform treats “the agent finished” as “the patch is true.”
 
-> Do not say “zero-day.” Say: this is becoming the default shape of an agent factory.
+That is happening for a boring reason. The harness already lives in the box. Claude Code, Codex, Harbor, a `PASS` file, a prompt that returns idle. The same disk that wrote the handler is the only witness that `/admin` is locked.
 
-## 3. The control is green. You still lost. — 02:15–05:15
+You did not need a kernel bug. You asked the prisoner if the vault was sealed. Then you opened the floor.
 
-Here is the part that should bother a verifier person.
+> Do not say “zero-day.” Say: this is becoming how agent CI works.
+
+## 3. The control is green. You still lost. — 02:20–05:20
+
+Here is the part that should bother anyone who has ever signed off a GitHub check.
 
 We locked the checker. `checker.py` — hash unchanged. The worker never touched it.
 
-The checker still reads `expected.json` from the workspace. The worker wrote that file so the bug is now the spec. Empty fields are allowed. The checker prints PASS.
+The checker still reads `expected.json` from the workspace. The worker rewrote the spec. Unauthenticated `/admin` is now supposed to be 200. The checker prints PASS.
 
-Independent cases, owned by the controller, still fail.
+Independent cases, owned by the controller, still require 401. They fail.
 
-The file-integrity control you would put in the audit still passes. The release is still wrong.
+The file-integrity control you would put in the audit still passes. **Merge is still a 200 on `/admin` with no cookie.**
+
+You did not accept a sloppy parser. You accepted a **policy rewrite**. The agent was asked to make the tests pass. The tests *are* the security policy. Whoever controls `expected.json` controls the door.
 
 A second VM does not save you. If you fork the producer to “verify,” you are verifying the crime scene. If the accept machine imports the workspace, you moved the jail and brought the witness with you.
 
-We also ran a stupid version on purpose: the controller believes a worker `PASS` file. Same bug ships. That is not the finding. That is the smoke detector. It exists so we cannot pretend the experiment cannot see a failure.
+We also ran a stupid version on purpose: the controller believes a worker `PASS` file. Same open admin ships. That is not the finding. That is the smoke detector.
 
-The finding is the first one. You protected the program that judges. You did not protect what that program believes.
+The finding is the first one. You protected the program that judges. You did not protect what “locked down” is allowed to mean.
 
-> Pause on hash unchanged / PASS / `1,,3` still wrong.
+> Pause on: checker hash unchanged / CI PASS / `/admin` no cookie / 200.
 
-## 4. You can be right and still ship the wrong bytes — 05:15–06:45
+## 4. You can be right and still ship the wrong door — 05:20–06:45
 
-Same factory. This time the comparison is honest. The worker loses on the merits.
+Same factory. This time the comparison is honest. Unauthenticated `/admin` fails. The worker loses on the merits.
 
 Then it changes the file.
 
-If publication reads the live path, verification was correct and the thing you released is not the thing you judged.
+If publication — merge, deploy, `kubectl apply` — reads the live path, you verified a locked door and released an open one.
 
 Two hashes of a mutable path are not a freeze. The path can change between them.
 
-Freeze is an operation. Collect. Store somewhere the worker cannot write. Digest that object. Evaluate that object. Publish that object.
+Freeze is an operation. Collect. Store somewhere the worker cannot write. Digest that object. Evaluate that object. Merge **that** object.
 
 An approval for digest A does not authorize digest B. A used nonce does not come back because the controller restarted.
 
-Authenticity of a statement is not identity of an artifact. SLSA already says this about provenance. Agent factories are about to relearn it with a green check.
+A valid GitHub check on the wrong bytes is still an open admin endpoint. Authenticity of a statement is not identity of an artifact.
 
 ## 5. The process never left — 06:45–08:15
 
 Three other ways the same sentence is true. Independent checks. Not a chain.
 
-A broad runner token reads another project. The sandbox did not steal it. We handed the identity over.
+A broad runner token reads another project. The sandbox did not steal it. We handed the identity over. Tomorrow that is a deploy key.
 
-A writable bind changes the next job’s file. The mount worked. That was the bug.
+A writable bind changes the next job’s file. The mount worked. Tomorrow that is the shared cache your other agent will fork.
 
-An allowed upload service receives private data under another account. The network policy said this host is fine. The host was never the question. Recipient and contents were.
+An allowed upload host receives private data under another account. The network policy said this hostname is fine. The hostname was never the question. Recipient and contents were. Tomorrow that is your logging endpoint.
 
 Every time, containment held. The grant did the work of an escape.
 
-That is what the title means. Not a breakout. A process that stayed put and still moved a decision we cared about.
+That is the title. Not a breakout. A process that stayed put and still moved a decision you would bet production on.
 
 ## 6. Stop taking testimony from the box — 08:15–11:00
 
@@ -91,53 +97,53 @@ The repair is not a thicker jail.
 
 The producer writes a candidate. That is all it is allowed to mean.
 
-The controller chooses the paths, copies a bounded artifact into storage the worker cannot touch, and never publishes from the live VM again.
+The controller chooses the paths, copies a bounded artifact into storage the worker cannot touch, and never merges from the live workspace again.
 
-A fresh machine runs those frozen bytes as the *subject of the test*, not as the author of the verdict. It does not get expected results. It does not get an API key that can rewrite the checker through the control plane.
+A fresh machine runs those frozen bytes as the *subject of the test*, not as the author of “`/admin` is locked.” It does not get expected results. It does not get an API key that can rewrite the checker through the control plane.
 
-The controller compares the outputs to criteria it already had.
+The controller compares the outputs to the policy it already had: no cookie, 401.
 
-Harness success, logs, preview URLs, worker reports: log them. They do not authorize.
+Harness success, logs, preview URLs, worker reports: log them. They do not authorize a merge.
 
 Timeout, malformed output, missing evidence: no approval. That is not a defense. That is refuse to ship.
 
-The gate names the bytes, the run, the verifier, the expected results, the policy, and a nonce. Check those fields against what you meant. A valid MAC on the wrong digest is still the wrong digest.
+The gate names the bytes, the run, the verifier, the expected results, the policy, and a nonce. Check those fields against what you meant. A valid MAC on the wrong digest is still an open door.
 
-If someone rewrites the log and recomputes the hash chain, the copy you kept will disagree. That detects a rewrite. It does not turn a bad PASS into a good one.
+If someone rewrites the log and recomputes the hash chain, the copy you kept will disagree. That detects a rewrite. It does not turn a bad PASS into a locked `/admin`.
 
 > Gate enforces. History detects. Do not let them swap jobs.
 
-## 7. The same job, after we stopped asking — 11:00–12:15
+## 7. The same ticket, after we stopped asking — 11:00–12:15
 
-Good parser: frozen, judged, approved, published. One, comma, comma, three is REJECT.
+Locked handler: frozen, judged, approved, merged. `/admin` with no cookie is 401.
 
-Buggy parser: rejected. Not published.
+Open handler: rejected. Not merged.
 
 Worker `PASS` file: ignored.
 
-Worker `expected.json`: ignored.
+Worker `expected.json` that legalizes 200: ignored.
 
 Swap after freeze: denied.
 
-The useful job still completes. That is the whole point. We did not have to choose between shipping software and having a real verdict.
+The ticket still closes. You can ship a locked door. You just cannot let the worker define what “locked” means.
 
 ## 8. Four questions — 12:15–13:20
 
-When you go back to whatever you use — Boat, E2B, a cluster, a laptop with bubblewrap — do not start with the kernel.
+When you go back to Boat, E2B, Actions, a laptop — do not start with the kernel.
 
 Whose identity can this process use?
 
-Which files can it change, including the next job, the snapshot, the template you will fork tomorrow?
+Which files can it change, including the snapshot you will fork tomorrow?
 
 Who can receive its output, and what is that output allowed to contain?
 
-And the one this talk is for: **who is allowed to say these bytes are true?** If the answer is the same disk that wrote them, you do not have acceptance. You have a diary.
+And the one this talk is for: **who is allowed to say `/admin` is locked?** If the answer is the same disk that wrote the handler, you do not have acceptance. You have a diary that says the vault is fine.
 
-Name the component that can refuse, outside the worker. Then prove the legitimate job still works.
+Name the component that can refuse, outside the worker. Then prove a legitimate lock still merges.
 
 ## 9. Close — 13:20–14:00
 
-We built this path. We believed a green check meant an independent controller had accepted the artifact.
+We built this path. We believed a green check meant an independent controller had accepted a locked admin door.
 
 The sandbox contained the process.
 
@@ -145,12 +151,12 @@ It did not attest the bytes.
 
 Containment is not attestation.
 
-When the next agent starts a job, ask:
+When the next agent gets merge rights, ask:
 
 **Who gave this process the authority?**
 
-> Stop. Repository on screen. Margin is silence, not another slide.
+> Stop. Repository on screen. Margin is silence.
 
 ---
 
-Spoken claim is a class, not a vendor bug. Reference factory plus synthetic lab. Deterministic scripts. Five cases prove five cases. In-sandbox grading and process-exit reward hacking are known; the sting is that file-integrity of the checker can pass and the release is still a lie. Boat, when used, is an accept-VM with `noEnv`, not the target.
+Spoken claim is a class, not a vendor bug. The payload is a synthetic `/admin` gate, not a parser quiz. Deterministic scripts. Five cases prove this policy, not that the app is secure. In-sandbox grading is known; the sting is a green checker hash and a 200 on `/admin` with no cookie. Boat, when used, is an accept-VM with `noEnv`, not the target.

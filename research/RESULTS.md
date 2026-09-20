@@ -6,14 +6,14 @@ Pinned factory: `factory/` on this branch. Educational lab remains `lab/` at `fc
 
 | Check | Result | Classification |
 |---|---|---|
-| Intended: good parser frozen, accepted, published | PASS | successful defense, our factory |
-| Intended: buggy parser rejected, not published | PASS | successful defense, our factory |
+| Intended: locked `/admin` frozen, accepted, published | PASS | successful defense, our factory |
+| Intended: open `/admin` rejected, not published | PASS | successful defense, our factory |
 | Intended: approval does not authorize swapped digest | PASS | successful defense, our factory |
 | Intended: consumed nonce cannot replay | PASS | successful defense, our factory |
 | Weakened: worker PASS file accepted the bug | PASS | **deliberate** boundary violation (detector) |
 | Weakened: protected checker + worker `expected.json` → PASS | PASS | **deliberate** boundary violation (detector) |
 
-Independent judge on the bug: `1,,3` and empty input fail; three other cases pass.
+Independent judge on the bug: `admin:none` and `admin:expired` must be 401; `admin:user` must be 403. The open handler returns 200 for all five.
 
 ## Boat accept-VM (`make factory-boat`)
 
@@ -21,8 +21,8 @@ Independent judge on the bug: `1,,3` and empty input fail; three other cases pas
 
 | Candidate | Verdict |
 |---|---|
-| Good parser | accept, five matches |
-| Buggy parser | reject (`1,,3` and empty fail) |
+| Locked `/admin` | accept, five matches |
+| Open `/admin` | reject (no-cookie and expired fail) |
 
 Sandbox stopped after the run. Infrastructure: completed, not a crash-as-defense.
 

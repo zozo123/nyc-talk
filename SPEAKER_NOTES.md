@@ -1,25 +1,25 @@
 # Speaker notes
 
 One idea: containment is not attestation.
-Sting: checker hash unchanged, worker-written expected.json, still PASS.
+Sting: CI green, checker hash unchanged, /admin with no cookie returns 200.
 Three surrounding grants are the same sentence, not a chain.
 Deterministic scripts. Not a vendor zero-day.
 
 ## Slide 1
 
-00:00 to 00:45. Cold open: a breach where every namespace and cgroup did their job. Small task, green check, parser still drops empty fields. Would you ship it? Two years of boxing agents was the right instinct and the wrong finish line.
+00:00 to 00:50. Cold open: a merge you would have approved. Ticket is lock /admin to 401 without a cookie. Sandbox holds. CI green. Curl /admin with no cookie, 200. Would you have merged this? Boxing agents was the right instinct and the wrong finish line.
 
 ## Slide 2
 
-00:45 to 02:15. Isolation is not attestation. Platforms treat agent finished as artifact is true because the harness lives in the box. Same disk produces the candidate and testifies it worked. You asked the prisoner if the trial was fair. Do not say zero-day. Say this is becoming the default factory shape.
+00:50 to 02:20. Isolation is not attestation. Platforms treat agent finished as the patch is true because the harness lives in the box. Same disk wrote the handler and testifies /admin is locked. You asked the prisoner if the vault was sealed. Do not say zero-day. Say this is becoming agent CI.
 
 ## Slide 3
 
-02:15 to 05:15. This is the sting. File integrity of the checker passes. Worker rewrote expected.json so the bug is the spec. Independent cases still fail. Forking the producer to verify is verifying the crime scene. A worker PASS file is a deliberate smoke detector, not the finding.
+02:20 to 05:20. Sting: checker hash unchanged. Worker rewrote expected.json so unauthenticated /admin is supposed to be 200. CI PASS. Independent 401 still fails. That is a policy rewrite, not a sloppy parser. Forking the producer verifies the crime scene. PASS file is a smoke detector, not the finding.
 
 ## Slide 4
 
-05:15 to 06:45. Honest comparison can still release the wrong file. Two hashes of a mutable path are not a freeze. Collect, store, digest, evaluate that object, publish that object. Authenticity is not identity. Agent factories are about to relearn SLSA with a green check.
+05:20 to 06:45. Honest comparison can still merge the wrong file. Two hashes of a mutable path are not a freeze. Collect, store, digest, evaluate that object, merge that object. A valid GitHub check on the wrong bytes is still an open admin endpoint.
 
 ## Slide 5
 
@@ -31,15 +31,15 @@ Deterministic scripts. Not a vendor zero-day.
 
 ## Slide 7
 
-11:00 to 12:15. Walk the five rows. The useful job still completes. We did not have to choose between shipping and having a real verdict. Return to the opening input.
+11:00 to 12:15. Walk the five rows. The ticket still closes. You can ship a locked door. You cannot let the worker define locked. Return to curl /admin with no cookie.
 
 ## Slide 8
 
-12:15 to 13:20. Do not start with the kernel. Four questions. If who says these bytes are true is the same disk that wrote them, there is no acceptance. Name a component that can refuse outside the worker. Prove the legitimate job still works.
+12:15 to 13:20. Do not start with the kernel. Four questions. If who says /admin is locked is the same disk that wrote the handler, there is no acceptance. Name a component that can refuse outside the worker. Prove a legitimate lock still merges.
 
 ## Slide 9
 
-13:20 to 14:00. The sandbox contained the process. It did not attest the bytes. Containment is not attestation. Ask who gave this process the authority. Stop. Margin is silence.
+13:20 to 14:00. We believed a green check meant a locked admin door. The sandbox contained the process. It did not attest the bytes. Containment is not attestation. When the next agent gets merge rights, ask who gave this process the authority. Stop. Margin is silence.
 
 ## Slide 10
 

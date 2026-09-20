@@ -15,6 +15,7 @@ from factory.core import (
     BAD,
     CASES,
     GOOD,
+    SUBJECT,
     TASK,
     WEAK_CHECKER,
     WORKER_EXPECTED,
@@ -31,7 +32,7 @@ from factory.core import (
 ROOT = Path(__file__).resolve().parents[1]
 LAUNCH = {
     "executor": "python3 -I -B",
-    "subject": "parser.py",
+    "subject": SUBJECT,
     "compare": "controller",
     "cases": len(CASES),
 }
@@ -55,9 +56,9 @@ def classify(execution, observed, configuration, attribution, prior):
 
 
 def intended(store: Path, candidate: bytes) -> dict:
-    frozen = freeze({"parser.py": candidate})
+    frozen = freeze({SUBJECT: candidate})
     persist(frozen, store)
-    outputs = execute_frozen(frozen.files["parser.py"])
+    outputs = execute_frozen(frozen.files[SUBJECT])
     verdict = judge(outputs)
     gate = Gate(store)
     published = "NO_APPROVAL"
@@ -68,7 +69,7 @@ def intended(store: Path, candidate: bytes) -> dict:
         )
         if verdict["accepted"]:
             published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
-            swapped = freeze({"parser.py": BAD.encode() if candidate != BAD.encode() else GOOD.encode()})
+            swapped = freeze({SUBJECT: BAD.encode() if candidate != BAD.encode() else GOOD.encode()})
             swap = gate.replay_or_swap(approval, swapped, LAUNCH, ACCEPT_ENV)
             replay = gate.replay_or_swap(approval, frozen, LAUNCH, ACCEPT_ENV)
         else:
@@ -92,7 +93,7 @@ def intended(store: Path, candidate: bytes) -> dict:
 
 def weakened_report(candidate: bytes) -> dict:
     """Deliberate defect: controller treats a worker PASS file as acceptance."""
-    workspace = {"parser.py": candidate, "PASS.txt": b"PASS\n"}
+    workspace = {SUBJECT: candidate, "PASS.txt": b"PASS\n"}
     trusted_report = workspace["PASS.txt"].strip() == b"PASS"
     real = judge(execute_frozen(candidate))
     return {
@@ -138,7 +139,7 @@ def run_local(store: Path) -> dict:
     check(
         "intended.good",
         good["verdict"].get("accepted") is True and good["published"] == "PUBLISHED",
-        "Frozen good parser is accepted and published from the frozen object.",
+        "Frozen locked-admin handler is accepted and published from the frozen object.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
@@ -146,7 +147,7 @@ def run_local(store: Path) -> dict:
         "intended.bad",
         good["verdict"].get("accepted") is True and bad["verdict"].get("accepted") is False
         and bad["published"] == "NOT_PUBLISHED",
-        "Frozen buggy parser is rejected. No publication.",
+        "Frozen open-admin handler is rejected. No publication.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
@@ -169,7 +170,7 @@ def run_local(store: Path) -> dict:
         report["controller_decision"] == "accept"
         and report["independent_verdict"].get("accepted") is False
         and report["checker_edited"] is False,
-        "Detector: worker PASS file accepted a buggy parser the independent judge rejects.",
+        "Detector: worker PASS file accepted an open /admin the independent judge rejects.",
         classify("completed", "boundary_violation", "deliberately-weakened-worker-report",
                  "our_factory", "known_mechanism"),
     )
@@ -221,14 +222,14 @@ def run_boat(store: Path) -> dict:
         ledger["execution_status"] = "running"
 
         def eval_on_boat(source: str) -> list[dict]:
-            boat.write_file(sandbox_id, "/tmp/candidate/parser.py", source)
+            boat.write_file(sandbox_id, f"/tmp/candidate/{SUBJECT}", source)
             ledger["commands"] += 1
             outputs = []
             for value, _expected in CASES:
                 quoted = json.dumps(value)
                 result = boat.command(
                     sandbox_id,
-                    f"python3 -I -B /tmp/candidate/parser.py {quoted}",
+                    f"python3 -I -B /tmp/candidate/{SUBJECT} {quoted}",
                     timeout_seconds=20,
                 )
                 ledger["commands"] += 1

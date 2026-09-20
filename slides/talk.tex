@@ -37,7 +37,7 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{00:00 to 00:45. Cold open: a breach where every namespace and cgroup did their job. Small task, green check, parser still drops empty fields. Would you ship it? Two years of boxing agents was the right instinct and the wrong finish line.}
+\note{00:00 to 00:50. Cold open: a merge you would have approved. Ticket is lock /admin to 401 without a cookie. Sandbox holds. CI green. Curl /admin with no cookie, 200. Would you have merged this? Boxing agents was the right instinct and the wrong finish line.}
 \end{frame}
 
 \begin{frame}{You bought a cage}
@@ -45,34 +45,34 @@
 \vspace{4mm}
 \bigline{Release asks:\\should we believe\\these bytes?}
 \subline{Those two questions got collapsed.}
-\note{00:45 to 02:15. Isolation is not attestation. Platforms treat agent finished as artifact is true because the harness lives in the box. Same disk produces the candidate and testifies it worked. You asked the prisoner if the trial was fair. Do not say zero-day. Say this is becoming the default factory shape.}
+\note{00:50 to 02:20. Isolation is not attestation. Platforms treat agent finished as the patch is true because the harness lives in the box. Same disk wrote the handler and testifies /admin is locked. You asked the prisoner if the vault was sealed. Do not say zero-day. Say this is becoming agent CI.}
 \end{frame}
 
 \begin{frame}[fragile]{The control is green. You still lost.}
 \begin{lstlisting}
-checker.py            hash unchanged
-expected.json         worker-written
-task check            PASS
+checker.py              hash unchanged
+expected.json           worker-written
+CI / merge check        PASS
 
-independent "1,,3"    REJECT required
-actual                [1, 3]
+GET /admin  (no cookie) 401 required
+shipped                 200
 \end{lstlisting}
-\subline{You protected the judge. Not what the judge believes.}
+\subline{You did not accept a bad parser. You accepted a policy rewrite.}
 \evidence
-\note{02:15 to 05:15. This is the sting. File integrity of the checker passes. Worker rewrote expected.json so the bug is the spec. Independent cases still fail. Forking the producer to verify is verifying the crime scene. A worker PASS file is a deliberate smoke detector, not the finding.}
+\note{02:20 to 05:20. Sting: checker hash unchanged. Worker rewrote expected.json so unauthenticated /admin is supposed to be 200. CI PASS. Independent 401 still fails. That is a policy rewrite, not a sloppy parser. Forking the producer verifies the crime scene. PASS file is a smoke detector, not the finding.}
 \end{frame}
 
-\begin{frame}{We verified A. We shipped B.}
+\begin{frame}{We verified a locked door. We merged an open one.}
 \begin{tabular}{@{}ll@{}}
-Publish from the live path after a swap & \textcolor{alarm}{Wrong artifact}\\[10pt]
+Merge from the live path after a swap & \textcolor{alarm}{Open /admin}\\[10pt]
 Hash the path, hash it again & \textcolor{alarm}{The path can move}\\[10pt]
-Evaluate and publish the frozen object & \textcolor{acid}{Same digest}\\[10pt]
+Evaluate and merge the frozen object & \textcolor{acid}{Same digest}\\[10pt]
 Approval for A applied to B & \textcolor{acid}{Denied}
 \end{tabular}\par
 \vspace{3mm}
-\subline{A valid signature on the wrong bytes is still the wrong bytes.}
+\subline{A green check on the wrong bytes is still a 200 with no cookie.}
 \evidence
-\note{05:15 to 06:45. Honest comparison can still release the wrong file. Two hashes of a mutable path are not a freeze. Collect, store, digest, evaluate that object, publish that object. Authenticity is not identity. Agent factories are about to relearn SLSA with a green check.}
+\note{05:20 to 06:45. Honest comparison can still merge the wrong file. Two hashes of a mutable path are not a freeze. Collect, store, digest, evaluate that object, merge that object. A valid GitHub check on the wrong bytes is still an open admin endpoint.}
 \end{frame}
 
 \begin{frame}[fragile]{The process never left}
@@ -89,22 +89,22 @@ release    the allowed host was never the question
 \begin{frame}{Stop taking testimony from the box}
 \bigline{The candidate is a subject.\\It is not a witness.}
 \vspace{3mm}
-\subline{Freeze the bytes. Compare off the worker. Publish that object.}
-\subline{A green harness is a log line. It is not an approval.}
+\subline{Freeze the bytes. Compare off the worker. Merge that object.}
+\subline{A green harness is a log line. It is not a 401.}
 \evidence
 \note{08:15 to 11:00. Repair is not a thicker jail. Controller freezes chosen paths. Fresh machine runs frozen bytes as the subject. Controller owns expected results. No accept-VM key that can rewrite the checker. Timeout is no approval, not a defense. Gate names bytes, run, verifier, expected results, policy, nonce. History detects rewrite. History does not authorize.}
 \end{frame}
 
-\begin{frame}{Same job. Different witness.}
+\begin{frame}{Same ticket. Different witness.}
 \begin{tabular}{@{}ll@{}}
-Good parser, frozen & \textcolor{acid}{Published. 1,,3 rejects.}\\[8pt]
-Buggy parser & \textcolor{acid}{Rejected}\\[8pt]
+Locked /admin, frozen & \textcolor{acid}{Merged. No cookie is 401.}\\[8pt]
+Open /admin & \textcolor{acid}{Rejected}\\[8pt]
 Worker PASS file & \textcolor{acid}{Ignored}\\[8pt]
 Worker expected.json & \textcolor{acid}{Ignored}\\[8pt]
 Swap after freeze & \textcolor{acid}{Denied}
 \end{tabular}\par
 \evidence
-\note{11:00 to 12:15. Walk the five rows. The useful job still completes. We did not have to choose between shipping and having a real verdict. Return to the opening input.}
+\note{11:00 to 12:15. Walk the five rows. The ticket still closes. You can ship a locked door. You cannot let the worker define locked. Return to curl /admin with no cookie.}
 \end{frame}
 
 \begin{frame}{If the writer is also the witness}
@@ -113,9 +113,9 @@ Swap after freeze & \textcolor{acid}{Denied}
 Whose identity? & You handed it over\\[8pt]
 Which files, including tomorrow's? & Snapshots and forks keep the crime\\[8pt]
 Which recipient, which contents? & The allowed host was the wrong question\\[8pt]
-Who says these bytes are true? & You do not have acceptance. You have a diary.
+Who says /admin is locked? & You do not have acceptance. You have a diary.
 \end{tabular}\par
-\note{12:15 to 13:20. Do not start with the kernel. Four questions. If who says these bytes are true is the same disk that wrote them, there is no acceptance. Name a component that can refuse outside the worker. Prove the legitimate job still works.}
+\note{12:15 to 13:20. Do not start with the kernel. Four questions. If who says /admin is locked is the same disk that wrote the handler, there is no acceptance. Name a component that can refuse outside the worker. Prove a legitimate lock still merges.}
 \end{frame}
 
 \begin{frame}[plain]
@@ -125,7 +125,7 @@ Who says these bytes are true? & You do not have acceptance. You have a diary.
 \vspace{7mm}
 {\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
 \subline{Yossi Eliaz}
-\note{13:20 to 14:00. The sandbox contained the process. It did not attest the bytes. Containment is not attestation. Ask who gave this process the authority. Stop. Margin is silence.}
+\note{13:20 to 14:00. We believed a green check meant a locked admin door. The sandbox contained the process. It did not attest the bytes. Containment is not attestation. When the next agent gets merge rights, ask who gave this process the authority. Stop. Margin is silence.}
 \end{frame}
 
 \begin{frame}[fragile]{Appendix / Reproduction}

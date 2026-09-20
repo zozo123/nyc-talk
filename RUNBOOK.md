@@ -10,9 +10,9 @@ PDF on screen. No live terminal. One idea: containment is not attestation. The s
 
 | Clock | Slide | Beat |
 |---|---|---|
-| 00:00–00:45 | 1 | Cold open: namespaces held, still a breach |
-| 00:45–02:15 | 2 | Cage vs belief: isolation is not attestation |
-| 02:15–05:15 | 3 | Checker hash unchanged, expected.json worker-written |
+| 00:00–00:50 | 1 | Cold open: CI green, `/admin` no cookie is 200 |
+| 00:50–02:20 | 2 | Cage vs belief: isolation is not attestation |
+| 02:20–05:20 | 3 | Checker hash unchanged; policy rewrite via expected.json |
 | 05:15–06:45 | 4 | Verified A, shipped B |
 | 06:45–08:15 | 5 | Process never left: token, mount, allowed host |
 | 08:15–11:00 | 6 | Subject, not witness |

@@ -8,7 +8,7 @@ source = (ROOT / "slides/talk.tex").read_text()
 frames = re.findall(r"\\begin\{frame\}(.*?)\\end\{frame\}", source, re.S)
 output = ["# Speaker notes", "",
           "One idea: containment is not attestation.",
-          "Sting: checker hash unchanged, worker-written expected.json, still PASS.",
+          "Sting: CI green, checker hash unchanged, /admin with no cookie returns 200.",
           "Three surrounding grants are the same sentence, not a chain.",
           "Deterministic scripts. Not a vendor zero-day.", ""]
 for number, frame in enumerate(frames, 1):

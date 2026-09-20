@@ -13,9 +13,7 @@ NYC · AI Agent Security Summit · October 21, 2026
 
 **Containment is not attestation.** Isolation answers whether a process can touch the host. Release answers whether we should believe these bytes. Agent factories are collapsing those questions because the harness already lives in the box.
 
-The sting is not a kernel escape and not a writable checker. We lock `checker.py`. The hash is unchanged. The checker still reads worker-written `expected.json`. PASS. The bug ships. The control you would audit is green.
-
-The spine is a **reference software factory** in `factory/`:
+The sting is not a kernel escape and not a CSV parser. A coding agent may merge when CI is green. The ticket is: unauthenticated `/admin` must be 401. We lock `checker.py`. Hash unchanged. The checker still reads worker-written `expected.json` so no-cookie `/admin` is “supposed” to be 200. CI PASS. Curl still gets 200. The control you would audit is green. That is a **policy rewrite**, then a merge.
 
 The spine is a **reference software factory** in `factory/`:
 
@@ -25,7 +23,7 @@ The spine is a **reference software factory** in `factory/`:
 4. Controller compares against **controller-owned** expected results.
 5. A gate binds artifact, run, verifier bundle, expected results, policy and nonce, then publishes **the frozen object**.
 
-The finding we spend time on: **the checker file was protected; `expected.json` was not.** The worker matched the bug. PASS. Independent criteria still failed.
+The finding we spend time on: **the checker file was protected; `expected.json` was not.** The worker legalized an open admin door. PASS. Independent criteria still required 401.
 
 A worker `PASS` file the controller believes is a **deliberate weakened variant** (the experiment can detect failure). It is not an unexpected discovery.
 
@@ -51,7 +49,7 @@ Python 3.10+ standard library. Isolation lab needs bubblewrap on disposable Linu
 
 ## What the evidence is not
 
-Not a named-product zero-day. Not a customer incident. Not a model attack-success rate. Not kernel-escape resistance. Five parser cases prove those five cases. The old lab’s 29 checks remain educational isolation demonstrations; they are not 29 vulnerabilities.
+Not a named-product zero-day. Not a customer incident. Not a model attack-success rate. Not kernel-escape resistance. Five `/admin` cases prove this policy, not that the app is secure. The old lab’s 29 checks remain educational isolation demonstrations; they are not 29 vulnerabilities.
 
 ## Accepted abstract
 

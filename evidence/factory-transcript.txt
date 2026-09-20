@@ -1,13 +1,11 @@
 MODE local / STATUS PASS
-PASS intended.good: Frozen good parser is accepted and published from the frozen object.
-PASS intended.bad: Frozen buggy parser is rejected. No publication.
+PASS intended.good: Frozen locked-admin handler is accepted and published from the frozen object.
+PASS intended.bad: Frozen open-admin handler is rejected. No publication.
 PASS intended.swap: Approval for frozen good bytes does not authorize a different digest.
 PASS intended.replay: Consumed approval cannot be replayed. Restart would still see the nonce file.
-PASS weakened.report: Detector: worker PASS file accepted a buggy parser the independent judge rejects.
+PASS weakened.report: Detector: worker PASS file accepted an open /admin the independent judge rejects.
 PASS weakened.deps: Detector: protected checker file still PASSed via worker expected.json.
 
 MODE boat / STATUS PASS
-noEnv True
 good {'kind': 'verdict', 'accepted': True, 'matches': [True, True, True, True, True]}
-bad {'kind': 'verdict', 'accepted': False, 'matches': [True, False, False, True, True]}
-stopped True
+bad {'kind': 'verdict', 'accepted': False, 'matches': [False, True, False, True, False]}
