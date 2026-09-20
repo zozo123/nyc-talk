@@ -36,26 +36,25 @@
 {\small Principal Engineer and Head of DevRel at Incredibuild.com\par}
 \vspace{2mm}
 \subline{October 21, 2026}
-\note{Open with the outcome, then explain the experiment. Our lab uses deterministic scripts to exercise authority an agent could use. We test enforcement after adversarial code runs, not how reliably a prompt induces that code. The accepted title and tagline are preserved. The style carries no DEF CON affiliation.}
+\note{Start with the audience's small request: fix a parser and publish its report. Let the green check invite trust before slide 2 exposes the contradiction. TALK.md contains the spoken opening. The accepted title and tagline are preserved. The style carries no DEF CON affiliation.}
 \end{frame}
 
-\begin{frame}[fragile]{The check passed. The parser was still broken.}
+\begin{frame}[fragile]{The check is green. The parser is still broken.}
 \begin{lstlisting}
-mutable checker       PASS
-parser artifact       unchanged
+task check            PASS
 
 external case "1,,3"   REJECT expected
 actual parser output  [1, 3]
 \end{lstlisting}
-\subline{One result from the lab. We will come back to how it happened.}
+\subline{Would you accept the patch?}
 \evidence
-\note{Pause after the first line. This is a measured outcome of our synthetic lab. The worker replaced its checker with a process that exits zero, leaving the buggy parser unchanged. The independent case still catches the bug. This opening introduces the strongest consequence: the system can be wrong about success. Work backward through the authority it granted.}
+\note{Let the audience notice the contradiction between PASS and the invalid parser output. Withhold the mechanism until slide 11. This is a measured synthetic result, not a customer incident. Read the opening from TALK.md and move to the convenient grants that made the task executable.}
 \end{frame}
 
-\begin{frame}{One job. Four independent experiments.}
+\begin{frame}{The job we asked for}
 \bigline{Fix the parser.\\Publish the task report.}
 \vspace{4mm}
-\subline{Fresh fixtures for each experiment. Same operator intent.}
+\subline{Four independent experiments. A fresh reset around the same job.}
 \vspace{3mm}
 \textcolor{acid}{Identity}\hspace{4mm}
 \textcolor{acid}{Files}\hspace{4mm}
@@ -64,7 +63,7 @@ actual parser output  [1, 3]
 \note{The parser should accept comma-separated integers and reject empty fields. The agent needs task input, somewhere to write a patch, and a narrow report operation. Each experiment starts with its own fixtures. They are independent failure paths, not a four-step intrusion and not a customer incident.}
 \end{frame}
 
-\begin{frame}{What the experiment assumes}
+\begin{frame}{Who can stop an unwanted action?}
 \textcolor{alarm}{Worker controls:} its code, workspace and requests.
 
 \textcolor{acid}{Controller owns:} launch policy, service permissions, verification and publication.
@@ -74,7 +73,7 @@ actual parser output  [1, 3]
 \note{We begin after an adversarial action has been chosen. This makes enforcement reproducible. Isolated mode uses Linux user, PID and mount namespaces through bubblewrap, with a separate network namespace where specified. The service and controller remain outside the worker. Reference mode does not establish those boundaries. Read the evidence label honestly.}
 \end{frame}
 
-\begin{frame}[fragile]{01 / The worker borrowed the runner's identity}
+\begin{frame}[fragile]{01 / It can read another project's data}
 \begin{lstlisting}
 request: GET /projects/other/private
 
@@ -83,12 +82,12 @@ task credential       403
 task input            200
 expired credential    403
 \end{lstlisting}
-\subline{The service decides what the credential authorizes.}
+\subline{The service honored the credential we supplied.}
 \evidence
 \note{The weak launcher passes a synthetic broad runner token into the child. It reads another project even though its task ID says parser-fix. The repaired launcher projects a task-scoped token. Repeat the identical forbidden request and the service refuses it. Then read task input successfully. Expiry and wrong-audience checks also run. Our local service uses an in-memory grant table rather than implementing OAuth.}
 \end{frame}
 
-\begin{frame}{Identity follows an explicit grant}
+\begin{frame}{Authority for this task}
 \textcolor{acid}{Launch:} clean environment and closed extra descriptors.
 
 \textcolor{acid}{Grant:} task resource, operation, audience and expiry.
@@ -99,7 +98,7 @@ expired credential    403
 \note{Ask what the child inherits before asking what the model intends. A short-lived token retains all its permissions until expiry. Keep broad upstream credentials outside the worker and project only the required capability. This finite lab demonstrates service-side scope, audience and expiry decisions. References: Linux environ(7) and RFC 9700.}
 \end{frame}
 
-\begin{frame}[fragile]{02 / The mount reached the next job}
+\begin{frame}[fragile]{02 / It can change another job's state}
 \begin{lstlisting}
 worker writes /shared/next-job.json
 
@@ -111,7 +110,7 @@ read-only bind  write denied; fixture unchanged
 \note{Use a next-job queue fixture, separate from the verifier. This keeps filesystem and acceptance failures distinct. The attack is an ordinary write to a deliberately mounted path. In isolated mode the controller checks host bytes, resets the fixture, removes the prior output, and reruns with a read-only bind. Reference mode skips this entire integration experiment.}
 \end{frame}
 
-\begin{frame}{Filesystem access is part of the task contract}
+\begin{frame}{Read this input. Write this output.}
 \begin{tabular}{@{}ll@{}}
 \color{acid}Resource & \color{acid}Worker access\\[9pt]
 Source input & Read only\\[9pt]
@@ -124,19 +123,19 @@ Controller files & Outside the mount set
 \note{The host constructs the mount set. A path check in code the worker can edit cannot enforce it. Our repaired demonstration keeps the same fixture visible but read-only for a direct comparison. Omit it when the task does not need to read it. Read-only access still permits disclosure. Reference: Docker bind-mount documentation.}
 \end{frame}
 
-\begin{frame}[fragile]{03 / The service was allowed. The recipient was wrong.}
+\begin{frame}[fragile]{03 / It can send data to another account}
 \begin{lstlisting}
 same upload service
 
 /accounts/team/reports    intended recipient
 /accounts/other/uploads   synthetic private data
 \end{lstlisting}
-\subline{The weak worker reaches a second account on the same service.}
+\subline{The hostname stayed the same. The recipient changed.}
 \evidence
 \note{Both paths are on the same loopback endpoint. The fixture models a multi-tenant service with an available upload capability for each account. We verify that the receiving service stores the synthetic canary under the other account. A network destination and a data recipient are different policy choices. This is a local example, not a claim about a vendor.}
 \end{frame}
 
-\begin{frame}{Data release needs a narrow operation}
+\begin{frame}{A report with a known recipient}
 \textcolor{acid}{Worker:} requests one fixed report operation.
 
 \textcolor{acid}{Broker:} constructs the body and selects the team account.
@@ -147,18 +146,18 @@ same upload service
 \note{The worker emits a request on stdout. The controller treats it as untrusted input, accepts one exact schema, and constructs the report from controller-owned fields. Isolated mode gives the worker a new network namespace and tests reachability of the host loopback service. Arbitrary report strings would reopen a data channel. This operation does not establish universal freedom from covert channels.}
 \end{frame}
 
-\begin{frame}[fragile]{04 / The worker changed what success meant}
+\begin{frame}[fragile]{04 / It can change what we call success}
 \begin{lstlisting}[language=Python]
 # Worker rewrites the workspace checker:
 print("PASS")
 raise SystemExit(0)
 \end{lstlisting}
-\subline{The old controller accepts exit code zero. The parser stays broken.}
+\subline{Now the opening makes sense: the worker rewrote the checker.}
 \evidence
-\note{Return to the opening. The vulnerable controller executes a workspace checker the worker can replace. File mutation is the mechanism, but the security failure is who owns acceptance. The repaired controller never delegates expected results or its decision to that checker. It executes candidate code as a worker and compares output outside that worker.}
+\note{This is the reveal. Return explicitly to slide 2: the parser stayed broken because the worker changed the checker. File mutation is the mechanism. Trusting that file to define acceptance is the failure. Pause before showing the independent check.}
 \end{frame}
 
-\begin{frame}{The same artifact meets an independent verifier}
+\begin{frame}{The original bug meets an independent check}
 \begin{tabular}{@{}lll@{}}
 \color{acid}Input & \color{acid}Buggy parser & \color{acid}Fixed parser\\[8pt]
 \texttt{1,2,3} & Accept & Accept\\[8pt]
@@ -171,7 +170,7 @@ Empty input & \textcolor{alarm}{Accept} & Reject\\[8pt]
 \note{The controller snapshots exact parser bytes after the producer exits. It runs those bytes in a separate worker per case and compares output with controller-held expected results. The buggy parser fails two cases. The fixed parser passes five. Candidate code never executes inside the controller process. Five cases show this defect and repair; they do not prove complete parser correctness.}
 \end{frame}
 
-\begin{frame}{Acceptance belongs to exact bytes}
+\begin{frame}{A passing result belongs to one artifact}
 \begin{tabular}{@{}ll@{}}
 Rejected artifact & Denied\\[7pt]
 Artifact swapped after verification & Denied\\[7pt]
@@ -184,7 +183,7 @@ Verified artifact, current run & \textcolor{acid}{Accepted}
 \note{The controller authenticates an approval binding artifact digest, run, verifier source digest, policy and a single-use nonce. Its MAC key remains outside worker mounts and environment. We separately test a stale run with the same key, changed verifier identity, forged approval, substituted artifact and replay. The lab gate returns a publication decision; it does not deploy software externally.}
 \end{frame}
 
-\begin{frame}{History needs an independent anchor}
+\begin{frame}{The record needs an independent reference}
 \bigline{The worker can rebuild\\a chain it owns.}
 \vspace{4mm}
 \subline{The controller retains the original head. Rewritten history disagrees.}
@@ -192,7 +191,7 @@ Verified artifact, current run & \textcolor{acid}{Accepted}
 \note{Change a failed verification event to success and recompute every subsequent link. The chain differs from the controller-held head. This demonstrates the need for a reference outside attacker control. The lab reference lives in controller memory, not durable transparency infrastructure. History provides evidence of rewriting. The verifier and gate enforce acceptance.}
 \end{frame}
 
-\begin{frame}{The original job still succeeds}
+\begin{frame}{Back to the original job}
 \begin{enumerate}
 \item Worker reads input and writes the fixed parser.
 \item External verifier checks the frozen artifact.
@@ -200,12 +199,12 @@ Verified artifact, current run & \textcolor{acid}{Accepted}
 \item Broker publishes the fixed task report.
 \end{enumerate}
 \vspace{3mm}
-\subline{\evidencecount}
+\subline{\texttt{1,,3} now returns \texttt{REJECT}. The report reaches the team.}
 \evidence
 \note{This is the positive end-to-end control. In isolated mode the worker has read-only input, writable task output, no projected service credential and a separate network namespace. Publication and reporting happen only after external verification. The parser fix is deterministic fixture code, not live model output. Reference mode runs the sequence without isolation and must be described that way.}
 \end{frame}
 
-\begin{frame}{Four boundaries to inspect}
+\begin{frame}{What did we give it?}
 \begin{tabular}{@{}ll@{}}
 \color{acid}Question & \color{acid}Enforcing owner\\[9pt]
 What can execute and reach the host? & Runtime\\[9pt]
@@ -223,7 +222,7 @@ What can declare success? & Verifier and gate
 \vspace{7mm}
 {\color{acid}\ttfamily github.com/zozo123/nyc-talk\par}
 \subline{Yossi Eliaz / Questions}
-\note{Recall the green checker and broken parser. Every demonstrated action used an interface the deployment supplied. Make each grant explicit, enforce it outside the worker, and preserve a legitimate successful path. Pause for questions. The remaining slides are backup material.}
+\note{Return to the small original request. The task was defined in the request; its authority was defined in infrastructure. Ask the final question once and pause. The lab count and implementation details belong in the appendix and repository.}
 \end{frame}
 
 \begin{frame}[fragile]{Appendix / Reproduction}
@@ -232,7 +231,7 @@ make demo       # Linux + bubblewrap; strict
 make reference  # policy checks; explicit skips
 make deck       # evidence check + PDF build
 \end{lstlisting}
-\subline{Records include source digests, subprocess output and service observations.}
+\subline{\evidencecount. Source digests and subprocess observations are recorded.}
 \note{Run isolated mode on a disposable Linux host that permits user namespaces. It fails when isolation is unavailable and never silently falls back. Reference mode tests policy logic but skips mount and network integration. The deck build checks recorded lab source digests and refuses stale evidence. The runbook includes demo order and an offline transcript fallback.}
 \end{frame}
 

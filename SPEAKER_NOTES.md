@@ -5,11 +5,11 @@ The workers are deterministic scripts. No claim of model-driven exploitation.
 
 ## Slide 1
 
-Open with the outcome, then explain the experiment. Our lab uses deterministic scripts to exercise authority an agent could use. We test enforcement after adversarial code runs, not how reliably a prompt induces that code. The accepted title and tagline are preserved. The style carries no DEF CON affiliation.
+Start with the audience's small request: fix a parser and publish its report. Let the green check invite trust before slide 2 exposes the contradiction. TALK.md contains the spoken opening. The accepted title and tagline are preserved. The style carries no DEF CON affiliation.
 
 ## Slide 2
 
-Pause after the first line. This is a measured outcome of our synthetic lab. The worker replaced its checker with a process that exits zero, leaving the buggy parser unchanged. The independent case still catches the bug. This opening introduces the strongest consequence: the system can be wrong about success. Work backward through the authority it granted.
+Let the audience notice the contradiction between PASS and the invalid parser output. Withhold the mechanism until slide 11. This is a measured synthetic result, not a customer incident. Read the opening from TALK.md and move to the convenient grants that made the task executable.
 
 ## Slide 3
 
@@ -45,7 +45,7 @@ The worker emits a request on stdout. The controller treats it as untrusted inpu
 
 ## Slide 11
 
-Return to the opening. The vulnerable controller executes a workspace checker the worker can replace. File mutation is the mechanism, but the security failure is who owns acceptance. The repaired controller never delegates expected results or its decision to that checker. It executes candidate code as a worker and compares output outside that worker.
+This is the reveal. Return explicitly to slide 2: the parser stayed broken because the worker changed the checker. File mutation is the mechanism. Trusting that file to define acceptance is the failure. Pause before showing the independent check.
 
 ## Slide 12
 
@@ -69,7 +69,7 @@ Map every permission to a component that can refuse the action outside worker co
 
 ## Slide 17
 
-Recall the green checker and broken parser. Every demonstrated action used an interface the deployment supplied. Make each grant explicit, enforce it outside the worker, and preserve a legitimate successful path. Pause for questions. The remaining slides are backup material.
+Return to the small original request. The task was defined in the request; its authority was defined in infrastructure. Ask the final question once and pause. The lab count and implementation details belong in the appendix and repository.
 
 ## Slide 18
 

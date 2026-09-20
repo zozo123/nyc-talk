@@ -13,6 +13,8 @@ NYC · AI Agent Security Summit · October 21, 2026
 
 One task: **fix a parser and publish its report**.
 
+The talk opens on a green check and a parser that still fails its original case. It holds the explanation until act four. Between those moments, each experiment shows how a convenient grant lets the worker affect something beyond its task. The ending returns to the same input and shows the repaired system completing the job.
+
 Four independent experiments reveal excess authority:
 
 1. **Identity:** an inherited runner credential reads another project.

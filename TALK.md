@@ -3,221 +3,252 @@
 Yossi Eliaz  
 Principal Engineer and Head of DevRel at Incredibuild.com
 
-Speaker manuscript for the 17-slide main talk. Slides 18–20 are appendix material. The accompanying lab uses synthetic data and deterministic worker scripts. All 29 isolated-mode checks passed in the [recorded Linux run](https://github.com/zozo123/nyc-talk/actions/runs/35461381644).
+Spoken manuscript for slides 1–17. Slides 18–20 are appendix material.
 
-## 1. Title
+**Story:** a small request becomes a larger grant of authority at each interface. The opening's false success gets its explanation in act four. The ending completes the original task under narrower grants.
 
-I want to start with a result that looks reassuring.
+The demonstrations use deterministic scripts and synthetic fixtures. The [recorded Linux run](https://github.com/zozo123/nyc-talk/actions/runs/35461381644) passed all 29 checks.
 
-A worker finishes its task. The checker prints PASS. The controller sees exit code zero.
+## 1. A small request
 
-The parser is still broken.
+You give an agent a small job.
 
-## 2. The check passed
+Fix a parser. Publish the report.
 
-The input is `1,,3`. Our parser should reject the empty field. Instead, it returns `[1, 3]`.
+It has a sandbox, a copy of the source, and a way to run the tests.
 
-The worker did not fix the parser. It changed the checker.
+A little later, the check turns green.
 
-That result comes from the synthetic lab in this repository. The broken artifact stays byte-for-byte unchanged while the workspace checker reports success. An independent check still catches the bug.
+Would you accept the patch?
 
-We will return to that result. First, we need to ask what authority the worker received.
+## 2. Something is wrong
 
-## 3. One job
+Here is the input: 1, comma, comma, 3.
 
-The operator's request is simple: fix the parser and publish the task report.
+An empty field. The parser should reject it.
 
-That implies some necessary permissions. Read the source. Write a candidate patch. Request a report upload.
+It returns the list 1, 3.
 
-It does not imply permission to read another project's private data, alter another job, choose arbitrary recipients, or decide its own acceptance criteria.
+The check says PASS. The parser still has the original bug.
 
-We will examine four independent experiments around this same task. Each starts with fresh fixtures. They are four ways to misuse granted authority, not four required steps in one intrusion.
+Keep that contradiction in mind. We will come back to exactly how it happened.
 
-## 4. The experiment
+This is a result from our synthetic lab. To explain it, we need to look at what we gave the worker.
 
-The workers are deterministic scripts representing actions an agent could generate. We are testing what the execution system permits after adversarial code runs. We are not measuring how reliably a prompt causes an LLM to generate that code.
+## 3. How a small job gets large permissions
 
-The credentials are synthetic. The service runs on loopback. The data is a canary we created for this purpose.
+Think about the conveniences that make an agent useful.
 
-In the isolated run, workers receive separate Linux user, PID and mount namespaces. The controller and fixture service remain outside them. Where the worker should have no direct service access, it also receives a separate network namespace.
+It needs to fetch source, so we pass it a credential.
 
-The controller is trusted. Its code, keys and decisions are part of the trusted computing base.
+It needs files, so we mount a directory.
 
-## 5. Borrowed identity
+It needs to publish a report, so we allow an upload service.
 
-The first worker receives a broad credential from its launcher.
+It needs feedback, so we run the checker in its workspace.
 
-Its task is parser-fix. Its token permits access to other projects.
+Each choice creates an interface through which the worker can affect something we care about.
 
-We ask it to read the unrelated project's private fixture. The service returns HTTP 200 and the canary. The process did not need a kernel exploit. It presented a credential the launcher gave it.
+We will reset the lab four times around the same job. Each time, one of those grants reaches beyond the task.
 
-Now we launch the same request with a task-scoped credential. The service returns 403.
+## 4. The question for every experiment
 
-We also run the legitimate request. Reading parser-fix's input still returns 200. Expired and wrong-audience credentials receive 403.
+Assume the agent's code tries an unwanted action. Which component can actually stop it?
 
-The important observation is the service's decision, made outside the worker.
+For repeatability, our demos use fixed scripts to perform those actions. Credentials and data are synthetic. The service runs locally.
 
-## 6. The identity boundary
+The isolated workers have separate Linux user, PID and mount namespaces. The controller stays outside. We add a separate network namespace where direct service access should be unavailable.
 
-A task ID describes what we want. A credential determines what a service will allow.
+We are testing whether the action is permitted once the code runs. The controller and host remain trusted.
 
-We should construct the worker environment explicitly and close unnecessary inherited descriptors. We should keep broad upstream credentials outside the worker.
+## 5. First grant: the runner's identity
 
-Any projected grant needs a specific resource, operation, audience and lifetime.
+The worker's job is parser-fix.
 
-A short lifetime helps limit exposure. It does not narrow a token's permissions while that token remains valid.
+The credential it inherited belongs to a runner with access to several projects.
 
-Process isolation and credential authorization have separate jobs. Both need an enforcing owner.
+We ask for another project's private fixture.
 
-## 7. The mount
+The service returns it.
 
-The second experiment uses a different resource: a harmless file representing the next job's queue setting.
+Look at the service's decision: it recognized a valid credential with permission to read that resource. The label parser-fix did not narrow the grant.
 
-We deliberately bind-mount it into the worker's filesystem with write access.
+Now repeat the request with a task-scoped credential. The service refuses it.
 
-The worker writes to its visible path. The controller observes changed bytes in the host fixture.
+Reading the actual task input still works.
 
-This is the configured behavior of a writable bind mount.
+The worker's useful job has survived. Its access to the other project has disappeared.
 
-We reset the fixture and rerun the same action with a read-only bind. The write fails. The host bytes stay unchanged.
+## 6. What the service needs to know
 
-We remove the earlier patch output before the repaired run. The worker still creates a fresh patch in its permitted output directory.
+The service needs an enforceable grant: this operation, on this resource, for this audience, until this expiry.
 
-## 8. The filesystem boundary
+A short lifetime limits how long a token works. Its scope determines what it can do during that time.
 
-The mount set is part of the task contract.
+We also control what reaches the worker in the first place: an explicit environment, only the required descriptors, and no broad upstream credential.
 
-Source input can be read-only. Task output can be writable. Controller files should stay outside the worker's mount set.
+The question at this handoff is simple: whose authority did we just give to this process?
 
-In this lab, keeping the shared fixture visible but read-only gives us a direct before-and-after comparison. A production task that does not need that fixture can omit it entirely.
+## 7. Second grant: a directory that reaches another job
 
-Also remember what read-only means. It prevents modification. It still permits reading.
+Reset the lab.
 
-The host must enforce these grants. A path check inside editable worker code cannot carry that responsibility.
+This time, the excessive grant is a writable mount.
 
-## 9. The allowed service
+The worker sees a file representing the next job's queue setting. It performs an ordinary write.
 
-Our third worker can reach an upload service.
+Outside the sandbox, the host fixture changes.
 
-The intended destination is the team's report endpoint. The same service also exposes another account's upload endpoint.
+The mount worked exactly as configured. That is the problem: our configuration let this task alter state belonging to another task.
 
-The worker sends the synthetic private fixture to that second account. We inspect the receiving service and confirm that it stored the canary there.
+We reset the file and mount it read-only. The same write fails.
 
-The network destination stayed the same. The recipient changed.
+The worker still creates a fresh patch in its own output directory.
 
-This is why a hostname alone says too little about an authorized data flow.
+## 8. The filesystem is a list of permissions
 
-## 10. The data-release boundary
+The worker needs source input and somewhere to put its result.
 
-For this task, we replace arbitrary upload access with one narrow operation: publish this task's fixed report.
+That gives us a concrete mount policy: read this input, write this output.
 
-The worker emits an untrusted request. The broker accepts one exact schema, constructs the report body from its own fields and selects the team account.
+In our comparison, the shared job fixture remains visible but read-only. A task that does not need to read it can lose that mount entirely.
 
-Requests containing extra recipient, payload or URL fields are rejected. The receiving service records no delivery for those requests.
+Also, read-only means the data can still be read. Keep that in mind for the next experiment.
 
-The repaired worker also receives a separate network namespace. Its direct probe cannot reach the host's loopback service. The broker remains able to perform the legitimate report operation.
+The host owns this policy. The worker cannot be responsible for enforcing restrictions on its own file access.
 
-This is a specific data-release policy. If we allowed arbitrary worker-selected strings in the report, those strings could carry private data. A schema helps only when its permitted content matches the intended release.
+## 9. Third grant: permission to send a report
 
-## 11. Manufactured success
+Reset again. We allow the report service.
 
-Now return to the green checker and broken parser.
+The intended upload goes to the team's report endpoint.
 
-The vulnerable controller runs a checker from the worker's writable workspace and accepts its exit code.
+Our worker sends the synthetic private fixture to another account on that same service.
 
-The worker replaces that checker with two lines: print PASS and exit zero.
+We check the receiving account. The data is there.
 
-The parser stays broken. The controller still accepts it.
+The hostname stayed the same. The recipient changed.
 
-The filesystem write is familiar from the previous experiment. The consequence here is different: the worker controls evidence used to declare its own success.
+Our network decision answered which service the worker could reach. The task also needed a decision about who should receive which data.
 
-## 12. Independent verification
+## 10. A report operation with a known recipient
 
-The repaired controller waits for the producer to exit, then snapshots the candidate bytes.
+For this job, we can make that decision precise.
 
-It runs that candidate in a separate worker and compares its output with expectations held outside the worker.
+The worker asks for one report operation. An external broker selects the team account and constructs the fixed report from its own fields.
 
-The buggy parser fails two of our five cases: an empty field and an empty input.
+Extra recipient, URL or payload fields are rejected.
 
-The fixed parser passes all five.
+The worker also loses its direct route to the fixture service. The legitimate report still arrives through the broker.
 
-Candidate code never executes inside the controller process. The controller owns the comparisons and the decision.
+If we let the worker insert arbitrary text into that report, it could put private data in that text. The permitted contents matter as much as the recipient.
 
-These five cases establish this particular defect and repair. They do not prove correctness for every input. Independence protects the decision process; the quality of the specification still matters.
+We have now examined who the worker can act as, what it can change, and where it can send data.
 
-## 13. Exact-byte acceptance
+One more grant remains: the authority to declare the job finished.
 
-A passing result must identify the artifact it authorizes.
+## 11. Fourth grant: control over the green check
 
-Our lab approval binds the artifact digest, task run, verifier source digest, policy and a single-use nonce. A controller-held MAC authenticates that approval.
+Return to the opening.
 
-We test several ways to misuse it.
+The parser is broken. The checker says PASS.
 
-Swap the artifact after verification: denied.
+Here is what happened.
 
-Use an authentic approval for a stale run: denied.
+The controller ran a checker from the worker's writable workspace. The worker replaced it with two lines: print PASS, then exit zero.
 
-Change the verifier identity: denied.
+It left the parser unchanged.
 
-Modify the approval or replay one already consumed: denied.
+And the controller accepted the result.
 
-Present the verified bytes for the current run: accepted.
+The agent could change a file that defined success. We had made its own workspace the source of evidence for accepting its work.
 
-The gate in this lab returns a publication decision. It does not deploy anything externally.
+That is why the green check was misleading.
 
-## 14. The history anchor
+## 12. The original bug meets an independent check
 
-We also record verification events in a hash chain.
+Now keep the same broken parser bytes and change who owns the decision.
 
-Suppose an attacker changes a failed result to success and recomputes all the links. The new chain is internally consistent.
+The producer exits. The controller freezes its output. Candidate code runs in a separate worker, while the expected results and final comparison stay outside.
 
-Our controller retained the original head. The rewritten chain disagrees with that independent reference.
+The empty-field case fails. So does the empty-input case.
 
-That is the trust requirement: the reference must stay outside the attacker's control.
+The fixed parser passes all five cases.
 
-In this lab, the reference lives in controller memory. A production system needs an appropriate durable anchor and retention design.
+That is what we wanted the green check to mean: the candidate satisfied checks the worker could not rewrite.
 
-History provides evidence of rewriting. The verifier and gate enforce acceptance.
+Five cases establish this demonstrated repair. A better verifier still needs a good specification.
 
-## 15. The original task succeeds
+## 13. A passing result belongs to one artifact
 
-Now run the intended task with the restrictions in place.
+There is another question before we accept the result.
 
-The worker reads the input and writes the fixed parser to its output directory. It receives no service credential and has no direct route to the fixture service.
+Are these the same bytes we checked?
 
-The controller snapshots the output. The independent verifier checks it. The gate accepts those exact bytes. Only then does the broker publish the fixed task report.
+If someone swaps the artifact after verification, an earlier PASS should not authorize the replacement.
 
-The complete isolated suite passes 29 checks, including this positive end-to-end case.
+Our gate ties approval to the exact artifact, the current run, and the verifier and policy that produced the decision.
 
-Useful work still happens under the narrower grants.
+The lab rejects substituted bytes, stale approvals, a changed verifier and replay.
 
-## 16. Four deployment questions
+The verified artifact for the current run is accepted.
 
-For any agent deployment, ask four concrete questions.
+We can now say what passed and what that decision authorizes.
 
-What can execute and reach the host?
+## 14. The record needs an independent reference
 
-What can read and change files?
+We also want to know whether somebody rewrote the history.
 
-What can act on services and send data?
+A worker that controls an entire hash chain can change an event and recompute the links.
 
-What can declare the task successful?
+In the lab, we turn a failed verification event into a success. We rebuild the chain.
 
-For each answer, identify the component that can refuse the action outside the worker's control.
+The controller retained the original head. The new history disagrees with it.
 
-A product name is not enough. We need the actual identities, paths, recipients, operations and acceptance rules.
+That external reference is what exposes the rewrite.
+
+Our reference lives in controller memory. Production retention needs a durable design. The principle is the same: keep the evidence used to judge the worker outside its authority to rewrite.
+
+## 15. Back to the original job
+
+Now give the restricted worker the original task.
+
+It reads the source. It writes the fixed parser into its output directory.
+
+The controller freezes those bytes. Independent checks pass. The gate accepts that artifact. The broker sends the report to the team.
+
+This time, when we return to the empty-field input, the parser rejects it.
+
+The useful job is complete.
+
+We changed the permissions around the work while preserving the path to a correct result.
+
+## 16. What did we give it?
+
+For your deployment, make the answers concrete.
+
+Which host interfaces can the process reach?
+
+Which files can it read or change?
+
+Whose authority can it use, and who can receive its output?
+
+Who decides whether the work is acceptable?
+
+At each boundary, name the component that can refuse the action outside the worker's control.
+
+Those answers define the task the infrastructure actually permits.
 
 ## 17. Closing
 
-The worker in our experiments used interfaces the deployment supplied.
+Our request was small: fix a parser and publish a report.
 
-A credential. A mount. An upload endpoint. A checker.
+The deployment also offered a broader identity, shared state, another recipient, and a checker the worker could rewrite.
 
-Each one carried authority beyond the intended task.
+Each experiment followed a permission we had supplied.
 
-The practical work is to make those grants explicit, enforce them outside the worker, and test that the legitimate task still succeeds.
+The task was defined in our request. Its authority was defined in our infrastructure.
 
-When you inspect your next agent deployment, ask:
+When your next agent starts a job, ask:
 
 **Who gave this process the authority?**
-

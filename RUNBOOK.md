@@ -10,6 +10,17 @@ Each experiment uses fresh synthetic fixtures. Each repair blocks the unwanted a
 
 The audience leaves with a concrete question for every interface: **who can refuse this action outside the worker's control?**
 
+## Delivery arc
+
+- **Opening:** show PASS alongside the broken parser output. Ask whether the audience would accept the patch. Hold the explanation until slide 11.
+- **Setup:** make the engineering choices recognizable: pass a credential, mount files, allow a report service, run a workspace checker.
+- **Escalation:** another project's data, another job's state, another account's inbox, then the operator's confidence in success.
+- **Reveal:** the worker rewrote the checker. Connect this explicitly to the opening.
+- **Resolution:** the restricted worker completes the original task; the same invalid input now gets rejected.
+- **Close:** the request defined the task; infrastructure defined the authority. Ask the final question and pause.
+
+Keep the 29-check count and detailed cryptographic fields in the appendix or Q&A. Use the main narrative to connect each permission to its consequence. Say once that the cases reset independently; avoid implying a cumulative intrusion or an observed customer incident. Use TALK.md for the spoken wording.
+
 ## Before presenting
 
 1. Read the current `evidence/transcript.txt`. Confirm its mode is isolated before describing kernel-enforced results.
