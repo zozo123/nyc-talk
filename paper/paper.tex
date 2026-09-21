@@ -26,12 +26,12 @@
 {\large Yossi Eliaz, PhD}\\[2pt]
 {\small Principal Engineer and Head of DevRel, Incredibuild}\\[8pt]
 {\color{acid}\rule{0.42\textwidth}{1.4pt}}\\[8pt]
-{\small\textit{Who controls what makes the work releasable?}}
+{\small\textit{The agent changes the answers. The check goes green.}}
 \end{center}
 
 \begin{abstract}
 \noindent
-The harness edits the proof the verifier reads. A developer asks an AI harness to fix authorization. The harness works in a dev sandbox. A verifier loads \texttt{expected.json} from that workspace. A GitHub CI runner promotes on PASS. A prod sandbox runs those bytes. The dev sandbox can do its job and the runner can still promote a bug. This paper is the written companion to a fifteen-minute lightning talk. On real Linux, with bubblewrap, a worker inherits a broad CI-style token, writes another job's file through a mount, publishes on an allowed host, and turns a read-only checker from \texttt{FAIL} to \texttt{PASS} by editing \texttt{expected.json}. The candidate bytes never change. Controller-owned cases reject those bytes. A corrected handler passes the same five cases. A fresh approval refuses a substituted artifact, publishes the original bytes, and refuses a replay. The breach rides the promotion. The credential, the mounts, the publish, and the answer key each need an owner outside the worker, and the legitimate job still has to complete.
+The agent changes the answers. The check goes green. A developer asks an AI harness to fix authorization. The harness works in a dev sandbox. A verifier loads \texttt{expected.json} from that workspace. A GitHub CI runner promotes on PASS. A prod sandbox runs those bytes. The dev sandbox can do its job and the runner can still promote a bug. This paper is the written companion to a fifteen-minute lightning talk. On real Linux, with bubblewrap, a worker inherits a broad CI-style token, writes another job's file through a mount, publishes on an allowed host, and turns a read-only checker from \texttt{FAIL} to \texttt{PASS} by editing \texttt{expected.json}. The candidate bytes never change. Controller-owned cases reject those bytes. A corrected handler passes the same five cases. A fresh approval refuses a substituted artifact, publishes the original bytes, and refuses a replay. The breach rides the promotion. The credential, the mounts, the publish, and the answer key each need an owner outside the worker, and the legitimate job still has to complete.
 \end{abstract}
 
 \section{The line}

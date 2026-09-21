@@ -6,29 +6,29 @@
 
 Attendance is confirmed. Slides are due 9 October. Speaker dinner follows the happy hour. A logistics note to Ian, Anna, Kayla, and Neil is still awaiting reply. Do not invent a stage time on the day.
 
-The spoken script contains 1,396 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
+The spoken script contains 1,200 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
 
 | Clock | Slide | Stage action |
 |---|---:|---|
-| 00:00-00:35 | 1 | Dev sandbox held. CI runner green. Prod sandbox got the bug. |
-| 00:35-01:30 | 2 | Read spec, harness, verifier, runner, prod. Then the line. |
-| 01:30-02:20 | 3 | Two files. handler.py prints 200. The checker trusts expected.json. |
-| 02:20-03:30 | 4 | Runner token 200, task token 403, this job's input still 200. |
-| 03:30-04:40 | 5 | Next-job file changes, then the same write is denied. |
-| 04:40-05:50 | 6 | 201 on the wrong account, then the runner's own report. |
-| 05:50-07:50 | 7 | Overwrite denied. 401 becomes 200. PASS. Pause. |
-| 07:50-09:05 | 8 | FAIL, PASS, REJECT, then ACCEPT on the real fix. |
-| 09:05-10:25 | 9 | Denied, published, denied. In that order. |
-| 10:25-11:15 | 10 | The next dev sandbox inherits the key. Say it is a consequence. |
-| 11:15-12:50 | 11 | Four lines. The abuse fails. The real ticket still ships. |
-| 12:50-14:00 | 12 | Who pressed promote? Leave it up. |
+| 00:00-00:40 | 1 | The agent changes the answers. The check goes green. |
+| 00:40-01:40 | 2 | Workflow on the default branch. Answers in the checkout. |
+| 01:40-02:50 | 3 | No login must be 401. This program prints 200. |
+| 02:50-04:30 | 4 | Honest file FAIL. Edited file PASS. Pause. |
+| 04:30-06:10 | 5 | FAIL, PASS, REJECT, ACCEPT. |
+| 06:10-07:40 | 6 | Denied, published, denied. |
+| 07:40-09:20 | 7 | Token, disk, host. One result each. |
+| 09:20-10:20 | 8 | The next run keeps the answer file. |
+| 10:20-11:30 | 9 | Answers move to the runner. Code stays in the checkout. |
+| 11:30-12:40 | 10 | Four rows. Refuse, and still allow. |
+| 12:40-13:20 | 11 | Compare, then approve. |
+| 13:20-14:00 | 12 | Who merged it? Leave it up. |
 | 14:00-15:00 | - | Margin for transitions or the host. |
 
 ## Rehearsal
 
-Rehearse with an audible timer. The five stations are on screen by minute one. The answer key is on screen by minute six. The promote step is on screen by minute nine. The question is up by minute thirteen.
+Rehearse with an audible timer. The sentence is up in the first minute. The answer file is on screen by minute three. The merge order is on screen by minute seven. The question is up by minute thirteen.
 
-If behind, say slide 10 in one sentence and read only the left column of slide 11. Keep the four doors, the PASS from the edited answer key, the rejection outside the dev sandbox, the fix that still ships, and the fresh-approval order. Do not read hashes aloud. The fixtures have the shape of a GitHub Actions runner and a Boat dev sandbox. State that once.
+If behind, read slide 7 as the table only and slide 8 in one sentence. Keep the edited-file PASS, the runner REJECT, the real fix ACCEPT, and denied, published, denied. Do not read hashes aloud. The fixtures have the shape of a GitHub Actions job and were recorded on a Boat Ubuntu machine. State that once.
 
 ## Evidence on stage
 

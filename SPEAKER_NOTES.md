@@ -4,210 +4,189 @@ Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-18 ar
 
 ## Slide 1: Your Agent Escaped Without Escaping the Sandbox
 
-00:00-00:35
+00:00-00:40
 
-Say the one line. Then the three statuses.
+Say the sentence. Stop.
 
-A factory starts with a written definition of correct. A harness works in a dev sandbox to satisfy it. A verifier reads that definition. The CI runner promotes on PASS. The prod sandbox runs the bytes.
+The agent changes the answers. The check goes green.
 
-In this recording the verifier reads expected.json from the workspace the harness writes. No login on admin must return 401. The program returns 200. The harness writes 200 into that file. The verifier prints PASS. A runner that promotes on PASS would ship that program. With the cases held on the runner, the gate refuses those bytes.
+A pull request is open to fix admin login. The program prints 200 for every request. No login on the admin page must return 401. The test answers live in the checkout, next to the program.
 
-I am Yossi Eliaz. The line on the slide is the reason.
+I am Yossi Eliaz. One GitHub Actions job. The file that matters is the answer file sitting in the checkout. The program stays wrong. The test starts agreeing with it. That agreement is the whole fifteen minutes. Everything else on stage is how the job is wired.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
-## Slide 2: Today's factory
+## Slide 2: One GitHub Actions job
 
-00:35-01:30
+00:40-01:40
 
-Read spec, harness, verifier, runner, prod. Then the line.
+Workflow on the left. Checkout on the right.
 
-This is the factory teams are running now. A spec says what correct means. A harness writes code in a dev sandbox to match it. A verifier checks the result. A CI runner promotes on PASS. A prod sandbox runs the published bytes.
+A GitHub Actions job splits in two. The workflow file comes from the default branch. That file is the check. The checkout is the pull request. The program and the answer file are in the checkout.
 
-Tessl describes that stack as context, then a loop with a verifier, then a factory. The verifier is there because a written skill is advice until something checks the output.
+A pull request from a fork gets a read-only job token. The privileged trigger runs the default-branch workflow and can hold a write token. Since June 2026 the checkout action refuses a fork head in that job. A same-repo change still lands in a checkout the job runs.
 
-In our recording the verifier loads expected.json from the dev sandbox. The harness can write that file. The rest of the talk is that edit, then the three other inputs the runner also trusts: the token, the next job's disk, and the allowed host.
-
-[Sources]
-https://tessl.io/
-https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-[/Sources]
-
-## Slide 3: Two files. One of them ships.
-
-01:30-02:20
-
-Point at print 200. Then at expected.json.
-
-Two files. handler.py is what the prod sandbox will run. admin:none means /admin with no login. A correct app prints 401. This one prints 200 for every request. That is an open admin page.
-
-checker.py is what the runner trusts, and it is read-only. It loads expected.json and prints PASS when the program matches that file. The harness cannot change the checker. It can change the answer key, because that file lives in the dev sandbox.
-
-The next three slides are the other doors the factory left open: the runner token, the next job's disk, and the allowed publish host. Then we come back and flip the answer key.
+We recorded that shape on a Boat Ubuntu machine. The calls are loopback. The mounts are real. There are five cases. The deck reads those recordings. It does not call GitHub. The point of the job picture is small: the check and the answers are not in the same place. The check is the workflow. The answers are in the pull request.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-[/Sources]
-
-## Slide 4: Runner token. Inside the sandbox.
-
-02:20-03:30
-
-200, then 403, then this job's input still works.
-
-GitHub mints a job token and the steps can see it. A pull request from a fork gets a read-only token. The privileged pull-request trigger runs the workflow from the default branch and can hold a write token and secrets. Since June 2026, the checkout action refuses to fetch a fork head in that privileged job. A same-repo agent still works inside a checkout the job chose to run.
-
-The fixture is that broad token, placed in the dev sandbox so the harness can read the repo. A GET for another project's private fixture returns two hundred and the synthetic private fixture. The worker sends the token the workflow put in the environment.
-
-A token minted for this task gets four-oh-three on the other project and two hundred on its own input. Expired and wrong-audience tokens get four-oh-three too.
-
-The lock sits on the runner: project this token for this task, this audience, this hour. A short lifetime on the runner secret is still the runner secret.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target
+https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
-## Slide 5: Next job's file. Writable.
+## Slide 3: No login must be 401
 
-03:30-04:40
+01:40-02:50
 
-Host file changes, then the same write is denied.
+Point at 200. Say what a correct program prints.
 
-The factory mounted the next job's directory into the dev sandbox and left it writable, so jobs could share a queue. The harness writes next-job.json. Ordinary open. The host file changes.
+admin:none is one request. The route is admin. The login is none. A correct program prints 401. This program prints 200 for every request. The admin page is open.
 
-The same write through a read-only bind is denied, and the host file stays. The harness can still write its own patch to output.
-
-That mount table is the lock. Input read-only, output writable, the next job absent. Fork this Boat disk for another harness and the files ride along. The fork kept the disk. Choosing who may write it is a separate authority.
+The checker that grades it sits with the workflow and is read-only. It loads expected.json from the checkout. When the printed number matches the file, it prints PASS. The agent is allowed to edit files in the checkout, so it can edit the answers. Replacing the checker is denied. That is the whole opening: the grade and the program can be brought into agreement while the admin page stays open.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 6: One allowed host. Wrong account.
+## Slide 4: The answer file
 
-04:40-05:50
+02:50-04:30
 
-201 on the wrong account. Then the runner's own report.
+Read the two JSON lines. Pause.
 
-The runner allows one host so the harness can publish a report or an artifact. The hostname is the one on the workflow allow list.
+Honest file: admin:none expects 401. The program prints 200. The checker prints FAIL and exits 1.
 
-The harness posts the private fixture to another account on that host. The service stores it. Two-oh-one. The receiver has the bytes. The data left through a door the runner opened.
+The agent writes 200 into the expected rows. admin:none now expects 200. The program still prints 200. The attempt to overwrite checker.py is denied. The hash before matches the hash after. The same checker prints PASS and exits 0.
 
-The repair keeps the POST on the runner. The harness may name one operation. Extra fields are denied and nothing is stored. The dev sandbox has no route of its own to the service. The runner still delivers the team report.
-
-One allowed hostname still contains many operations.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-[/Sources]
-
-## Slide 7: No login. Test says PASS.
-
-05:50-07:50
-
-Say no login. Then 401 becomes 200. Then PASS. Pause.
-
-admin:none is the lab name for one request. The route is admin. The login is none. Nobody is authenticated. A correct app returns 401. This app returns 200 for every request. That is an open admin page.
-
-The runner decides promote from a checker. The checker program is read-only. The harness tries to overwrite it. The mount denies the write. The hash matches before and after. With the honest answer key the checker prints FAIL, because 200 is not 401. The check can see the bug.
-
-The checker loads expected.json from the dev sandbox. The harness changes the answer for no login from 401 to 200, and does the same for the other cases. The app still returns 200. Same checker. Still read-only. It prints PASS, because the app matches the new answer key.
-
-The runner is now green. The handler it would publish still returns two hundred. We protected the grader and left the answer key with the harness. The filename is expected.json.
+The check is green. The program you would merge still lets anyone into admin. Remember the filename: expected.json. It is an ordinary JSON file in the pull request, and the checker trusts it. Anyone who can edit the pull request can edit the grade, and the workflow will report success.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 8: Same bytes, three stations
+## Slide 5: Same program. Four results.
 
-07:50-09:05
+04:30-06:10
 
-PASS is the harness. REJECT is the runner. ACCEPT is the real fix.
+FAIL, PASS, REJECT, ACCEPT.
 
-Same bad bytes. Three stations.
+Same program. Four results.
 
-The honest file in the dev sandbox: FAIL. The file the harness wrote: PASS. That PASS is what the runner would promote. Cases the runner owns, outside the dev sandbox: REJECT.
+Honest answers in the checkout: FAIL. Answers the agent wrote: PASS. Cases stored on the runner: REJECT. The fixed program returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public page, and 401 for an expired login. The runner accepts it.
 
-Then the factory still has to ship. The corrected handler returns four-oh-one for anonymous admin and for an expired credential, four-oh-three for an ordinary user, and two hundred for the administrator and the public route. The runner accepts it.
-
-Move the answer key to the runner. The prod sandbox can receive the real fix.
+The real fix can merge. What changed between FAIL and PASS was the answer file, not the program. Put that file on the runner, with the workflow, and the checkout can still hold the code. Five numbers cover this policy: 401, 200, 403, 200, 401. They are the policy we ran.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 9: Prod runs the judged bytes.
+## Slide 6: Then the merge
 
-09:05-10:25
+06:10-07:40
 
-Denied, published, denied. Point at the order.
+Denied. Published. Denied.
 
-Green on the runner is not yet a prod sandbox. Freeze the candidate in dev before the run. Execute those frozen bytes where the harness cannot edit them. Compare against cases the runner owns. Then one fresh approval.
+Green is the check. Merge is the next step. Freeze the program. Run those exact bytes. Compare them with the cases on the runner. Then one fresh approval.
 
-Bad bytes under that approval: DENIED. The judged bytes: PUBLISHED. Those bytes again: DENIED.
+The bad program: DENIED. The judged program: PUBLISHED. Those bytes again: DENIED.
 
-Say the order. Denied, published, denied. Spend the approval before the digest check, and a broken check hides behind an already-used approval. This repository used to do that.
-
-Publication is those exact bytes and the spent approval, one transaction, in storage the dev sandbox cannot reach. The prod sandbox runs that object. A harness that prints finished holds no approval.
+This recording publishes the corrected handler and refuses the program that always prints 200. Compare first, then spend the approval. An earlier version of this gate spent the approval first, and a bad swap could hide behind an already-used approval. The order on this slide is the whole demonstration: the bad program is offered while the approval is still live.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 10: Fork the disk. Fork the key.
+## Slide 7: Three more files in the job
 
-10:25-11:15
+07:40-09:20
 
-Say this follows from the file. Then move.
+Token, disk, host. One result each.
 
-Start the reviewer harness from a fork of this Boat disk. Start the deploy job from it too. If they all read expected.json, and the dev harness can write it, three stations share one definition of done.
+Three more things in the same kind of job. Each one is its own recording.
 
-The fork records the disk. It does not record who was allowed to choose the criteria. This follows from the file the harness changed. A separate attack across harnesses was not run. A workspace file needs an owner before any later sandbox treats it as policy.
+The job token reads another project's private fixture and gets 200. A token for this task gets 403 there and 200 on this job's own input. Expired and wrong-audience tokens get 403.
+
+The next job's file is mounted writable. The write changes the host file. A read-only mount denies it. This job's own patch still writes.
+
+The job may call one host. A post of the private fixture to another account is stored, 201, and the receiver log has the bytes. The repair sends one fixed team report from the runner. Extra fields are denied, and the checkout has no route of its own. The team report still arrives. These three rows are separate runs. They sit in one job because a real workflow has a token, a disk, and a host.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+[/Sources]
+
+## Slide 8: The next run keeps the file
+
+09:20-10:20
+
+One sentence. Move on.
+
+Copy this checkout into the next run and expected.json still expects 200. The next job grades against the edited answers. A cache, a reusable workspace, or a forked machine does the same thing if it copies the tree.
+
+This follows from the file the agent changed. We did not run a separate trial across several jobs. A copied workspace keeps whatever the last job wrote, including a grade of 200 for no login. The next run will go green on the same open admin page.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
-## Slide 11: Rewrite four lines.
+## Slide 9: Keep the answers on the runner
 
-11:15-12:50
+10:20-11:30
 
-Each row: the abuse fails, and the developer's ticket still ships.
+Left file moves to the right.
 
-Rewrite four lines in your own factory. The abuse fails. The developer's ticket still completes.
+Move the answer file to the runner, beside the workflow. Leave the program in the checkout.
 
-Which token does the harness find in the dev sandbox, and what else can it read? Which paths are mounted, including a disk you will fork for the next harness? Which host can it publish to, and who writes the path and the body? Which file does the runner's check open, and can the harness edit it?
+The agent can change the code. The agent cannot change the grade. The honest cases fail the open admin page. The runner rejects that program. The fixed program is accepted and can be published. The checkout remains the place where the agent writes handler.py. The answers move to the side that merges.
 
-The component that returns four-oh-three, a read-only denial, DENIED, or reject sits on the runner, outside the dev sandbox. After it is there, run the harness again on the real ticket.
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+[/Sources]
 
-A green runner is still three decisions. These bytes met these criteria. This approval authorizes these bytes for the prod sandbox. The record matches an anchor the harness cannot rewrite. A clean log can store a bad promote.
+## Slide 10: On your job
+
+11:30-12:40
+
+Four rows. Then stop.
+
+On your own job, check four places. The token may read this job's input and is refused on another project. The disk may take this job's output and refuses a write to the next job. The host delivers the team report and refuses another account. The check publishes the real fix and refuses an edited answer file.
+
+Do that on the runner. Then run the real ticket again, so the job can still ship. A check that can only refuse will also refuse the fix. Each row needs both columns.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 12: Who pressed promote?
+## Slide 11: Compare, then approve
 
-12:50-14:00
+12:40-13:20
 
-Leave the question up. Stop by 14:00.
+Three words. Denied, published, denied.
 
-The developer asked for a fix. The harness wrote 200 into the proof. The verifier said PASS. The recorded gate, with the cases on the runner, refuses those bytes and publishes the corrected handler.
+Say the order once more. Denied. Published. Denied. One fresh approval. The bad program first, while the approval is still live. Then the program that was judged. Then a replay, which is refused. If the replay is refused before the bad program is tried, the demonstration hides the swap.
 
-Who pressed promote?
+The publication stores those exact bytes and spends the approval in the same write. What leaves the job is the program that was compared, and it leaves once.
 
-Keep the criteria on the runner. Freeze the candidate. Run those bytes where the harness cannot edit the cases. Publish those bytes into the prod sandbox, and only those bytes. Run the four bad lines again. Run the real ticket again.
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
 
-The repository has the source, the recordings from the Boat dev sandbox, and the limits. Four doors from the abstract. Four locks. Open the file your runner's check trusts. Thank you.
+## Slide 12: Who merged it?
+
+13:20-14:00
+
+Leave the question up.
+
+The agent changed the answers. The check went green.
+
+Who merged it?
+
+Keep the answers with the workflow. Freeze the program. Publish those bytes. Run the open-admin case again, and run the real fix again.
+
+The repository has the source and the Linux recordings from the Boat machine: the token, the mounts, the upload, the answer file, and the merge. Open expected.json in the job you run tomorrow. If that file is in the checkout, the grade belongs to whoever edits the pull request. Thank you.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md

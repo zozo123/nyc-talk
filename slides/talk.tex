@@ -28,344 +28,299 @@
 \newcommand{\takeaway}[1]{\par\vfill{\fontsize{13}{16}\selectfont #1}\par}
 \newcommand{\scope}[1]{\par\vspace{1mm}{\color{muted}\fontsize{7.5}{9}\selectfont #1}\par}
 \newcommand{\tablefont}{\fontsize{10.5}{13}\selectfont\renewcommand{\arraystretch}{1.22}\setlength{\tabcolsep}{3pt}}
-\hypersetup{pdftitle={Your Agent Escaped Without Escaping the Sandbox},pdfauthor={Yossi Eliaz},pdfsubject={Dev sandbox, AI harness, GitHub CI runner, prod sandbox}}
+\hypersetup{pdftitle={Your Agent Escaped Without Escaping the Sandbox},pdfauthor={Yossi Eliaz},pdfsubject={The agent changes the answers. The check goes green.}}
 \begin{document}
 
 \begin{frame}[plain,t]
 % title: Your Agent Escaped Without Escaping the Sandbox
-% time: 00:00-00:35
-% cue: Say the one line. Then the three statuses.
+% time: 00:00-00:40
+% cue: Say the sentence. Stop.
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\vspace{2.5mm}
+\vspace{6mm}
 \labeltext{ZENITY\quad AI AGENT SECURITY SUMMIT\quad PIER SIXTY}
-\vspace{1.5mm}
-{\fontsize{22}{26}\selectfont\bfseries Your Agent Escaped\\Without Escaping\\the Sandbox\par}
-\vspace{2mm}
-{\fontsize{13}{16}\selectfont The harness edits the proof the verifier reads.\par}
-\vspace{2mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.32\textwidth}
-\labeltext{DEV SANDBOX}
-{\color{acid}\fontsize{14}{17}\selectfont\bfseries writes\par}
-\end{column}
-\begin{column}{.32\textwidth}
-\labeltext{VERIFIER}
-{\color{acid}\fontsize{14}{17}\selectfont\bfseries PASS\par}
-\end{column}
-\begin{column}{.32\textwidth}
-\labeltext{HANDLER}
-{\color{danger}\fontsize{14}{17}\selectfont\bfseries 200\par}
-\end{column}
-\end{columns}
-\vspace{1.5mm}
-{\small Yossi Eliaz, PhD\par}
-{\color{muted}\small Incredibuild\quad 21 October 2026\par}
-\note{A factory starts with a written definition of correct. A harness works in a dev sandbox to satisfy it. A verifier reads that definition. The CI runner promotes on PASS. The prod sandbox runs the bytes.
+\vspace{4mm}
+{\fontsize{24}{28}\selectfont\bfseries Your Agent Escaped\\Without Escaping\\the Sandbox\par}
+\vspace{5mm}
+{\fontsize{16}{20}\selectfont The agent changes the answers.\\The check goes green.\par}
+\vfill
+{\small Yossi Eliaz, PhD\quad Incredibuild\quad 21 October 2026\par}
+\note{The agent changes the answers. The check goes green.
 
-In this recording the verifier reads expected.json from the workspace the harness writes. No login on admin must return 401. The program returns 200. The harness writes 200 into that file. The verifier prints PASS. A runner that promotes on PASS would ship that program. With the cases held on the runner, the gate refuses those bytes.
+A pull request is open to fix admin login. The program prints 200 for every request. No login on the admin page must return 401. The test answers live in the checkout, next to the program.
 
-I am Yossi Eliaz. The line on the slide is the reason.}
+I am Yossi Eliaz. One GitHub Actions job. The file that matters is the answer file sitting in the checkout. The program stays wrong. The test starts agreeing with it. That agreement is the whole fifteen minutes. Everything else on stage is how the job is wired.}
 \end{frame}
 
-\renewcommand{\track}{02  /  FACTORY}
+\renewcommand{\track}{02  /  THE JOB}
 \begin{frame}[t]
-% title: Today's factory
-% time: 00:35-01:30
-% cue: Read spec, harness, verifier, runner, prod. Then the line.
-% source: https://tessl.io/
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\frametitle{Today's factory}
-{\tablefont
-\begin{tabular}{@{}p{.28\textwidth}p{.64\textwidth}@{}}
-\textcolor{acid}{Spec} & What correct means.\\
-\textcolor{acid}{Harness} & Writes in the dev sandbox.\\
-\textcolor{acid}{Verifier} & Reads \texttt{expected.json}.\\
-\textcolor{acid}{CI runner} & Base workflow. PR checkout. PASS promotes.\\
-\textcolor{acid}{Prod sandbox} & Runs those bytes.\\
-\end{tabular}}
-\takeaway{The harness edits the proof the verifier reads.}
-\scope{Factory shape described by Tessl, 2026. The break is this recording.}
-\note{This is the factory teams are running now. A spec says what correct means. A harness writes code in a dev sandbox to match it. A verifier checks the result. A CI runner promotes on PASS. A prod sandbox runs the published bytes.
-
-Tessl describes that stack as context, then a loop with a verifier, then a factory. The verifier is there because a written skill is advice until something checks the output.
-
-In our recording the verifier loads expected.json from the dev sandbox. The harness can write that file. The rest of the talk is that edit, then the three other inputs the runner also trusts: the token, the next job's disk, and the allowed host.}
-\end{frame}
-
-\renewcommand{\track}{03  /  THE BUG}
-\begin{frame}[t,fragile]
-% title: Two files. One of them ships.
-% time: 01:30-02:20
-% cue: Point at print 200. Then at expected.json.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{Two files. One of them ships.}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\textwidth}
-\labeltext{handler.py GOES TO PROD}
-\begin{lstlisting}
-# admin:none = /admin, no login
-route, auth = argv.split(":")
-print(200)  # every request
-# a correct app prints 401
-\end{lstlisting}
-\end{column}
-\begin{column}{.48\textwidth}
-\labeltext{checker.py STAYS ON THE RUNNER}
-\begin{lstlisting}
-key = json.load("expected.json")
-out = run("handler.py", case)
-if out == key[case]:
-    print("PASS")
-\end{lstlisting}
-\end{column}
-\end{columns}
-\takeaway{Checker locked. Answer key writable.}
-\scope{admin:none means /admin, no login.}
-\note{Two files. handler.py is what the prod sandbox will run. admin:none means /admin with no login. A correct app prints 401. This one prints 200 for every request. That is an open admin page.
-
-checker.py is what the runner trusts, and it is read-only. It loads expected.json and prints PASS when the program matches that file. The harness cannot change the checker. It can change the answer key, because that file lives in the dev sandbox.
-
-The next three slides are the other doors the factory left open: the runner token, the next job's disk, and the allowed publish host. Then we come back and flip the answer key.}
-\end{frame}
-
-\renewcommand{\track}{04  /  TOKEN}
-\begin{frame}[t,fragile]
-% title: Runner token. Inside the sandbox.
-% time: 02:20-03:30
-% cue: 200, then 403, then this job's input still works.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% title: One GitHub Actions job
+% time: 00:40-01:40
+% cue: Workflow on the left. Checkout on the right.
 % source: https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target
-\frametitle{Runner token. Inside the sandbox.}
-\begin{lstlisting}
-Authorization: Bearer fixture-runner
-GET /projects/other/private
-200  {"fixture":"SYNTHETIC-PRIVATE-FIXTURE"}
-
-Authorization: Bearer fixture-task
-GET /projects/other/private     403
-GET /input/parser-fix           200
-\end{lstlisting}
-\takeaway{Task token in. Runner secret stays out.}
-\scope{Loopback stand-in for GITHUB\_TOKEN. Workflow file stays on the base branch.}
-\note{GitHub mints a job token and the steps can see it. A pull request from a fork gets a read-only token. The privileged pull-request trigger runs the workflow from the default branch and can hold a write token and secrets. Since June 2026, the checkout action refuses to fetch a fork head in that privileged job. A same-repo agent still works inside a checkout the job chose to run.
-
-The fixture is that broad token, placed in the dev sandbox so the harness can read the repo. A GET for another project's private fixture returns two hundred and the synthetic private fixture. The worker sends the token the workflow put in the environment.
-
-A token minted for this task gets four-oh-three on the other project and two hundred on its own input. Expired and wrong-audience tokens get four-oh-three too.
-
-The lock sits on the runner: project this token for this task, this audience, this hour. A short lifetime on the runner secret is still the runner secret.}
-\end{frame}
-
-\renewcommand{\track}{05  /  DISK}
-\begin{frame}[t,fragile]
-% title: Next job's file. Writable.
-% time: 03:30-04:40
-% cue: Host file changes, then the same write is denied.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-\frametitle{Next job's file. Writable.}
-\begin{lstlisting}
-Path("/shared/next-job.json").write_text('{"queue":"attacker"}')
-
-writable bind    WRITE_SUCCEEDED    host file changed
-read-only bind   WRITE_DENIED       host file unchanged
-
-Path("/output/patch.txt").write_text("legitimate patch output")
-# still succeeds
-\end{lstlisting}
-\takeaway{Read-only in. Writable out.}
-\note{The factory mounted the next job's directory into the dev sandbox and left it writable, so jobs could share a queue. The harness writes next-job.json. Ordinary open. The host file changes.
-
-The same write through a read-only bind is denied, and the host file stays. The harness can still write its own patch to output.
-
-That mount table is the lock. Input read-only, output writable, the next job absent. Fork this Boat disk for another harness and the files ride along. The fork kept the disk. Choosing who may write it is a separate authority.}
-\end{frame}
-
-\renewcommand{\track}{06  /  PUBLISH}
-\begin{frame}[t,fragile]
-% title: One allowed host. Wrong account.
-% time: 04:40-05:50
-% cue: 201 on the wrong account. Then the runner's own report.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-\frametitle{One allowed host. Wrong account.}
-\begin{lstlisting}
-POST /accounts/other/uploads
-{"data":"SYNTHETIC-PRIVATE-FIXTURE"}
-201  stored
-
-request = {"operation":"publish_report","task":"parser-fix"}
-# extra keys -> DENIED, nothing stored
-# runner POST /accounts/team/reports
-#         {"task":"parser-fix","status":"completed"}
-\end{lstlisting}
-\takeaway{The runner sends the POST.}
-\note{The runner allows one host so the harness can publish a report or an artifact. The hostname is the one on the workflow allow list.
-
-The harness posts the private fixture to another account on that host. The service stores it. Two-oh-one. The receiver has the bytes. The data left through a door the runner opened.
-
-The repair keeps the POST on the runner. The harness may name one operation. Extra fields are denied and nothing is stored. The dev sandbox has no route of its own to the service. The runner still delivers the team report.
-
-One allowed hostname still contains many operations.}
-\end{frame}
-
-\renewcommand{\track}{07  /  THE CHECK}
-\begin{frame}[t,fragile]
-% title: No login. Test says PASS.
-% time: 05:50-07:50
-% cue: Say no login. Then 401 becomes 200. Then PASS. Pause.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{No login. Test says PASS.}
-\begin{lstlisting}
-# expected.json   the harness can write this file
-{"input":"admin:none","output":401}  # honest -> FAIL
-{"input":"admin:none","output":200}  # harness writes this -> PASS
-# handler.py still prints 200
-# checker.py hash unchanged, overwrite DENIED
-\end{lstlisting}
-\vspace{2mm}
-\labeltext{CI RUNNER}
-\bigresult{acid}{PASS}
-\takeaway{Code still open. Test agrees.}
-\scope{Checker hash unchanged. Handler still prints 200.}
-\note{admin:none is the lab name for one request. The route is admin. The login is none. Nobody is authenticated. A correct app returns 401. This app returns 200 for every request. That is an open admin page.
-
-The runner decides promote from a checker. The checker program is read-only. The harness tries to overwrite it. The mount denies the write. The hash matches before and after. With the honest answer key the checker prints FAIL, because 200 is not 401. The check can see the bug.
-
-The checker loads expected.json from the dev sandbox. The harness changes the answer for no login from 401 to 200, and does the same for the other cases. The app still returns 200. Same checker. Still read-only. It prints PASS, because the app matches the new answer key.
-
-The runner is now green. The handler it would publish still returns two hundred. We protected the grader and left the answer key with the harness. The filename is expected.json.}
-\end{frame}
-
-\renewcommand{\track}{08  /  THREE ANSWERS}
-\begin{frame}[t]
-% title: Same bytes, three stations
-% time: 07:50-09:05
-% cue: PASS is the harness. REJECT is the runner. ACCEPT is the real fix.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{Same bytes, three stations}
-{\tablefont
-\begin{tabular}{@{}p{.30\textwidth}p{.40\textwidth}p{.22\textwidth}@{}}
-\textcolor{acid}{Bytes} & \textcolor{acid}{Who holds the key} & \textcolor{acid}{Result}\\\midrule
-Open admin & Honest answer key & FAIL\\
-Same code & Harness rewrote the key & \textcolor{danger}{PASS}\\
-Same code & Runner's own cases & \textcolor{acid}{REJECT}\\\addlinespace
-Login required & Runner's own cases & \textcolor{acid}{ACCEPT}\\
-\end{tabular}}
-\vspace{1mm}
-{\color{muted}\fontsize{8}{10}\selectfont no-login 401\quad admin 200\quad user 403\quad public 200\quad expired 401\par}
-\takeaway{The real fix still ships.}
-\note{Same bad bytes. Three stations.
-
-The honest file in the dev sandbox: FAIL. The file the harness wrote: PASS. That PASS is what the runner would promote. Cases the runner owns, outside the dev sandbox: REJECT.
-
-Then the factory still has to ship. The corrected handler returns four-oh-one for anonymous admin and for an expired credential, four-oh-three for an ordinary user, and two hundred for the administrator and the public route. The runner accepts it.
-
-Move the answer key to the runner. The prod sandbox can receive the real fix.}
-\end{frame}
-
-\renewcommand{\track}{09  /  PROMOTE}
-\begin{frame}[t]
-% title: Prod runs the judged bytes.
-% time: 09:05-10:25
-% cue: Denied, published, denied. Point at the order.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{Prod runs the judged bytes.}
-{\tablefont
-\begin{tabular}{@{}p{.08\textwidth}p{.60\textwidth}p{.22\textwidth}@{}}
-1 & Fresh approval, bad bytes offered & \textcolor{danger}{DENIED}\\\addlinespace
-2 & Same approval, the judged bytes & \textcolor{acid}{PUBLISHED}\\\addlinespace
-3 & Same approval, those bytes again & \textcolor{acid}{DENIED}\\
-\end{tabular}}
-\takeaway{Denied. Published. Denied.}
-\note{Green on the runner is not yet a prod sandbox. Freeze the candidate in dev before the run. Execute those frozen bytes where the harness cannot edit them. Compare against cases the runner owns. Then one fresh approval.
-
-Bad bytes under that approval: DENIED. The judged bytes: PUBLISHED. Those bytes again: DENIED.
-
-Say the order. Denied, published, denied. Spend the approval before the digest check, and a broken check hides behind an already-used approval. This repository used to do that.
-
-Publication is those exact bytes and the spent approval, one transaction, in storage the dev sandbox cannot reach. The prod sandbox runs that object. A harness that prints finished holds no approval.}
-\end{frame}
-
-\renewcommand{\track}{10  /  FORK}
-\begin{frame}[t]
-% title: Fork the disk. Fork the key.
-% time: 10:25-11:15
-% cue: Say this follows from the file. Then move.
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\frametitle{Fork the disk. Fork the key.}
-\vspace{1mm}
+\frametitle{One GitHub Actions job}
+{\tablefont
+\begin{tabular}{@{}p{.36\textwidth}p{.56\textwidth}@{}}
+\textcolor{acid}{workflow file} & default branch\\
+\textcolor{acid}{checkout} & the pull request\\
+\textcolor{acid}{expected.json} & in the checkout\\
+\textcolor{acid}{job token} & minted for this run\\
+\end{tabular}}
+\takeaway{The answers travel with the code.}
+\scope{Recorded on a Boat Ubuntu machine. Loopback fixtures. No live GitHub repo.}
+\note{A GitHub Actions job splits in two. The workflow file comes from the default branch. That file is the check. The checkout is the pull request. The program and the answer file are in the checkout.
+
+A pull request from a fork gets a read-only job token. The privileged trigger runs the default-branch workflow and can hold a write token. Since June 2026 the checkout action refuses a fork head in that job. A same-repo change still lands in a checkout the job runs.
+
+We recorded that shape on a Boat Ubuntu machine. The calls are loopback. The mounts are real. There are five cases. The deck reads those recordings. It does not call GitHub. The point of the job picture is small: the check and the answers are not in the same place. The check is the workflow. The answers are in the pull request.}
+\end{frame}
+
+\renewcommand{\track}{03  /  THE PROGRAM}
+\begin{frame}[t,fragile]
+% title: No login must be 401
+% time: 01:40-02:50
+% cue: Point at 200. Say what a correct program prints.
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{No login must be 401}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{.46\textwidth}
-{\fontsize{14}{18}\selectfont Dev sandbox\\Reviewer harness\\Deploy job\par}
+\begin{column}{.48\textwidth}
+\labeltext{THIS PROGRAM}
+\begin{lstlisting}
+# admin:none
+# /admin, no login
+print(200)
+\end{lstlisting}
 \end{column}
-\begin{column}{.50\textwidth}
-\labeltext{ON THE FORKED DISK}
-{\fontsize{16}{20}\selectfont\texttt{expected.json}\par}
-\vspace{1mm}
-{\color{danger} The harness can write it.\par}
+\begin{column}{.48\textwidth}
+\labeltext{A CORRECT PROGRAM}
+\begin{lstlisting}
+# no login
+print(401)
+# real admin
+print(200)
+\end{lstlisting}
 \end{column}
 \end{columns}
-\takeaway{The next sandbox keeps the answer key.}
-\note{Start the reviewer harness from a fork of this Boat disk. Start the deploy job from it too. If they all read expected.json, and the dev harness can write it, three stations share one definition of done.
+\takeaway{Admin is open.}
+\note{admin:none is one request. The route is admin. The login is none. A correct program prints 401. This program prints 200 for every request. The admin page is open.
 
-The fork records the disk. It does not record who was allowed to choose the criteria. This follows from the file the harness changed. A separate attack across harnesses was not run. A workspace file needs an owner before any later sandbox treats it as policy.}
+The checker that grades it sits with the workflow and is read-only. It loads expected.json from the checkout. When the printed number matches the file, it prints PASS. The agent is allowed to edit files in the checkout, so it can edit the answers. Replacing the checker is denied. That is the whole opening: the grade and the program can be brought into agreement while the admin page stays open.}
 \end{frame}
 
-\renewcommand{\track}{11  /  YOUR FACTORY}
+\renewcommand{\track}{04  /  THE FILE}
+\begin{frame}[t,fragile]
+% title: The answer file
+% time: 02:50-04:30
+% cue: Read the two JSON lines. Pause.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{The answer file}
+\begin{lstlisting}
+# expected.json
+{"input":"admin:none","output":401}
+
+{"input":"admin:none","output":200}
+\end{lstlisting}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.48\textwidth}
+\labeltext{HONEST FILE}
+\bigresult{danger}{FAIL}
+\end{column}
+\begin{column}{.48\textwidth}
+\labeltext{AFTER THE EDIT}
+\bigresult{acid}{PASS}
+\end{column}
+\end{columns}
+\takeaway{Same program. Same checker.}
+\scope{Checker hash \texttt{f5d8d3468bbe...} unchanged. Overwrite of checker.py denied.}
+\note{Honest file: admin:none expects 401. The program prints 200. The checker prints FAIL and exits 1.
+
+The agent writes 200 into the expected rows. admin:none now expects 200. The program still prints 200. The attempt to overwrite checker.py is denied. The hash before matches the hash after. The same checker prints PASS and exits 0.
+
+The check is green. The program you would merge still lets anyone into admin. Remember the filename: expected.json. It is an ordinary JSON file in the pull request, and the checker trusts it. Anyone who can edit the pull request can edit the grade, and the workflow will report success.}
+\end{frame}
+
+\renewcommand{\track}{05  /  FOUR ROWS}
 \begin{frame}[t]
-% title: Rewrite four lines.
-% time: 11:15-12:50
-% cue: Each row: the abuse fails, and the developer's ticket still ships.
+% title: Same program. Four results.
+% time: 04:30-06:10
+% cue: FAIL, PASS, REJECT, ACCEPT.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{Same program. Four results.}
+{\tablefont
+\begin{tabular}{@{}p{.42\textwidth}p{.28\textwidth}p{.22\textwidth}@{}}
+\textcolor{acid}{Answers} & \textcolor{acid}{Where} & \textcolor{acid}{Result}\\\midrule
+Honest file & checkout & FAIL\\
+Agent's file & checkout & \textcolor{danger}{PASS}\\
+Runner's cases & on the runner & \textcolor{acid}{REJECT}\\\addlinespace
+Real fix & on the runner & \textcolor{acid}{ACCEPT}\\
+\end{tabular}}
+\vspace{2mm}
+{\color{muted}\fontsize{8}{10}\selectfont no-login 401\quad admin 200\quad user 403\quad public 200\quad expired 401\par}
+\takeaway{The real fix still merges.}
+\note{Same program. Four results.
+
+Honest answers in the checkout: FAIL. Answers the agent wrote: PASS. Cases stored on the runner: REJECT. The fixed program returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public page, and 401 for an expired login. The runner accepts it.
+
+The real fix can merge. What changed between FAIL and PASS was the answer file, not the program. Put that file on the runner, with the workflow, and the checkout can still hold the code. Five numbers cover this policy: 401, 200, 403, 200, 401. They are the policy we ran.}
+\end{frame}
+
+\renewcommand{\track}{06  /  MERGE}
+\begin{frame}[t]
+% title: Then the merge
+% time: 06:10-07:40
+% cue: Denied. Published. Denied.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{Then the merge}
+{\tablefont
+\begin{tabular}{@{}p{.08\textwidth}p{.58\textwidth}p{.24\textwidth}@{}}
+1 & Bad program, fresh approval & \textcolor{danger}{DENIED}\\\addlinespace
+2 & The judged program & \textcolor{acid}{PUBLISHED}\\\addlinespace
+3 & That program again & \textcolor{acid}{DENIED}\\
+\end{tabular}}
+\takeaway{Publish the judged bytes.}
+\scope{The recording publishes the corrected handler.}
+\note{Green is the check. Merge is the next step. Freeze the program. Run those exact bytes. Compare them with the cases on the runner. Then one fresh approval.
+
+The bad program: DENIED. The judged program: PUBLISHED. Those bytes again: DENIED.
+
+This recording publishes the corrected handler and refuses the program that always prints 200. Compare first, then spend the approval. An earlier version of this gate spent the approval first, and a bad swap could hide behind an already-used approval. The order on this slide is the whole demonstration: the bad program is offered while the approval is still live.}
+\end{frame}
+
+\renewcommand{\track}{07  /  ALSO}
+\begin{frame}[t]
+% title: Three more files in the job
+% time: 07:40-09:20
+% cue: Token, disk, host. One result each.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\frametitle{Three more files in the job}
+{\tablefont
+\begin{tabular}{@{}p{.22\textwidth}p{.42\textwidth}p{.28\textwidth}@{}}
+\textcolor{acid}{In the job} & \textcolor{acid}{What happened} & \textcolor{acid}{After the fix}\\\midrule
+Job token & other project 200 & 403, own input 200\\
+Next job's file & host file changed & write denied\\
+Allowed host & other account 201 & team report delivered\\
+\end{tabular}}
+\takeaway{Same job. Three more writable things.}
+\scope{Separate recordings. Loopback HTTP. Real bind mounts.}
+\note{Three more things in the same kind of job. Each one is its own recording.
+
+The job token reads another project's private fixture and gets 200. A token for this task gets 403 there and 200 on this job's own input. Expired and wrong-audience tokens get 403.
+
+The next job's file is mounted writable. The write changes the host file. A read-only mount denies it. This job's own patch still writes.
+
+The job may call one host. A post of the private fixture to another account is stored, 201, and the receiver log has the bytes. The repair sends one fixed team report from the runner. Extra fields are denied, and the checkout has no route of its own. The team report still arrives. These three rows are separate runs. They sit in one job because a real workflow has a token, a disk, and a host.}
+\end{frame}
+
+\renewcommand{\track}{08  /  NEXT RUN}
+\begin{frame}[t]
+% title: The next run keeps the file
+% time: 09:20-10:20
+% cue: One sentence. Move on.
+% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
+\frametitle{The next run keeps the file}
+\vspace{4mm}
+{\fontsize{20}{26}\selectfont\texttt{expected.json}\\[4mm]
+output: \textcolor{danger}{\texttt{200}}\par}
+\takeaway{Copy the checkout, copy the answers.}
+\scope{Follows from the file we changed.}
+\note{Copy this checkout into the next run and expected.json still expects 200. The next job grades against the edited answers. A cache, a reusable workspace, or a forked machine does the same thing if it copies the tree.
+
+This follows from the file the agent changed. We did not run a separate trial across several jobs. A copied workspace keeps whatever the last job wrote, including a grade of 200 for no login. The next run will go green on the same open admin page.}
+\end{frame}
+
+\renewcommand{\track}{09  /  THE FIX}
+\begin{frame}[t,fragile]
+% title: Keep the answers on the runner
+% time: 10:20-11:30
+% cue: Left file moves to the right.
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+\frametitle{Keep the answers on the runner}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.48\textwidth}
+\labeltext{CHECKOUT}
+\begin{lstlisting}
+handler.py
+\end{lstlisting}
+\end{column}
+\begin{column}{.48\textwidth}
+\labeltext{RUNNER}
+\begin{lstlisting}
+expected.json
+checker.py
+\end{lstlisting}
+\end{column}
+\end{columns}
+\takeaway{The agent can change the code.}
+\note{Move the answer file to the runner, beside the workflow. Leave the program in the checkout.
+
+The agent can change the code. The agent cannot change the grade. The honest cases fail the open admin page. The runner rejects that program. The fixed program is accepted and can be published. The checkout remains the place where the agent writes handler.py. The answers move to the side that merges.}
+\end{frame}
+
+\renewcommand{\track}{10  /  YOUR JOB}
+\begin{frame}[t]
+% title: On your job
+% time: 11:30-12:40
+% cue: Four rows. Then stop.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{Rewrite four lines.}
-{\fontsize{10}{12.5}\selectfont\renewcommand{\arraystretch}{1.32}\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}p{.22\textwidth}p{.38\textwidth}p{.32\textwidth}@{}}
-\textcolor{acid}{Station} & \textcolor{acid}{Must fail} & \textcolor{acid}{Must still work}\\\midrule
-Runner token & Read another project & Read this job's input\\
-Dev disk & Edit the next job & Write this job's output\\
-Publish host & Another account & The team report\\
-The check & Edit the key or swap bytes & Release the real fix\\
+\frametitle{On your job}
+{\fontsize{11}{14}\selectfont\renewcommand{\arraystretch}{1.35}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{.24\textwidth}p{.34\textwidth}p{.34\textwidth}@{}}
+\textcolor{acid}{} & \textcolor{acid}{Refuse} & \textcolor{acid}{Still allow}\\\midrule
+Token & another project & this job's input\\
+Disk & the next job & this job's output\\
+Host & another account & the team report\\
+Answers & an edited file & the real fix\\
 \end{tabular}}
-\takeaway{Block it on the runner. Ship the real ticket.}
-\note{Rewrite four lines in your own factory. The abuse fails. The developer's ticket still completes.
+\takeaway{Then run the real ticket again.}
+\note{On your own job, check four places. The token may read this job's input and is refused on another project. The disk may take this job's output and refuses a write to the next job. The host delivers the team report and refuses another account. The check publishes the real fix and refuses an edited answer file.
 
-Which token does the harness find in the dev sandbox, and what else can it read? Which paths are mounted, including a disk you will fork for the next harness? Which host can it publish to, and who writes the path and the body? Which file does the runner's check open, and can the harness edit it?
+Do that on the runner. Then run the real ticket again, so the job can still ship. A check that can only refuse will also refuse the fix. Each row needs both columns.}
+\end{frame}
 
-The component that returns four-oh-three, a read-only denial, DENIED, or reject sits on the runner, outside the dev sandbox. After it is there, run the harness again on the real ticket.
+\renewcommand{\track}{11  /  ORDER}
+\begin{frame}[t]
+% title: Compare, then approve
+% time: 12:40-13:20
+% cue: Three words. Denied, published, denied.
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{Compare, then approve}
+\vspace{6mm}
+{\fontsize{22}{28}\selectfont Denied.\\Published.\\Denied.\par}
+\takeaway{One approval. The judged program only.}
+\note{Say the order once more. Denied. Published. Denied. One fresh approval. The bad program first, while the approval is still live. Then the program that was judged. Then a replay, which is refused. If the replay is refused before the bad program is tried, the demonstration hides the swap.
 
-A green runner is still three decisions. These bytes met these criteria. This approval authorizes these bytes for the prod sandbox. The record matches an anchor the harness cannot rewrite. A clean log can store a bad promote.}
+The publication stores those exact bytes and spends the approval in the same write. What leaves the job is the program that was compared, and it leaves once.}
 \end{frame}
 
 \begin{frame}[plain,t]
-% title: Who pressed promote?
-% time: 12:50-14:00
-% cue: Leave the question up. Stop by 14:00.
+% title: Who merged it?
+% time: 13:20-14:00
+% cue: Leave the question up.
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\vspace{4mm}
-{\color{danger}\ttfamily\fontsize{8}{9}\selectfont 12  /  PROMOTE}\hspace{2mm}{\color{acid}\rule{14mm}{0.7pt}}\par
-\vspace{3mm}
-{\fontsize{26}{30}\selectfont\bfseries Who pressed promote?\par}
-\vspace{3mm}
-{\fontsize{15}{19}\selectfont The harness edits the proof the verifier reads.\par}
-\vspace{3mm}
-{\fontsize{14}{17}\selectfont Judge on the runner.\\Prod gets only those bytes.\par}
+\vspace{8mm}
+{\color{danger}\ttfamily\fontsize{8}{9}\selectfont 12  /  CLOSE}\hspace{2mm}{\color{acid}\rule{14mm}{0.7pt}}\par
+\vspace{6mm}
+{\fontsize{28}{34}\selectfont\bfseries Who merged it?\par}
+\vspace{6mm}
+{\fontsize{16}{20}\selectfont The agent changed the answers.\\The check went green.\par}
 \vfill
 {\color{acid}\ttfamily\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}\par}
 {\color{muted}\small Pier Sixty\quad 21 October 2026\par}
-\note{The developer asked for a fix. The harness wrote 200 into the proof. The verifier said PASS. The recorded gate, with the cases on the runner, refuses those bytes and publishes the corrected handler.
+\note{The agent changed the answers. The check went green.
 
-Who pressed promote?
+Who merged it?
 
-Keep the criteria on the runner. Freeze the candidate. Run those bytes where the harness cannot edit the cases. Publish those bytes into the prod sandbox, and only those bytes. Run the four bad lines again. Run the real ticket again.
+Keep the answers with the workflow. Freeze the program. Publish those bytes. Run the open-admin case again, and run the real fix again.
 
-The repository has the source, the recordings from the Boat dev sandbox, and the limits. Four doors from the abstract. Four locks. Open the file your runner's check trusts. Thank you.}
+The repository has the source and the Linux recordings from the Boat machine: the token, the mounts, the upload, the answer file, and the merge. Open expected.json in the job you run tomorrow. If that file is in the checkout, the grade belongs to whoever edits the pull request. Thank you.}
 \end{frame}
 
 \appendix
+
 \renewcommand{\track}{A1  /  CASES}
 \begin{frame}[t]
 % title: The five policy cases

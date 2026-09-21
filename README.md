@@ -10,7 +10,7 @@ Principal Engineer and Head of DevRel at Incredibuild.com
 
 ## The story
 
-**One line.** The harness edits the proof the verifier reads.
+**One line.** The agent changes the answers. The check goes green.
 
 The accepted abstract is four failures on that factory: an inherited runner token, a dangerous mount in the dev sandbox, a publish through a host the runner already allows, and a green check whose answer key the harness can edit. The checker reports **PASS**. Unauthenticated admin still returns **200**, where policy requires **401**. The checker and the candidate have the same bytes as before.
 
@@ -25,7 +25,7 @@ This is a controlled reproduction of a known trust-boundary failure, with a repa
 ## Final stage package
 
 - **12 main slides + 6 Q&A appendices.** One central experiment occupies the main story.
-- **1,396 spoken words.** A 14-minute delivery budget leaves one minute of margin. Rehearse aloud to verify your own pace.
+- **1,200 spoken words.** A 14-minute delivery budget leaves one minute of margin. Rehearse aloud to verify your own pace.
 - **LaTeX only.** `slides/talk.tex` is the editable source for the PDF, manuscript and speaker notes.
 - **Offline presentation.** Recorded observations are on the slides. No live terminal, cloud key or conference network is required.
 - The four abstract categories remain the deployment checklist: identity, files, outbound operations and acceptance. Supporting experiments are independent cases, not an attack chain.
