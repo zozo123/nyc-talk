@@ -4,7 +4,7 @@
 
 Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,308 words.
+Spoken manuscript: 1,396 words.
 ## 1. Your Agent Escaped Without Escaping the Sandbox
 
 **00:00-00:35**
@@ -13,7 +13,7 @@ Spoken manuscript: 1,308 words.
 
 A factory starts with a written definition of correct. A harness works in a dev sandbox to satisfy it. A verifier reads that definition. The CI runner promotes on PASS. The prod sandbox runs the bytes.
 
-In this recording the verifier reads expected.json from the workspace the harness writes. No login on admin must return 401. The program returns 200. The harness writes 200 into that file. The verifier prints PASS. The runner promotes the program.
+In this recording the verifier reads expected.json from the workspace the harness writes. No login on admin must return 401. The program returns 200. The harness writes 200 into that file. The verifier prints PASS. A runner that promotes on PASS would ship that program. With the cases held on the runner, the gate refuses those bytes.
 
 I am Yossi Eliaz. The line on the slide is the reason.
 
@@ -47,9 +47,9 @@ The next three slides are the other doors the factory left open: the runner toke
 
 *200, then 403, then this job's input still works.*
 
-The runner injected its token into the dev sandbox so the harness could read the repo. The harness sends that token.
+GitHub mints a job token and the steps can see it. A pull request from a fork gets a read-only token. The privileged pull-request trigger runs the workflow from the default branch and can hold a write token and secrets. Since June 2026, the checkout action refuses to fetch a fork head in that privileged job. A same-repo agent still works inside a checkout the job chose to run.
 
-A GET for another project's private fixture returns two hundred and the synthetic private fixture. The sandbox did not steal a credential. It used the one the workflow placed in the environment.
+The fixture is that broad token, placed in the dev sandbox so the harness can read the repo. A GET for another project's private fixture returns two hundred and the synthetic private fixture. The worker sends the token the workflow put in the environment.
 
 A token minted for this task gets four-oh-three on the other project and two hundred on its own input. Expired and wrong-audience tokens get four-oh-three too.
 
@@ -153,7 +153,7 @@ A green runner is still three decisions. These bytes met these criteria. This ap
 
 *Leave the question up. Stop by 14:00.*
 
-The developer asked for a fix. The harness wrote 200 into the proof. The runner said PASS. The prod sandbox ran that program.
+The developer asked for a fix. The harness wrote 200 into the proof. The verifier said PASS. The recorded gate, with the cases on the runner, refuses those bytes and publishes the corrected handler.
 
 Who pressed promote?
 
