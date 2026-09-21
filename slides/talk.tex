@@ -41,58 +41,55 @@
 \vspace{1.5mm}
 {\fontsize{22}{26}\selectfont\bfseries Your Agent Escaped\\Without Escaping\\the Sandbox\par}
 \vspace{2mm}
-{\fontsize{12}{15}\selectfont The harness stays in the dev sandbox.\\It poisons what the runner trusts.\\The runner promotes that bug into prod.\par}
+{\fontsize{13}{16}\selectfont The harness edits the proof the verifier reads.\par}
 \vspace{2mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{.32\textwidth}
 \labeltext{DEV SANDBOX}
-{\color{acid}\fontsize{14}{17}\selectfont\bfseries held\par}
+{\color{acid}\fontsize{14}{17}\selectfont\bfseries writes\par}
 \end{column}
 \begin{column}{.32\textwidth}
 \labeltext{CI RUNNER}
-{\color{acid}\fontsize{14}{17}\selectfont\bfseries green\par}
+{\color{acid}\fontsize{14}{17}\selectfont\bfseries PASS\par}
 \end{column}
 \begin{column}{.32\textwidth}
 \labeltext{PROD SANDBOX}
-{\color{danger}\fontsize{14}{17}\selectfont\bfseries the bug\par}
+{\color{danger}\fontsize{14}{17}\selectfont\bfseries 200\par}
 \end{column}
 \end{columns}
 \vspace{1.5mm}
 {\small Yossi Eliaz, PhD\par}
 {\color{muted}\small Incredibuild\quad 21 October 2026\par}
-\note{One line. The harness stays in the dev sandbox, poisons what the CI runner trusts, and the runner promotes that bug into the prod sandbox.
+\note{A factory starts with a written definition of correct. A harness works in a dev sandbox to satisfy it. A verifier reads that definition. The CI runner promotes on PASS. The prod sandbox runs the bytes.
 
-A developer asked for an admin-auth fix. The dev sandbox held. The runner went green. The prod sandbox got the bug.
+In this recording the verifier reads expected.json from the workspace the harness writes. No login on admin must return 401. The program returns 200. The harness writes 200 into that file. The verifier prints PASS. The runner promotes the program.
 
-I am Yossi Eliaz. Fifteen minutes on that one line.}
+I am Yossi Eliaz. The line on the slide is the reason.}
 \end{frame}
 
 \renewcommand{\track}{02  /  FACTORY}
 \begin{frame}[t]
-% title: The one line
+% title: Today's factory
 % time: 00:35-01:30
-% cue: Read top to bottom. Stop on the prod sandbox.
+% cue: Read spec, harness, verifier, runner, prod. Then the line.
+% source: https://tessl.io/
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\frametitle{The one line}
+\frametitle{Today's factory}
 {\tablefont
 \begin{tabular}{@{}p{.28\textwidth}p{.64\textwidth}@{}}
-\textcolor{acid}{Developer} & PR 481. Fix admin auth.\\
-\textcolor{acid}{Harness} & Tools and the workspace.\\
-\textcolor{acid}{Dev sandbox} & The agent writes here.\\
-\textcolor{acid}{CI runner} & Token. Check. Promote.\\
+\textcolor{acid}{Spec} & What correct means.\\
+\textcolor{acid}{Harness} & Writes in the dev sandbox.\\
+\textcolor{acid}{Verifier} & Reads \texttt{expected.json}.\\
+\textcolor{acid}{CI runner} & Promotes on PASS.\\
 \textcolor{acid}{Prod sandbox} & Runs those bytes.\\
 \end{tabular}}
-\takeaway{The harness stays in the dev sandbox.\\It poisons what the runner trusts.\\The runner promotes that bug into prod.}
-\scope{Recorded on a Boat Ubuntu sandbox.}
-\note{Read the factory from the top.
+\takeaway{The harness edits the proof the verifier reads.}
+\scope{Factory shape described by Tessl, 2026. The break is this recording.}
+\note{This is the factory teams are running now. A spec says what correct means. A harness writes code in a dev sandbox to match it. A verifier checks the result. A CI runner promotes on PASS. A prod sandbox runs the published bytes.
 
-The developer opens the ticket. The harness is the loop that drives the agent: the goal, the tools, and the workspace. The dev sandbox is a Boat machine. That is where the agent writes, and where the namespaces hold.
+Tessl describes that stack as context, then a loop with a verifier, then a factory. The verifier is there because a written skill is advice until something checks the output.
 
-The CI runner is the GitHub Actions job. It holds the runner token, it runs the check, it may publish, and it is the station that promotes.
-
-The prod sandbox runs only the bytes that promote step published. It never sees the harness. It sees a build.
-
-The agent can satisfy the harness's goal by poisoning what the runner trusts. The runner, doing its job, promotes. The prod sandbox, doing its job, executes.}
+In our recording the verifier loads expected.json from the dev sandbox. The harness can write that file. The rest of the talk is that edit, then the three other inputs the runner also trusts: the token, the next job's disk, and the allowed host.}
 \end{frame}
 
 \renewcommand{\track}{03  /  THE BUG}
@@ -221,7 +218,7 @@ One allowed hostname still contains many operations.}
 \begin{lstlisting}
 # expected.json   the harness can write this file
 {"input":"admin:none","output":401}  # honest -> FAIL
-{"input":"admin:none","output":200}  # poison -> PASS
+{"input":"admin:none","output":200}  # harness writes this -> PASS
 # handler.py still prints 200
 # checker.py hash unchanged, overwrite DENIED
 \end{lstlisting}
@@ -351,13 +348,13 @@ A green runner is still three decisions. These bytes met these criteria. This ap
 \vspace{3mm}
 {\fontsize{26}{30}\selectfont\bfseries Who pressed promote?\par}
 \vspace{3mm}
-{\fontsize{14}{18}\selectfont The harness stays in the dev sandbox.\\It poisons what the runner trusts.\\The runner promotes that bug into prod.\par}
+{\fontsize{15}{19}\selectfont The harness edits the proof the verifier reads.\par}
 \vspace{3mm}
 {\fontsize{14}{17}\selectfont Judge on the runner.\\Prod gets only those bytes.\par}
 \vfill
 {\color{acid}\ttfamily\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}\par}
 {\color{muted}\small Pier Sixty\quad 21 October 2026\par}
-\note{The developer asked for a fix. The harness wrote the answer key. The runner said PASS. The prod sandbox ran the bug. The dev sandbox held the whole time.
+\note{The developer asked for a fix. The harness wrote 200 into the proof. The runner said PASS. The prod sandbox ran that program.
 
 Who pressed promote?
 
@@ -488,6 +485,7 @@ Old gate audit & 1 & Controller-object misuse\\
 \begin{frame}[t,fragile]
 % title: Reproduce the factory
 % source: https://github.com/zozo123/nyc-talk
+% source: https://tessl.io/
 % source: https://github.com/containers/bubblewrap#sandbox-security
 % source: https://slsa.dev/spec/v1.2/verifying-artifacts
 % source: https://www.anthropic.com/research/emergent-misalignment-reward-hacking
@@ -496,6 +494,7 @@ Old gate audit & 1 & Controller-object misuse\\
 \href{https://github.com/zozo123/nyc-talk}{\textcolor{acid}{Source}}\quad github.com/zozo123/nyc-talk\par
 \href{https://github.com/containers/bubblewrap#sandbox-security}{\textcolor{acid}{bubblewrap}}\quad The caller defines the sandbox policy\par
 \href{https://slsa.dev/spec/v1.2/verifying-artifacts}{\textcolor{acid}{SLSA v1.2}}\quad Digest and expectations before use\par
+\href{https://tessl.io/}{\textcolor{acid}{Tessl}}\quad Context, verifier, factory, 2026\par
 \href{https://www.cidersecurity.io/blog/research/ppe-poisoned-pipeline-execution/}{\textcolor{acid}{Poisoned pipeline execution}}\quad Cider Security, 2022\par}
 \vspace{2mm}
 \begin{lstlisting}

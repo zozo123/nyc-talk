@@ -4,34 +4,30 @@
 
 Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,283 words.
+Spoken manuscript: 1,308 words.
 ## 1. Your Agent Escaped Without Escaping the Sandbox
 
 **00:00-00:35**
 
 *Say the one line. Then the three statuses.*
 
-One line. The harness stays in the dev sandbox, poisons what the CI runner trusts, and the runner promotes that bug into the prod sandbox.
+A factory starts with a written definition of correct. A harness works in a dev sandbox to satisfy it. A verifier reads that definition. The CI runner promotes on PASS. The prod sandbox runs the bytes.
 
-A developer asked for an admin-auth fix. The dev sandbox held. The runner went green. The prod sandbox got the bug.
+In this recording the verifier reads expected.json from the workspace the harness writes. No login on admin must return 401. The program returns 200. The harness writes 200 into that file. The verifier prints PASS. The runner promotes the program.
 
-I am Yossi Eliaz. Fifteen minutes on that one line.
+I am Yossi Eliaz. The line on the slide is the reason.
 
-## 2. The one line
+## 2. Today's factory
 
 **00:35-01:30**
 
-*Read top to bottom. Stop on the prod sandbox.*
+*Read spec, harness, verifier, runner, prod. Then the line.*
 
-Read the factory from the top.
+This is the factory teams are running now. A spec says what correct means. A harness writes code in a dev sandbox to match it. A verifier checks the result. A CI runner promotes on PASS. A prod sandbox runs the published bytes.
 
-The developer opens the ticket. The harness is the loop that drives the agent: the goal, the tools, and the workspace. The dev sandbox is a Boat machine. That is where the agent writes, and where the namespaces hold.
+Tessl describes that stack as context, then a loop with a verifier, then a factory. The verifier is there because a written skill is advice until something checks the output.
 
-The CI runner is the GitHub Actions job. It holds the runner token, it runs the check, it may publish, and it is the station that promotes.
-
-The prod sandbox runs only the bytes that promote step published. It never sees the harness. It sees a build.
-
-The agent can satisfy the harness's goal by poisoning what the runner trusts. The runner, doing its job, promotes. The prod sandbox, doing its job, executes.
+In our recording the verifier loads expected.json from the dev sandbox. The harness can write that file. The rest of the talk is that edit, then the three other inputs the runner also trusts: the token, the next job's disk, and the allowed host.
 
 ## 3. Two files. One of them ships.
 
@@ -157,7 +153,7 @@ A green runner is still three decisions. These bytes met these criteria. This ap
 
 *Leave the question up. Stop by 14:00.*
 
-The developer asked for a fix. The harness wrote the answer key. The runner said PASS. The prod sandbox ran the bug. The dev sandbox held the whole time.
+The developer asked for a fix. The harness wrote 200 into the proof. The runner said PASS. The prod sandbox ran that program.
 
 Who pressed promote?
 

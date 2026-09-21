@@ -1,5 +1,5 @@
 SHELL := /bin/sh
-.PHONY: all test demo reference factory factory-isolated factory-boat record record-factory record-isolated record-all evidence deck snapshot paper final replay replay-html verify clean
+.PHONY: all test demo reference factory factory-isolated factory-boat record record-factory record-isolated record-all evidence deck notes snapshot paper final replay replay-html verify clean
 all: deck
 
 test:
@@ -50,7 +50,15 @@ deck: evidence
 	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build slides/talk.tex
 	! grep -q 'Overfull' build/talk.log
 
-snapshot: deck replay-html
+notes: evidence
+	python3 tools/build_deck.py
+	mkdir -p build
+	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build slides/notes.tex
+	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build slides/notes.tex
+	! grep -q 'Overfull' build/notes.log
+	cp build/notes.pdf slides/notes.pdf
+
+snapshot: deck notes replay-html
 	cp build/talk.pdf slides/talk.pdf
 
 paper:

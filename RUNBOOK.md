@@ -6,12 +6,12 @@
 
 Attendance is confirmed. Slides are due 9 October. Speaker dinner follows the happy hour. A logistics note to Ian, Anna, Kayla, and Neil is still awaiting reply. Do not invent a stage time on the day.
 
-The spoken script contains 1,283 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
+The spoken script contains 1,308 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
 
 | Clock | Slide | Stage action |
 |---|---:|---|
 | 00:00-00:35 | 1 | Dev sandbox held. CI runner green. Prod sandbox got the bug. |
-| 00:35-01:30 | 2 | Read the five stations top to bottom. |
+| 00:35-01:30 | 2 | Read spec, harness, verifier, runner, prod. Then the line. |
 | 01:30-02:20 | 3 | Two files. handler.py prints 200. The checker trusts expected.json. |
 | 02:20-03:30 | 4 | Runner token 200, task token 403, this job's input still 200. |
 | 03:30-04:40 | 5 | Next-job file changes, then the same write is denied. |
