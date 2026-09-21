@@ -13,7 +13,7 @@ def main():
     if len(frames) != 18 or sum(f.start() < appendix for f in frames) != 12:
         raise SystemExit('Require 12 main slides and 6 appendix slides')
     script = ['# Your Agent Escaped Without Escaping the Sandbox', '',
-              '**Yossi Eliaz, PhD / NYC / October 21, 2026 / 15 minutes**', '',
+              '**Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**', '',
               'Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. '
               'Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. '
               'Timings are rehearsal targets, not measured delivery.', '']

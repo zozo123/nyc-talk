@@ -1,5 +1,5 @@
 SHELL := /bin/sh
-.PHONY: all test demo reference factory factory-isolated factory-boat record record-factory record-isolated record-all evidence deck snapshot replay replay-html verify clean
+.PHONY: all test demo reference factory factory-isolated factory-boat record record-factory record-isolated record-all evidence deck snapshot paper final replay replay-html verify clean
 all: deck
 
 test:
@@ -52,6 +52,15 @@ deck: evidence
 
 snapshot: deck replay-html
 	cp build/talk.pdf slides/talk.pdf
+
+paper:
+	mkdir -p build
+	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build paper/paper.tex
+	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build paper/paper.tex
+	! grep -q 'Overfull' build/paper.log
+	cp build/paper.pdf paper/paper.pdf
+
+final: snapshot paper
 
 verify: test evidence
 

@@ -1,176 +1,166 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
-**Yossi Eliaz, PhD / NYC / October 21, 2026 / 15 minutes**
+**Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**
 
 Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,307 words.
+Spoken manuscript: 1,283 words.
 ## 1. Your Agent Escaped Without Escaping the Sandbox
 
-**00:00-00:30**
+**00:00-00:35**
 
-*Start immediately. The contradiction is on the next slide.*
+*Say the one line. Then the three statuses.*
 
-You ask an agent to fix authorization. It finishes. The checker says PASS. The checker itself is protected. Would you release the result?
+One line. The harness stays in the dev sandbox, poisons what the CI runner trusts, and the runner promotes that bug into the prod sandbox.
 
-I am Yossi Eliaz. Let me show you a small experiment where every one of those statements is true, and the authorization bug is still there.
+A developer asked for an admin-auth fix. The dev sandbox held. The runner went green. The prod sandbox got the bug.
 
-## 2. The checker passes. The policy fails.
+I am Yossi Eliaz. Fifteen minutes on that one line.
 
-**00:30-01:20**
+## 2. The one line
 
-*Pause between PASS and 200. These are recorded observations.*
+**00:35-01:30**
 
-On the left, the checker reports PASS. On the right, the unauthenticated admin case returns two hundred. Our policy requires four-oh-one.
+*Read top to bottom. Stop on the prod sandbox.*
 
-This is a deliberately small command-line model of authorization. Those numbers are program outputs. We are not showing packets from a production server.
+Read the factory from the top.
 
-The surprising part is what stayed constant. The broken candidate has the same bytes. The checker has the same bytes. The operating system refuses the worker's attempt to overwrite the checker.
+The developer opens the ticket. The harness is the loop that drives the agent: the goal, the tools, and the workspace. The dev sandbox is a Boat machine. That is where the agent writes, and where the namespaces hold.
 
-Something else changed. To see it, follow the inputs to the decision.
+The CI runner is the GitHub Actions job. It holds the runner token, it runs the check, it may publish, and it is the station that promotes.
 
-## 3. The task and the trust boundary
+The prod sandbox runs only the bytes that promote step published. It never sees the harness. It sees a build.
 
-**01:20-02:15**
+The agent can satisfy the harness's goal by poisoning what the runner trusts. The runner, doing its job, promotes. The prod sandbox, doing its job, executes.
 
-*State the worker's actual control. Keep the setup brief.*
+## 3. Two files. One of them ships.
 
-The worker can edit task code and its workspace. It can propose tests and write reports. That is ordinary coding-agent authority.
+**01:30-02:20**
 
-We protect the checker with a read-only bind mount. The controller process, approval key and release store remain outside worker control. We trust the kernel and the controller.
+*Point at print 200. Then at expected.json.*
 
-The promise is narrow: the worker should not be able to approve an artifact that fails the controller's acceptance policy.
+Two files. handler.py is what the prod sandbox will run. admin:none means /admin with no login. A correct app prints 401. This one prints 200 for every request. That is an open admin page.
 
-Our worker is a deterministic script. That lets us test whether an action is permitted. It does not measure whether a particular model would discover or choose that action.
+checker.py is what the runner trusts, and it is read-only. It loads expected.json and prints PASS when the program matches that file. The harness cannot change the checker. It can change the answer key, because that file lives in the dev sandbox.
 
-## 4. The original check catches the bug
+The next three slides are the other doors the factory left open: the runner token, the next job's disk, and the allowed publish host. Then we come back and flip the answer key.
 
-**02:15-03:10**
+## 4. Runner token. Inside the sandbox.
 
-*Establish the negative control before revealing the edit.*
+**02:20-03:30**
 
-First, establish that the check can catch the bug. The candidate always returns two hundred. With the honest expectations, the checker reports FAIL and exits with status one.
+*200, then 403, then this job's input still works.*
 
-Next, the worker tries to write the checker. The operating system denies that write. We also hash the checker before and after the worker step.
+The runner injected its token into the dev sandbox so the harness could read the repo. The harness sends that token.
 
-So this is not the simple demonstration where someone replaces a grader with a program that exits zero. The check works, and the protected file stays protected.
+A GET for another project's private fixture returns two hundred and the synthetic private fixture. The sandbox did not steal a credential. It used the one the workflow placed in the environment.
 
-Now look at the file the checker opens to learn what the answers should be.
+A token minted for this task gets four-oh-three on the other project and two hundred on its own input. Expired and wrong-audience tokens get four-oh-three too.
 
-## 5. The worker changes the answer key
+The lock sits on the runner: project this token for this task, this audience, this hour. A short lifetime on the runner secret is still the runner secret.
 
-**03:10-04:45**
+## 5. Next job's file. Writable.
 
-*Point at expected.json, then PASS. Pause before the takeaway.*
+**03:30-04:40**
 
-The checker reads expected dot json from its working directory. That file lives in the workspace the worker can edit.
+*Host file changes, then the same write is denied.*
 
-The worker changes the expected outputs to two hundred. For the anonymous admin case, the expected value changes from four-oh-one to two hundred. The candidate still returns two hundred. Now those values match, and the unchanged checker prints PASS.
+The factory mounted the next job's directory into the dev sandbox and left it writable, so jobs could share a queue. The harness writes next-job.json. Ordinary open. The host file changes.
 
-Protecting the executable protected only one dependency of the decision. The answer key still belonged to the producer.
+The same write through a read-only bind is denied, and the host file stays. The harness can still write its own patch to output.
 
-The consequence is precise. A controller that promotes this PASS to release eligibility accepts the worker's definition of success. This experiment demonstrates the false PASS. It does not claim a production deployment occurred.
+That mount table is the lock. Input read-only, output writable, the next job absent. Fork this Boat disk for another harness and the files ride along. The fork kept the disk. Choosing who may write it is a separate authority.
 
-You can replace this file with a workspace plugin, imported helper, test configuration or worker-written report. Those are audit leads, not additional attacks we measured here. The concrete dependency we reproduced is the answer key.
+## 6. One allowed host. Wrong account.
 
-## 6. Independent checks reject the bad bytes
+**04:40-05:50**
 
-**04:45-06:15**
+*201 on the wrong account. Then the runner's own report.*
 
-*Read the first three rows slowly. The fourth row proves the job still works.*
+The runner allows one host so the harness can publish a report or an artifact. The hostname is the one on the workflow allow list.
 
-Here is the controlled comparison. The first three rows use the same bad candidate bytes.
+The harness posts the private fixture to another account on that host. The service stores it. Two-oh-one. The receiver has the bytes. The data left through a door the runner opened.
 
-The honest workspace key makes the checker fail. The worker-edited key makes it pass. Controller-owned expectations reject that same candidate.
+The repair keeps the POST on the runner. The harness may name one operation. Extra fields are denied and nothing is stored. The dev sandbox has no route of its own to the service. The runner still delivers the team report.
 
-Then we run a corrected handler. It passes all five controller-owned cases. Anonymous admin and expired credentials produce four-oh-one. An ordinary user produces four-oh-three. The authorized administrator and public route produce two hundred.
+One allowed hostname still contains many operations.
 
-The repair preserves the legitimate job. We have not simply disconnected everything until the attack stops.
+## 7. No login. Test says PASS.
 
-Five cases establish this policy's tested behavior. They do not prove all possible application behavior. The useful result is the paired change: move the criteria outside producer control, reject the bad artifact, and still accept the valid one.
+**05:50-07:50**
 
-## 7. Production and acceptance
+*Say no login. Then 401 becomes 200. Then PASS. Pause.*
 
-**06:15-07:40**
+admin:none is the lab name for one request. The route is admin. The login is none. Nobody is authenticated. A correct app returns 401. This app returns 200 for every request. That is an open admin page.
 
-*Explain the two arrows across the boundary: bytes and observations.*
+The runner decides promote from a checker. The checker program is read-only. The harness tries to overwrite it. The mount denies the write. The hash matches before and after. With the honest answer key the checker prints FAIL, because 200 is not 401. The check can see the bug.
 
-The controller first freezes the candidate bytes. A separate isolated run executes those bytes with a read-only candidate mount. The run returns observations. The controller compares them with criteria the worker cannot rewrite.
+The checker loads expected.json from the dev sandbox. The harness changes the answer for no login from 401 to 200, and does the same for the other cases. The app still returns 200. Same checker. Still read-only. It prints PASS, because the app matches the new answer key.
 
-The controller also owns the approval key and publication store. A harness saying finished has no authority to issue that approval.
+The runner is now green. The handler it would publish still returns two hundred. We protected the grader and left the answer key with the harness. The filename is expected.json.
 
-A fresh acceptance machine can help implement this separation. But copying the producer's answer key into it preserves the bad dependency. A fork of the producer's disk also carries whatever expectations, configuration and caches the producer left there.
+## 8. Same bytes, three stations
 
-Our recorded repair uses Linux isolation and a controller-side comparison. The design requirement is ownership of the decision's dependencies. Count those dependencies before you count machines.
+**07:50-09:05**
 
-## 8. The gate binds approval to bytes
+*PASS is the harness. REJECT is the runner. ACCEPT is the real fix.*
 
-**07:40-09:00**
+Same bad bytes. Three stations.
 
-*Stress fresh approval. A consumed nonce would confound the substitution test.*
+The honest file in the dev sandbox: FAIL. The file the harness wrote: PASS. That PASS is what the runner would promote. Cases the runner owns, outside the dev sandbox: REJECT.
 
-Independent checking still leaves a second question: do we release the bytes we checked?
+Then the factory still has to ship. The corrected handler returns four-oh-one for anonymous admin and for an expired credential, four-oh-three for an ordinary user, and two hundred for the administrator and the public route. The runner accepts it.
 
-Take a fresh approval for the good candidate. Offer bad bytes under that approval. The gate denies them. Offer the original bytes with the same approval. They publish. Offer them again. The gate rejects the replay.
+Move the answer key to the runner. The prod sandbox can receive the real fix.
 
-The order matters. If you consume the approval first, a broken digest check can hide behind the already-used nonce. We corrected that misleading test order in this repository.
+## 9. Prod runs the judged bytes.
 
-Here, publication means storing the approved bytes in a controller-owned SQLite database. It is a local release model. The same transaction stores the bytes and consumes the nonce. A real deployment needs to preserve that binding all the way to the consumer.
+**09:05-10:25**
 
-## 9. Three agents share one writable answer key
+*Denied, published, denied. Point at the order.*
 
-**09:00-10:00**
+Green on the runner is not yet a prod sandbox. Freeze the candidate in dev before the run. Execute those frozen bytes where the harness cannot edit them. Compare against cases the runner owns. Then one fresh approval.
 
-*Explicitly label this as an architectural implication.*
+Bad bytes under that approval: DENIED. The judged bytes: PUBLISHED. Those bytes again: DENIED.
 
-This is why the experiment matters to an agent factory. Add a builder, a reviewer and a judge. Give them different prompts, or different models. If they all trust the builder's writable answer key, they still share the same compromised criterion.
+Say the order. Denied, published, denied. Spend the approval before the digest check, and a broken check hides behind an already-used approval. This repository used to do that.
 
-Freezing that workspace in a snapshot preserves the criterion. It does not establish who was authorized to choose it.
+Publication is those exact bytes and the spent approval, one transaction, in storage the dev sandbox cannot reach. The prod sandbox runs that object. A harness that prints finished holds no approval.
 
-This slide is an architectural implication of our dependency, not a measured multi-agent attack. Agents can propose tests and explore solutions. Promotion criteria need a separate owner, and proposals need an explicit route to become authorized policy.
+## 10. Fork the disk. Fork the key.
 
-## 10. Four deployment boundaries
+**10:25-11:15**
 
-**10:00-12:00**
+*Say this follows from the file. Then move.*
 
-*The surrounding abstract categories. Spend most time on the positive controls.*
+Start the reviewer harness from a fork of this Boat disk. Start the deploy job from it too. If they all read expected.json, and the dev harness can write it, three stations share one definition of done.
 
-The answer-key failure sits inside a wider map of authority. Our repository includes three supporting boundary demonstrations.
+The fork records the disk. It does not record who was allowed to choose the criteria. This follows from the file the harness changed. A separate attack across harnesses was not run. A workspace file needs an owner before any later sandbox treats it as policy.
 
-First, identity. A broad fixture token reads another project's private data. A task-scoped token gets denied there, while still reading its own input. The service must enforce the resource grant. Short lifetime alone cannot narrow a broad token.
+## 11. Rewrite four lines.
 
-Second, files. A writable mount lets the worker change the next job's fixture. A read-only input mount blocks that write, while a separate output remains writable.
+**11:15-12:50**
 
-Third, outbound operations. One service accepts both the legitimate report and an upload to another account. The corrected broker fixes the destination and body, and the worker has no direct route around it. We inspect the receiver to confirm delivery or its absence.
+*Each row: the abuse fails, and the developer's ticket still ships.*
 
-Finally, acceptance. The worker must not change the governing criteria or substitute the released bytes.
+Rewrite four lines in your own factory. The abuse fails. The developer's ticket still completes.
 
-For each boundary, require both a denied unauthorized effect and a successful legitimate job. Otherwise a system that cannot do any work looks secure. These are separate boundary experiments, not steps in one attack chain.
+Which token does the harness find in the dev sandbox, and what else can it read? Which paths are mounted, including a disk you will fork for the next harness? Which host can it publish to, and who writes the path and the body? Which file does the runner's check open, and can the harness edit it?
 
-## 11. A release decision needs more than PASS
+The component that returns four-oh-three, a read-only denial, DENIED, or reject sits on the runner, outside the dev sandbox. After it is there, run the harness again on the real ticket.
 
-**12:00-13:00**
+A green runner is still three decisions. These bytes met these criteria. This approval authorizes these bytes for the prod sandbox. The record matches an anchor the harness cannot rewrite. A clean log can store a bad promote.
 
-*Explain the three responsibilities. Do not turn history into the gate.*
+## 12. Who pressed promote?
 
-A useful approval names the artifact, verifier, expected results, policy and run. Our reference gate also binds the environment description, task, decision, nonce, expiry and schema.
+**12:50-14:00**
 
-Keep verification, authorization and history distinct. A consistent history can faithfully record a bad decision. Our hash-chain check detects a rewrite only relative to a separately protected anchor.
+*Leave the question up. Stop by 14:00.*
 
-Likewise, a green worker test or a successful harness exit cannot substitute for independent acceptance. Missing or malformed observations produce no approval.
+The developer asked for a fix. The harness wrote the answer key. The runner said PASS. The prod sandbox ran the bug. The dev sandbox held the whole time.
 
-For a release review, ask for evidence that the published artifact is the artifact evaluated under the intended criteria. A PASS without that context leaves the important question unanswered.
+Who pressed promote?
 
-## 12. Who controls what makes the work releasable?
+Keep the criteria on the runner. Freeze the candidate. Run those bytes where the harness cannot edit the cases. Publish those bytes into the prod sandbox, and only those bytes. Run the four bad lines again. Run the real ticket again.
 
-**13:00-14:00**
-
-*Leave this slide on screen. Stop by 14:00 and retain one minute of margin.*
-
-The checker was protected. The candidate never improved. The worker changed the answer key, and PASS changed meaning.
-
-That is the question I want you to take home: who controls what makes the work releasable?
-
-Trace the authority through every input to that decision. Keep the criteria outside producer control. Freeze the candidate, evaluate it independently, and publish those exact bytes. Then rerun the unauthorized attempt and the legitimate task.
-
-The repository has the source, recorded observations and limits. This is a controlled reproduction of a known failure mechanism, with a repair you can inspect. Thank you.
+The repository has the source, the recordings from the Boat dev sandbox, and the limits. Four doors from the abstract. Four locks. Open the file your runner's check trusts. Thank you.

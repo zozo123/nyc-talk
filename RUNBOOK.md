@@ -1,30 +1,34 @@
 # October 21 stage runbook
 
-**15-minute slot. Target delivery: 14:00.** Present `slides/talk.pdf` offline. Main route: slides 1-12. Slides 13-18 are for questions. Keep a second local copy.
+**Zenity AI Agent Security Summit. Pier Sixty, New York. Wednesday 21 October 2026.**
 
-The spoken script contains 1,307 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
+**15-minute lightning. Target delivery: 14:00.** The final stage clock is still to be confirmed. Present `slides/talk.pdf` offline. The leave-behind is `paper/paper.pdf`. Main route: slides 1-12. Slides 13-18 are for questions. Keep a second local copy of both PDFs.
+
+Attendance is confirmed. Slides are due 9 October. Speaker dinner follows the happy hour. A logistics note to Ian, Anna, Kayla, and Neil is still awaiting reply. Do not invent a stage time on the day.
+
+The spoken script contains 1,283 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
 
 | Clock | Slide | Stage action |
 |---|---:|---|
-| 00:00-00:30 | 1 | Ask whether a protected checker's PASS is enough to release. |
-| 00:30-01:20 | 2 | Show PASS beside the policy-violating 200. Pause. |
-| 01:20-02:15 | 3 | State worker control and trusted components. |
-| 02:15-03:10 | 4 | Honest key yields FAIL. Direct checker write is denied. |
-| 03:10-04:45 | 5 | Reveal the workspace answer key. Same checker now passes. |
-| 04:45-06:15 | 6 | Walk the paired comparison. Bad bytes rejected; valid fix accepted. |
-| 06:15-07:40 | 7 | Follow frozen bytes and observations across the trust boundary. |
-| 07:40-09:00 | 8 | Fresh substitution denied, original published, replay denied. |
-| 09:00-10:00 | 9 | Explain shared criteria across agents and snapshots as an inference. |
-| 10:00-12:00 | 10 | Give the four deployment checks and their positive controls. |
-| 12:00-13:00 | 11 | Distinguish verification, the gate and protected history. |
-| 13:00-14:00 | 12 | Close on who controls release eligibility. Leave the slide visible. |
+| 00:00-00:35 | 1 | Dev sandbox held. CI runner green. Prod sandbox got the bug. |
+| 00:35-01:30 | 2 | Read the five stations top to bottom. |
+| 01:30-02:20 | 3 | Two files. handler.py prints 200. The checker trusts expected.json. |
+| 02:20-03:30 | 4 | Runner token 200, task token 403, this job's input still 200. |
+| 03:30-04:40 | 5 | Next-job file changes, then the same write is denied. |
+| 04:40-05:50 | 6 | 201 on the wrong account, then the runner's own report. |
+| 05:50-07:50 | 7 | Overwrite denied. 401 becomes 200. PASS. Pause. |
+| 07:50-09:05 | 8 | FAIL, PASS, REJECT, then ACCEPT on the real fix. |
+| 09:05-10:25 | 9 | Denied, published, denied. In that order. |
+| 10:25-11:15 | 10 | The next dev sandbox inherits the key. Say it is a consequence. |
+| 11:15-12:50 | 11 | Four lines. The abuse fails. The real ticket still ships. |
+| 12:50-14:00 | 12 | Who pressed promote? Leave it up. |
 | 14:00-15:00 | - | Margin for transitions or the host. |
 
 ## Rehearsal
 
-Rehearse with an audible timer. Reach the answer-key reveal by minute four, the gate controls by minute eight, and the close by minute thirteen. The paired comparison and release controls are the story.
+Rehearse with an audible timer. The five stations are on screen by minute one. The answer key is on screen by minute six. The promote step is on screen by minute nine. The question is up by minute thirteen.
 
-If behind, shorten slide 9 to one sentence and slide 10 to the table's four rows. Preserve the answer-key mechanism, independent rejection, legitimate success and fresh-approval substitution test. Do not read hashes or source URLs aloud.
+If behind, say slide 10 in one sentence and read only the left column of slide 11. Keep the four doors, the PASS from the edited answer key, the rejection outside the dev sandbox, the fix that still ships, and the fresh-approval order. Do not read hashes aloud. The fixtures have the shape of a GitHub Actions runner and a Boat dev sandbox. State that once.
 
 ## Evidence on stage
 
@@ -40,7 +44,13 @@ make evidence
 make snapshot
 ```
 
-After changing experiment source, first run `make record-all` on disposable Linux with bubblewrap. Inspect the compiled PDF and keep it offline. `make replay` is an optional explicitly labeled recording. No cloud login or live terminal is part of the delivery.
+After changing experiment source, first run `make record-all` on disposable Linux with bubblewrap. Ubuntu 24.04 restricts unprivileged user namespaces, and bubblewrap then fails while bringing up a network namespace. On that release:
+
+```sh
+sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+```
+
+The recorded run used that setting on kernel 6.8.0-117. Inspect the compiled PDF and keep it offline. `make replay` is an optional explicitly labeled recording. No cloud login or live terminal is part of the delivery.
 
 ## Organizer and AV
 

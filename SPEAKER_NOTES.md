@@ -4,298 +4,286 @@ Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-18 ar
 
 ## Slide 1: Your Agent Escaped Without Escaping the Sandbox
 
-00:00-00:30
+00:00-00:35
 
-Start immediately. The contradiction is on the next slide.
+Say the one line. Then the three statuses.
 
-You ask an agent to fix authorization. It finishes. The checker says PASS. The checker itself is protected. Would you release the result?
+One line. The harness stays in the dev sandbox, poisons what the CI runner trusts, and the runner promotes that bug into the prod sandbox.
 
-I am Yossi Eliaz. Let me show you a small experiment where every one of those statements is true, and the authorization bug is still there.
+A developer asked for an admin-auth fix. The dev sandbox held. The runner went green. The prod sandbox got the bug.
+
+I am Yossi Eliaz. Fifteen minutes on that one line.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
-## Slide 2: The checker passes. The policy fails.
+## Slide 2: The one line
 
-00:30-01:20
+00:35-01:30
 
-Pause between PASS and 200. These are recorded observations.
+Read top to bottom. Stop on the prod sandbox.
 
-On the left, the checker reports PASS. On the right, the unauthenticated admin case returns two hundred. Our policy requires four-oh-one.
+Read the factory from the top.
 
-This is a deliberately small command-line model of authorization. Those numbers are program outputs. We are not showing packets from a production server.
+The developer opens the ticket. The harness is the loop that drives the agent: the goal, the tools, and the workspace. The dev sandbox is a Boat machine. That is where the agent writes, and where the namespaces hold.
 
-The surprising part is what stayed constant. The broken candidate has the same bytes. The checker has the same bytes. The operating system refuses the worker's attempt to overwrite the checker.
+The CI runner is the GitHub Actions job. It holds the runner token, it runs the check, it may publish, and it is the station that promotes.
 
-Something else changed. To see it, follow the inputs to the decision.
+The prod sandbox runs only the bytes that promote step published. It never sees the harness. It sees a build.
 
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 3: The task and the trust boundary
-
-01:20-02:15
-
-State the worker's actual control. Keep the setup brief.
-
-The worker can edit task code and its workspace. It can propose tests and write reports. That is ordinary coding-agent authority.
-
-We protect the checker with a read-only bind mount. The controller process, approval key and release store remain outside worker control. We trust the kernel and the controller.
-
-The promise is narrow: the worker should not be able to approve an artifact that fails the controller's acceptance policy.
-
-Our worker is a deterministic script. That lets us test whether an action is permitted. It does not measure whether a particular model would discover or choose that action.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-[/Sources]
-
-## Slide 4: The original check catches the bug
-
-02:15-03:10
-
-Establish the negative control before revealing the edit.
-
-First, establish that the check can catch the bug. The candidate always returns two hundred. With the honest expectations, the checker reports FAIL and exits with status one.
-
-Next, the worker tries to write the checker. The operating system denies that write. We also hash the checker before and after the worker step.
-
-So this is not the simple demonstration where someone replaces a grader with a program that exits zero. The check works, and the protected file stays protected.
-
-Now look at the file the checker opens to learn what the answers should be.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 5: The worker changes the answer key
-
-03:10-04:45
-
-Point at expected.json, then PASS. Pause before the takeaway.
-
-The checker reads expected dot json from its working directory. That file lives in the workspace the worker can edit.
-
-The worker changes the expected outputs to two hundred. For the anonymous admin case, the expected value changes from four-oh-one to two hundred. The candidate still returns two hundred. Now those values match, and the unchanged checker prints PASS.
-
-Protecting the executable protected only one dependency of the decision. The answer key still belonged to the producer.
-
-The consequence is precise. A controller that promotes this PASS to release eligibility accepts the worker's definition of success. This experiment demonstrates the false PASS. It does not claim a production deployment occurred.
-
-You can replace this file with a workspace plugin, imported helper, test configuration or worker-written report. Those are audit leads, not additional attacks we measured here. The concrete dependency we reproduced is the answer key.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 6: Independent checks reject the bad bytes
-
-04:45-06:15
-
-Read the first three rows slowly. The fourth row proves the job still works.
-
-Here is the controlled comparison. The first three rows use the same bad candidate bytes.
-
-The honest workspace key makes the checker fail. The worker-edited key makes it pass. Controller-owned expectations reject that same candidate.
-
-Then we run a corrected handler. It passes all five controller-owned cases. Anonymous admin and expired credentials produce four-oh-one. An ordinary user produces four-oh-three. The authorized administrator and public route produce two hundred.
-
-The repair preserves the legitimate job. We have not simply disconnected everything until the attack stops.
-
-Five cases establish this policy's tested behavior. They do not prove all possible application behavior. The useful result is the paired change: move the criteria outside producer control, reject the bad artifact, and still accept the valid one.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 7: Production and acceptance
-
-06:15-07:40
-
-Explain the two arrows across the boundary: bytes and observations.
-
-The controller first freezes the candidate bytes. A separate isolated run executes those bytes with a read-only candidate mount. The run returns observations. The controller compares them with criteria the worker cannot rewrite.
-
-The controller also owns the approval key and publication store. A harness saying finished has no authority to issue that approval.
-
-A fresh acceptance machine can help implement this separation. But copying the producer's answer key into it preserves the bad dependency. A fork of the producer's disk also carries whatever expectations, configuration and caches the producer left there.
-
-Our recorded repair uses Linux isolation and a controller-side comparison. The design requirement is ownership of the decision's dependencies. Count those dependencies before you count machines.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-[/Sources]
-
-## Slide 8: The gate binds approval to bytes
-
-07:40-09:00
-
-Stress fresh approval. A consumed nonce would confound the substitution test.
-
-Independent checking still leaves a second question: do we release the bytes we checked?
-
-Take a fresh approval for the good candidate. Offer bad bytes under that approval. The gate denies them. Offer the original bytes with the same approval. They publish. Offer them again. The gate rejects the replay.
-
-The order matters. If you consume the approval first, a broken digest check can hide behind the already-used nonce. We corrected that misleading test order in this repository.
-
-Here, publication means storing the approved bytes in a controller-owned SQLite database. It is a local release model. The same transaction stores the bytes and consumes the nonce. A real deployment needs to preserve that binding all the way to the consumer.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-[/Sources]
-
-## Slide 9: Three agents share one writable answer key
-
-09:00-10:00
-
-Explicitly label this as an architectural implication.
-
-This is why the experiment matters to an agent factory. Add a builder, a reviewer and a judge. Give them different prompts, or different models. If they all trust the builder's writable answer key, they still share the same compromised criterion.
-
-Freezing that workspace in a snapshot preserves the criterion. It does not establish who was authorized to choose it.
-
-This slide is an architectural implication of our dependency, not a measured multi-agent attack. Agents can propose tests and explore solutions. Promotion criteria need a separate owner, and proposals need an explicit route to become authorized policy.
+The agent can satisfy the harness's goal by poisoning what the runner trusts. The runner, doing its job, promotes. The prod sandbox, doing its job, executes.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
-## Slide 10: Four deployment boundaries
+## Slide 3: Two files. One of them ships.
 
-10:00-12:00
+01:30-02:20
 
-The surrounding abstract categories. Spend most time on the positive controls.
+Point at print 200. Then at expected.json.
 
-The answer-key failure sits inside a wider map of authority. Our repository includes three supporting boundary demonstrations.
+Two files. handler.py is what the prod sandbox will run. admin:none means /admin with no login. A correct app prints 401. This one prints 200 for every request. That is an open admin page.
 
-First, identity. A broad fixture token reads another project's private data. A task-scoped token gets denied there, while still reading its own input. The service must enforce the resource grant. Short lifetime alone cannot narrow a broad token.
+checker.py is what the runner trusts, and it is read-only. It loads expected.json and prints PASS when the program matches that file. The harness cannot change the checker. It can change the answer key, because that file lives in the dev sandbox.
 
-Second, files. A writable mount lets the worker change the next job's fixture. A read-only input mount blocks that write, while a separate output remains writable.
+The next three slides are the other doors the factory left open: the runner token, the next job's disk, and the allowed publish host. Then we come back and flip the answer key.
 
-Third, outbound operations. One service accepts both the legitimate report and an upload to another account. The corrected broker fixes the destination and body, and the worker has no direct route around it. We inspect the receiver to confirm delivery or its absence.
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
 
-Finally, acceptance. The worker must not change the governing criteria or substitute the released bytes.
+## Slide 4: Runner token. Inside the sandbox.
 
-For each boundary, require both a denied unauthorized effect and a successful legitimate job. Otherwise a system that cannot do any work looks secure. These are separate boundary experiments, not steps in one attack chain.
+02:20-03:30
+
+200, then 403, then this job's input still works.
+
+The runner injected its token into the dev sandbox so the harness could read the repo. The harness sends that token.
+
+A GET for another project's private fixture returns two hundred and the synthetic private fixture. The sandbox did not steal a credential. It used the one the workflow placed in the environment.
+
+A token minted for this task gets four-oh-three on the other project and two hundred on its own input. Expired and wrong-audience tokens get four-oh-three too.
+
+The lock sits on the runner: project this token for this task, this audience, this hour. A short lifetime on the runner secret is still the runner secret.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 11: A release decision needs more than PASS
-
-12:00-13:00
-
-Explain the three responsibilities. Do not turn history into the gate.
-
-A useful approval names the artifact, verifier, expected results, policy and run. Our reference gate also binds the environment description, task, decision, nonce, expiry and schema.
-
-Keep verification, authorization and history distinct. A consistent history can faithfully record a bad decision. Our hash-chain check detects a rewrite only relative to a separately protected anchor.
-
-Likewise, a green worker test or a successful harness exit cannot substitute for independent acceptance. Missing or malformed observations produce no approval.
-
-For a release review, ask for evidence that the published artifact is the artifact evaluated under the intended criteria. A PASS without that context leaves the important question unanswered.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-https://slsa.dev/spec/v1.2/verifying-artifacts
 [/Sources]
 
-## Slide 12: Who controls what makes the work releasable?
+## Slide 5: Next job's file. Writable.
 
-13:00-14:00
+03:30-04:40
 
-Leave this slide on screen. Stop by 14:00 and retain one minute of margin.
+Host file changes, then the same write is denied.
 
-The checker was protected. The candidate never improved. The worker changed the answer key, and PASS changed meaning.
+The factory mounted the next job's directory into the dev sandbox and left it writable, so jobs could share a queue. The harness writes next-job.json. Ordinary open. The host file changes.
 
-That is the question I want you to take home: who controls what makes the work releasable?
+The same write through a read-only bind is denied, and the host file stays. The harness can still write its own patch to output.
 
-Trace the authority through every input to that decision. Keep the criteria outside producer control. Freeze the candidate, evaluate it independently, and publish those exact bytes. Then rerun the unauthorized attempt and the legitimate task.
-
-The repository has the source, recorded observations and limits. This is a controlled reproduction of a known failure mechanism, with a repair you can inspect. Thank you.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-[/Sources]
-
-## Slide 13: Appendix: the five policy cases
-
-Appendix only
-
-Use only in Q&A.
-
-The handler accepts a route and an authentication label on the command line. It emits an integer status value. The independent controller checks these five observations. The repaired result is correct for these cases. This does not exercise an HTTP stack or validate a real credential.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-[/Sources]
-
-## Slide 14: Appendix: identity and file effects
-
-Appendix only
-
-Use only in Q&A.
-
-The token case is actual loopback HTTP. Synthetic runner and task grants model different resource scopes. Expired and wrong-audience fixtures are also denied. The mount case observes the host fixture after an ordinary worker write. Read-only input protects integrity, not confidentiality. The legitimate output is separately writable.
+That mount table is the lock. Input read-only, output writable, the next job absent. Fork this Boat disk for another harness and the files ride along. The fork kept the disk. Choosing who may write it is a separate authority.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 15: Appendix: an allowed service accepts the wrong upload
+## Slide 6: One allowed host. Wrong account.
+
+04:40-05:50
+
+201 on the wrong account. Then the runner's own report.
+
+The runner allows one host so the harness can publish a report or an artifact. The hostname is the one on the workflow allow list.
+
+The harness posts the private fixture to another account on that host. The service stores it. Two-oh-one. The receiver has the bytes. The data left through a door the runner opened.
+
+The repair keeps the POST on the runner. The harness may name one operation. Extra fields are denied and nothing is stored. The dev sandbox has no route of its own to the service. The runner still delivers the team report.
+
+One allowed hostname still contains many operations.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+[/Sources]
+
+## Slide 7: No login. Test says PASS.
+
+05:50-07:50
+
+Say no login. Then 401 becomes 200. Then PASS. Pause.
+
+admin:none is the lab name for one request. The route is admin. The login is none. Nobody is authenticated. A correct app returns 401. This app returns 200 for every request. That is an open admin page.
+
+The runner decides promote from a checker. The checker program is read-only. The harness tries to overwrite it. The mount denies the write. The hash matches before and after. With the honest answer key the checker prints FAIL, because 200 is not 401. The check can see the bug.
+
+The checker loads expected.json from the dev sandbox. The harness changes the answer for no login from 401 to 200, and does the same for the other cases. The app still returns 200. Same checker. Still read-only. It prints PASS, because the app matches the new answer key.
+
+The runner is now green. The handler it would publish still returns two hundred. We protected the grader and left the answer key with the harness. The filename is expected.json.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 8: Same bytes, three stations
+
+07:50-09:05
+
+PASS is the harness. REJECT is the runner. ACCEPT is the real fix.
+
+Same bad bytes. Three stations.
+
+The honest file in the dev sandbox: FAIL. The file the harness wrote: PASS. That PASS is what the runner would promote. Cases the runner owns, outside the dev sandbox: REJECT.
+
+Then the factory still has to ship. The corrected handler returns four-oh-one for anonymous admin and for an expired credential, four-oh-three for an ordinary user, and two hundred for the administrator and the public route. The runner accepts it.
+
+Move the answer key to the runner. The prod sandbox can receive the real fix.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 9: Prod runs the judged bytes.
+
+09:05-10:25
+
+Denied, published, denied. Point at the order.
+
+Green on the runner is not yet a prod sandbox. Freeze the candidate in dev before the run. Execute those frozen bytes where the harness cannot edit them. Compare against cases the runner owns. Then one fresh approval.
+
+Bad bytes under that approval: DENIED. The judged bytes: PUBLISHED. Those bytes again: DENIED.
+
+Say the order. Denied, published, denied. Spend the approval before the digest check, and a broken check hides behind an already-used approval. This repository used to do that.
+
+Publication is those exact bytes and the spent approval, one transaction, in storage the dev sandbox cannot reach. The prod sandbox runs that object. A harness that prints finished holds no approval.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 10: Fork the disk. Fork the key.
+
+10:25-11:15
+
+Say this follows from the file. Then move.
+
+Start the reviewer harness from a fork of this Boat disk. Start the deploy job from it too. If they all read expected.json, and the dev harness can write it, three stations share one definition of done.
+
+The fork records the disk. It does not record who was allowed to choose the criteria. This follows from the file the harness changed. A separate attack across harnesses was not run. A workspace file needs an owner before any later sandbox treats it as policy.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
+[/Sources]
+
+## Slide 11: Rewrite four lines.
+
+11:15-12:50
+
+Each row: the abuse fails, and the developer's ticket still ships.
+
+Rewrite four lines in your own factory. The abuse fails. The developer's ticket still completes.
+
+Which token does the harness find in the dev sandbox, and what else can it read? Which paths are mounted, including a disk you will fork for the next harness? Which host can it publish to, and who writes the path and the body? Which file does the runner's check open, and can the harness edit it?
+
+The component that returns four-oh-three, a read-only denial, DENIED, or reject sits on the runner, outside the dev sandbox. After it is there, run the harness again on the real ticket.
+
+A green runner is still three decisions. These bytes met these criteria. This approval authorizes these bytes for the prod sandbox. The record matches an anchor the harness cannot rewrite. A clean log can store a bad promote.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 12: Who pressed promote?
+
+12:50-14:00
+
+Leave the question up. Stop by 14:00.
+
+The developer asked for a fix. The harness wrote the answer key. The runner said PASS. The prod sandbox ran the bug. The dev sandbox held the whole time.
+
+Who pressed promote?
+
+Keep the criteria on the runner. Freeze the candidate. Run those bytes where the harness cannot edit the cases. Publish those bytes into the prod sandbox, and only those bytes. Run the four bad lines again. Run the real ticket again.
+
+The repository has the source, the recordings from the Boat dev sandbox, and the limits. Four doors from the abstract. Four locks. Open the file your runner's check trusts. Thank you.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
+[/Sources]
+
+## Slide 13: The five policy cases
 
 Appendix only
 
 Use only in Q&A.
 
-The fixture service intentionally permits both account paths. We check its delivery record to establish the consequence. The repair constrains the broker request and removes direct worker reachability to the service. A free-form reporting API would need additional analysis. These observations do not establish that every possible output channel prevents exfiltration.
+The handler takes a route and an authentication label and prints an integer. The runner checks these five. The repaired handler matches all five. This is the model of the check that promotes into the prod sandbox.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 14: Runner token and the dev disk
+
+Appendix only
+
+Use only in Q&A.
+
+The token case is loopback HTTP. The broad fixture stands in for the runner secret. The task fixture stands in for a job-scoped token. The mount case watches the host file after an ordinary write from the dev sandbox. This job's output stays writable.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+[/Sources]
+
+## Slide 15: Allowed host, wrong account
+
+Appendix only
+
+Use only in Q&A.
+
+The fixture service permits both account paths, the way one allowed deploy host holds more than one operation. The delivery record shows the bytes arrived. The repair moves the POST onto the runner and removes the dev sandbox's direct route.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 16: Appendix: the audit of our original gate
+## Slide 16: An earlier promote stored a marker
 
 Appendix only
 
 Use only in Q&A.
 
-The archived counterexample mutates a controller-side Python object. It can retain a stale digest while changing the candidate bytes. The original gate then records a publication marker. The current implementation derives the digest from immutable bytes and stores the approved bytes. This is a real defect in our earlier reference API with a stated prerequisite, not evidence of an agent reaching the controller or a compromised production deployment.
+The archived case mutates a controller-side object, keeps a stale digest, and the old gate records a publication marker. The current promote derives the digest from immutable bytes and stores those bytes. Reaching the old flaw takes access to the controller object.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 https://github.com/zozo123/nyc-talk/blob/main/evidence/baseline-audit.json
 [/Sources]
 
-## Slide 17: Appendix: evidence and limits
+## Slide 17: What was recorded
 
 Appendix only
 
 Use only in Q&A.
 
-The raw records bind their experiment source files. The build rejects stale or incomplete evidence. The centerpiece uses real read-only mounts. The local protocol executor by itself is not an operating-system sandbox. Boat was not used for this stage evidence. Multiple-agent and snapshot examples are architectural inferences. No human speaking-time measurement is claimed by the timed manuscript.
+The records bind their source. The dev sandbox recordings use bubblewrap on a Boat Ubuntu machine. The harness under test is a script. The prod step in the recording is the runner's publication of exact bytes, the shape of what a prod sandbox is allowed to execute. The forked-disk slide follows from that workspace file. The timings are a delivery budget.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 [/Sources]
 
-## Slide 18: Appendix: sources and reproduction
+## Slide 18: Reproduce the factory
 
 Appendix only
 
 Use only in Q&A.
 
-The external references supply prior work and architectural context. We do not transfer Anthropic's model measurements to this experiment and do not claim SLSA compliance. Use a disposable Linux environment for the isolated fixtures. The deck and replay use recorded evidence and require no cloud account.
+Run the fixtures on disposable Linux with bubblewrap. The deck reads those recordings. Poisoned pipeline execution is the public name for a CI job that runs an attacker-influenced file. Anthropic's reward-hacking study is prior motivation and its measurements stay with that study. Reproducing the talk needs no GitHub token.
 
 [Sources]
 https://github.com/zozo123/nyc-talk
