@@ -15,11 +15,11 @@ jobs:
           persist-credentials: false
       - name: Install isolated lab and Beamer runtime
         run: sudo apt-get update && sudo apt-get install -y bubblewrap texlive-latex-recommended texlive-pictures lmodern
-      - name: Verify committed evidence and generated text before rerunning anything
+      - name: Verify committed evidence and LaTeX speaker notes
         run: |
           make evidence
           python3 tools/build_deck.py
-          git diff --exit-code -- slides/talk.tex TALK.md SPEAKER_NOTES.md
+          git diff --exit-code -- TALK.md SPEAKER_NOTES.md
       - name: Run controller and evidence regression suite
         run: |
           mkdir -p build
@@ -27,8 +27,8 @@ jobs:
           make test 2>&1 | tee build/tests.log
       - name: Reproduce and record the actual Linux experiments
         run: make record-all
-      - name: Build final PDF, editable PowerPoint and offline replay
-        run: npm ci --prefix slides --ignore-scripts && npm run slides
+      - name: Build final LaTeX PDF and offline replay
+        run: make snapshot
       - name: Replay recorded evidence
         run: |
           set -o pipefail
@@ -37,11 +37,11 @@ jobs:
       - name: Package the tested working tree
         run: |
           mkdir -p build/release
-          git add evidence slides/talk.tex slides/talk.pdf slides/talk.pptx slides/evidence.tex TALK.md SPEAKER_NOTES.md demo/replay.html
+          git add evidence slides/talk.tex slides/talk.pdf slides/evidence.tex TALK.md SPEAKER_NOTES.md demo/replay.html
           git diff --cached --binary > build/release/generated.patch
           git ls-files -z | tar --null -T - -cf build/release/source.tar
           git rev-parse HEAD > build/release/BASE_COMMIT.txt
-          sha256sum build/release/source.tar slides/talk.pdf slides/talk.pptx > build/release/SHA256SUMS
+          sha256sum build/release/source.tar slides/talk.pdf > build/release/SHA256SUMS
       - uses: actions/upload-artifact@v4
         if: success()
         with:
@@ -50,9 +50,7 @@ jobs:
             build/release
             build/tests.log
             build/replay.txt
-            build/nyc-talk.pptx
             slides/talk.pdf
-            slides/talk.pptx
             demo/replay.html
             evidence
             TALK.md

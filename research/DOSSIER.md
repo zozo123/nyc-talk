@@ -40,7 +40,7 @@ The separate audit in [AUDIT.md](AUDIT.md) found and reproduced a stale-digest f
 
 ## 6. Multi-agent and snapshot implications
 
-Adding reviewers does not establish independence when they consume the same worker-writable expected-results file. The diagram in the talk traces shared authority, not model diversity or temperature. A frozen snapshot preserves its contents; it does not decide whether those contents should be authoritative. These are architectural implications of the dependency relationship, explicitly **not measured multi-agent attacks**.
+Adding reviewers does not establish independence when they consume the same worker-writable expected-results file. The shared-answer-key slide traces shared authority, not model diversity or temperature. A frozen snapshot preserves its contents; it does not decide whether those contents should be authoritative. These are architectural implications of the dependency relationship, explicitly **not measured multi-agent attacks**.
 
 Different agent roles, stochastic exploration, independent execution and deterministic release policy can coexist. Nothing in these experiments measures the benefit of a particular model temperature, physical metaphor, orchestration product or software-factory architecture. The talk retains only the security consequence the evidence supports.
 
@@ -52,7 +52,7 @@ The older lab chains events to a controller-retained anchor. Rewriting the event
 
 [RESULTS.md](RESULTS.md) maps raw records to assertion counts and source hashes. `make test` runs protocol and evidence regressions. `make record-all` performs the Linux lab, isolated checker experiment, local factory controls and archived audit. `make evidence` checks exact source sets, required checks, paired observations and positive controls. `make snapshot` compiles the evidence-bound Beamer deck without cloud access. `make replay` shows recorded observations and says explicitly that no new experiment is running.
 
-The code uses standard-library fixtures. A pinned npm dependency is needed only for the editable PowerPoint companion. The presentation is an offline PDF; conference Wi-Fi and remote machine provisioning are outside the stage dependency graph.
+The code uses standard-library fixtures. The canonical deck is `slides/talk.tex`; `make deck` exports its manuscript and notes and compiles it with TeX Live. The presentation is an offline PDF; conference Wi-Fi and remote machine provisioning are outside the stage dependency graph.
 
 ## 9. Prior work and attribution
 

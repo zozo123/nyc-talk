@@ -8,7 +8,7 @@
 | Current experiments | Exact per-file SHA-256 sets in each record under `evidence/` |
 | Task | `lock-admin`; policy `admin-requires-auth-v1`; five CLI cases |
 | Isolation fixture | `lab/run.py` and `factory/isolated.py`; disposable Linux + bubblewrap |
-| Presentation content | `slides/deck.json`; generated Beamer, PowerPoint and manuscript |
+| Presentation content | Canonical `slides/talk.tex`; compiled Beamer PDF and exported manuscript |
 
 The source hashes identify the executed implementation, including uncommitted record-generation work. They do not pretend a build's initial checkout commit already contains subsequently generated changes. The GitHub commit containing the final records is an additional immutable checkout point.
 

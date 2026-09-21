@@ -1,8 +1,0 @@
-{
-  "name": "nyc-talk",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Evidence-backed October 21, 2026 presentation",
-  "scripts": {"slides": "node tools/build_deck.js"},
-  "dependencies": {"pptxgenjs": "4.0.0"}
-}

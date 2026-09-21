@@ -1,5 +1,5 @@
 SHELL := /bin/sh
-.PHONY: all test demo reference factory factory-isolated factory-boat record record-factory record-isolated record-all evidence deck snapshot pptx replay replay-html verify clean
+.PHONY: all test demo reference factory factory-isolated factory-boat record record-factory record-isolated record-all evidence deck snapshot replay replay-html verify clean
 all: deck
 
 test:
@@ -50,12 +50,8 @@ deck: evidence
 	pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build slides/talk.tex
 	! grep -q 'Overfull' build/talk.log
 
-snapshot: deck pptx replay-html
+snapshot: deck replay-html
 	cp build/talk.pdf slides/talk.pdf
-	cp build/nyc-talk.pptx slides/talk.pptx
-
-pptx: evidence
-	node slides/build_pptx.js
 
 verify: test evidence
 
