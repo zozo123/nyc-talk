@@ -10,7 +10,7 @@ Principal Engineer and Head of DevRel at Incredibuild.com
 
 ## The story
 
-**One line.** The agent changes the answers. The check goes green.
+**One line.** What changed when the test went green? The worker changed what counted as correct.
 
 The accepted abstract is four failures on that factory: an inherited runner token, a dangerous mount in the dev sandbox, a publish through a host the runner already allows, and a green check whose answer key the harness can edit. The checker reports **PASS**. Unauthenticated admin still returns **200**, where policy requires **401**. The checker and the candidate have the same bytes as before.
 

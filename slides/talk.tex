@@ -22,6 +22,7 @@
 \setbeamersize{text margin left=10mm,text margin right=10mm}
 \setbeamertemplate{footline}{\hspace{10mm}{\color{muted}\fontsize{6}{7}\selectfont YOSSI ELIAZ\quad PIER SIXTY\quad 21 OCT 2026}\hfill{\color{acid}\fontsize{6}{7}\selectfont\insertframenumber}\hspace{10mm}\vspace{2.4mm}}
 \setlength{\parskip}{2pt}
+\hfuzz=1pt
 \lstset{basicstyle=\ttfamily\fontsize{10}{12.5}\selectfont,keywordstyle=\color{acid},commentstyle=\color{muted},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,aboveskip=1pt,belowskip=0pt}
 \newcommand{\labeltext}[1]{\par{\color{acid}\fontsize{8}{10}\selectfont\bfseries #1}\par}
 \newcommand{\bigresult}[2]{\par\vspace{0.5mm}{\color{#1}\fontsize{36}{40}\selectfont\bfseries #2}\par}
@@ -32,294 +33,244 @@
 \begin{document}
 
 \begin{frame}[plain,t]
-% title: Your Agent Escaped Without Escaping the Sandbox
-% time: 00:00-00:40
-% cue: Say the sentence. Stop.
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\vspace{6mm}
+% title: What changed when the test went green?
+% time: 00:00-01:00
+% cue: Show FAIL, then PASS. Ask what changed.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\vspace{8mm}
 \labeltext{ZENITY\quad AI AGENT SECURITY SUMMIT\quad PIER SIXTY}
-\vspace{4mm}
-{\fontsize{24}{28}\selectfont\bfseries Your Agent Escaped\\Without Escaping\\the Sandbox\par}
-\vspace{5mm}
-{\fontsize{16}{20}\selectfont The agent changes the answers.\\The check goes green.\par}
+\vspace{6mm}
+{\fontsize{22}{26}\selectfont\bfseries What changed when\\the test went green?\par}
+\vspace{8mm}
+{\color{danger}\fontsize{28}{32}\selectfont\bfseries FAIL}\hspace{8mm}{\color{muted}\fontsize{28}{32}\selectfont$\longrightarrow$}\hspace{8mm}{\color{acid}\fontsize{28}{32}\selectfont\bfseries PASS}
 \vfill
 {\small Yossi Eliaz, PhD\quad Incredibuild\quad 21 October 2026\par}
-\note{The agent changes the answers. The check goes green.
+\note{What changed when the test went green?
 
-A pull request is open to fix admin login. The program prints 200 for every request. No login on the admin page must return 401. The test answers live in the checkout, next to the program.
+The recording starts at FAIL and ends at PASS. Same setup, one worker step in between. I am Yossi Eliaz. For the next fourteen minutes we stay on that pair of results and name the file that moved. By the end, the room should be able to point at that file and say why PASS appeared.
 
-I am Yossi Eliaz. One GitHub Actions job. The file that matters is the answer file sitting in the checkout. The program stays wrong. The test starts agreeing with it. That agreement is the whole fifteen minutes. Everything else on stage is how the job is wired.}
+The worker in the recording is a script. The program is a small command-line model of an access check. It prints an integer. It does not serve an HTTP admin page, and this talk does not show a GitHub merge. The signal on the slide is the checker's own FAIL and PASS.}
 \end{frame}
 
-\renewcommand{\track}{02  /  THE JOB}
-\begin{frame}[t]
-% title: One GitHub Actions job
-% time: 00:40-01:40
-% cue: Workflow on the left. Checkout on the right.
-% source: https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\frametitle{One GitHub Actions job}
-{\tablefont
-\begin{tabular}{@{}p{.36\textwidth}p{.56\textwidth}@{}}
-\textcolor{acid}{workflow file} & default branch\\
-\textcolor{acid}{checkout} & the pull request\\
-\textcolor{acid}{expected.json} & in the checkout\\
-\textcolor{acid}{job token} & minted for this run\\
-\end{tabular}}
-\takeaway{The answers travel with the code.}
-\scope{Recorded on a Boat Ubuntu machine. Loopback fixtures. No live GitHub repo.}
-\note{A GitHub Actions job splits in two. The workflow file comes from the default branch. That file is the check. The checkout is the pull request. The program and the answer file are in the checkout.
-
-A pull request from a fork gets a read-only job token. The privileged trigger runs the default-branch workflow and can hold a write token. Since June 2026 the checkout action refuses a fork head in that job. A same-repo change still lands in a checkout the job runs.
-
-We recorded that shape on a Boat Ubuntu machine. The calls are loopback. The mounts are real. There are five cases. The deck reads those recordings. It does not call GitHub. The point of the job picture is small: the check and the answers are not in the same place. The check is the workflow. The answers are in the pull request.}
-\end{frame}
-
-\renewcommand{\track}{03  /  THE PROGRAM}
+\renewcommand{\track}{02  /  ONE CASE}
 \begin{frame}[t,fragile]
-% title: No login must be 401
-% time: 01:40-02:50
-% cue: Point at 200. Say what a correct program prints.
+% title: No login prints 200
+% time: 01:00-02:30
+% cue: Name the case. Then the two numbers.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{No login must be 401}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\textwidth}
-\labeltext{THIS PROGRAM}
+\frametitle{No login prints 200}
 \begin{lstlisting}
 # admin:none
-# /admin, no login
+# model of /admin with no login
+# required status: 401
 print(200)
 \end{lstlisting}
-\end{column}
-\begin{column}{.48\textwidth}
-\labeltext{A CORRECT PROGRAM}
-\begin{lstlisting}
-# no login
-print(401)
-# real admin
-print(200)
-\end{lstlisting}
-\end{column}
-\end{columns}
-\takeaway{Admin is open.}
-\note{admin:none is one request. The route is admin. The login is none. A correct program prints 401. This program prints 200 for every request. The admin page is open.
+\takeaway{The program fails this case.}
+\scope{CLI fixture. Five integer cases. Scripted worker.}
+\note{One case is enough to see the failure. admin:none is the model's name for the admin route with no login. The required status is 401. The program prints 200 for every input, including this one.
 
-The checker that grades it sits with the workflow and is read-only. It loads expected.json from the checkout. When the printed number matches the file, it prints PASS. The agent is allowed to edit files in the checkout, so it can edit the answers. Replacing the checker is denied. That is the whole opening: the grade and the program can be brought into agreement while the admin page stays open.}
+A correct program prints 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public route, and 401 for an expired login. This program prints 200 five times. The checker will compare those integers with a file. Until that file is in view, FAIL and PASS are just two words on a slide.}
 \end{frame}
 
-\renewcommand{\track}{04  /  THE FILE}
+\renewcommand{\track}{03  /  THE CHECKER}
 \begin{frame}[t,fragile]
-% title: The answer file
-% time: 02:50-04:30
-% cue: Read the two JSON lines. Pause.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% title: The checker is protected
+% time: 02:30-04:00
+% cue: Denied first. Then the line it reads.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{The answer file}
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{The checker is protected}
 \begin{lstlisting}
-# expected.json
-{"input":"admin:none","output":401}
+# write to checker.py -> DENIED
+expected = json.loads(Path("expected.json").read_text())
+\end{lstlisting}
+\takeaway{The executable holds. It reads a workspace file.}
+\scope{Read-only bind mount. Hash f5d8d3468bbe before and after.}
+\note{The worker tries to replace the checker with a program that prints PASS. The read-only mount returns DENIED. The checker hash is f5d8d3468bbe before that step and the same value after it.
 
+The checker then loads expected.json from its working directory. That file is in the workspace. The protection on the executable does not cover the file the executable uses to decide success. With the honest file, this same checker prints FAIL and exits 1. The executable protection worked. The next slide is the input that protection leaves writable.}
+\end{frame}
+
+\renewcommand{\track}{04  /  WHAT MOVED}
+\begin{frame}[t,fragile]
+% title: Only the answer file moved
+% time: 04:00-06:00
+% cue: Read across the row. Stop on PASS.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{Only the answer file moved}
+{\fontsize{8}{10}\selectfont\renewcommand{\arraystretch}{1.35}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{.16\textwidth}p{.24\textwidth}p{.24\textwidth}p{.22\textwidth}p{.08\textwidth}@{}}
+ & \textcolor{acid}{Program} & \textcolor{acid}{Checker} & \textcolor{acid}{Answers} & \textcolor{acid}{}\\\midrule
+Honest & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \texttt{0494f1a01dee} & FAIL\\
+Edited & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \texttt{390e5e764916} & \textcolor{acid}{PASS}\\
+\end{tabular}}
+\vspace{3mm}
+\begin{lstlisting}
+{"input":"admin:none","output":401}
 {"input":"admin:none","output":200}
 \end{lstlisting}
-\vspace{2mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\textwidth}
-\labeltext{HONEST FILE}
-\bigresult{danger}{FAIL}
-\end{column}
-\begin{column}{.48\textwidth}
-\labeltext{AFTER THE EDIT}
-\bigresult{acid}{PASS}
-\end{column}
-\end{columns}
-\takeaway{Same program. Same checker.}
-\scope{Checker hash \texttt{f5d8d3468bbe...} unchanged. Overwrite of checker.py denied.}
-\note{Honest file: admin:none expects 401. The program prints 200. The checker prints FAIL and exits 1.
+\takeaway{The worker changed what counted as correct.}
+\scope{SHA-256 prefixes of the bytes in the isolated recording.}
+\note{Read the row. Program 76fcb0904f51 both times. Checker f5d8d3468bbe both times. The answer file moves from 0494f1a01dee to 390e5e764916. The verdict moves from FAIL to PASS.
 
-The agent writes 200 into the expected rows. admin:none now expects 200. The program still prints 200. The attempt to overwrite checker.py is denied. The hash before matches the hash after. The same checker prints PASS and exits 0.
+The diff is the required status for admin:none, 401 becoming 200, and the same change on the other four rows. The worker changed what counted as correct. The checker executed, compared the program with that file, and the numbers matched.
 
-The check is green. The program you would merge still lets anyone into admin. Remember the filename: expected.json. It is an ordinary JSON file in the pull request, and the checker trusts it. Anyone who can edit the pull request can edit the grade, and the workflow will report success.}
+The worker changed what counted as correct. The checker compared the program with the new file, and the numbers matched.}
 \end{frame}
 
-\renewcommand{\track}{05  /  FOUR ROWS}
+\renewcommand{\track}{05  /  HASHES}
 \begin{frame}[t]
-% title: Same program. Four results.
-% time: 04:30-06:10
-% cue: FAIL, PASS, REJECT, ACCEPT.
+% title: What the three hashes say
+% time: 06:00-07:00
+% cue: One sentence per hash.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{Same program. Four results.}
-{\tablefont
-\begin{tabular}{@{}p{.42\textwidth}p{.28\textwidth}p{.22\textwidth}@{}}
-\textcolor{acid}{Answers} & \textcolor{acid}{Where} & \textcolor{acid}{Result}\\\midrule
-Honest file & checkout & FAIL\\
-Agent's file & checkout & \textcolor{danger}{PASS}\\
-Runner's cases & on the runner & \textcolor{acid}{REJECT}\\\addlinespace
-Real fix & on the runner & \textcolor{acid}{ACCEPT}\\
-\end{tabular}}
-\vspace{2mm}
-{\color{muted}\fontsize{8}{10}\selectfont no-login 401\quad admin 200\quad user 403\quad public 200\quad expired 401\par}
-\takeaway{The real fix still merges.}
-\note{Same program. Four results.
+\frametitle{What the three hashes say}
+{\fontsize{13}{17}\selectfont
+Program \texttt{76fcb0904f51} stayed.\\
+Checker \texttt{f5d8d3468bbe} stayed.\\
+Answers \texttt{0494f1a01dee} became \texttt{390e5e764916}.\par}
+\takeaway{A hash of the new answers is not the policy.}
+\note{The unchanged program hash means this comparison did not repair the program. The unchanged checker hash means this comparison did not edit that executable. The changed answer-file hash names the dependency that moved.
 
-Honest answers in the checkout: FAIL. Answers the agent wrote: PASS. Cases stored on the runner: REJECT. The fixed program returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public page, and 401 for an expired login. The runner accepts it.
-
-The real fix can merge. What changed between FAIL and PASS was the answer file, not the program. Put that file on the runner, with the workflow, and the checkout can still hold the code. Five numbers cover this policy: 401, 200, 403, 200, 401. They are the policy we ran.}
+Hashing the altered answers does not make them authoritative. Their identity and their owner have to come from the trusted policy. In this run the owner of the new file was the worker. If you only hash the file after the worker writes it, you have a name for the new bytes and you still have the worker as the author of the criteria.}
 \end{frame}
 
-\renewcommand{\track}{06  /  MERGE}
-\begin{frame}[t]
-% title: Then the merge
-% time: 06:10-07:40
-% cue: Denied. Published. Denied.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{Then the merge}
-{\tablefont
-\begin{tabular}{@{}p{.08\textwidth}p{.58\textwidth}p{.24\textwidth}@{}}
-1 & Bad program, fresh approval & \textcolor{danger}{DENIED}\\\addlinespace
-2 & The judged program & \textcolor{acid}{PUBLISHED}\\\addlinespace
-3 & That program again & \textcolor{acid}{DENIED}\\
-\end{tabular}}
-\takeaway{Publish the judged bytes.}
-\scope{The recording publishes the corrected handler.}
-\note{Green is the check. Merge is the next step. Freeze the program. Run those exact bytes. Compare them with the cases on the runner. Then one fresh approval.
-
-The bad program: DENIED. The judged program: PUBLISHED. Those bytes again: DENIED.
-
-This recording publishes the corrected handler and refuses the program that always prints 200. Compare first, then spend the approval. An earlier version of this gate spent the approval first, and a bad swap could hide behind an already-used approval. The order on this slide is the whole demonstration: the bad program is offered while the approval is still live.}
-\end{frame}
-
-\renewcommand{\track}{07  /  ALSO}
-\begin{frame}[t]
-% title: Three more files in the job
-% time: 07:40-09:20
-% cue: Token, disk, host. One result each.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-\frametitle{Three more files in the job}
-{\tablefont
-\begin{tabular}{@{}p{.22\textwidth}p{.42\textwidth}p{.28\textwidth}@{}}
-\textcolor{acid}{In the job} & \textcolor{acid}{What happened} & \textcolor{acid}{After the fix}\\\midrule
-Job token & other project 200 & 403, own input 200\\
-Next job's file & host file changed & write denied\\
-Allowed host & other account 201 & team report delivered\\
-\end{tabular}}
-\takeaway{Same job. Three more writable things.}
-\scope{Separate recordings. Loopback HTTP. Real bind mounts.}
-\note{Three more things in the same kind of job. Each one is its own recording.
-
-The job token reads another project's private fixture and gets 200. A token for this task gets 403 there and 200 on this job's own input. Expired and wrong-audience tokens get 403.
-
-The next job's file is mounted writable. The write changes the host file. A read-only mount denies it. This job's own patch still writes.
-
-The job may call one host. A post of the private fixture to another account is stored, 201, and the receiver log has the bytes. The repair sends one fixed team report from the runner. Extra fields are denied, and the checkout has no route of its own. The team report still arrives. These three rows are separate runs. They sit in one job because a real workflow has a token, a disk, and a host.}
-\end{frame}
-
-\renewcommand{\track}{08  /  NEXT RUN}
-\begin{frame}[t]
-% title: The next run keeps the file
-% time: 09:20-10:20
-% cue: One sentence. Move on.
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\frametitle{The next run keeps the file}
-\vspace{4mm}
-{\fontsize{20}{26}\selectfont\texttt{expected.json}\\[4mm]
-output: \textcolor{danger}{\texttt{200}}\par}
-\takeaway{Copy the checkout, copy the answers.}
-\scope{Follows from the file we changed.}
-\note{Copy this checkout into the next run and expected.json still expects 200. The next job grades against the edited answers. A cache, a reusable workspace, or a forked machine does the same thing if it copies the tree.
-
-This follows from the file the agent changed. We did not run a separate trial across several jobs. A copied workspace keeps whatever the last job wrote, including a grade of 200 for no login. The next run will go green on the same open admin page.}
-\end{frame}
-
-\renewcommand{\track}{09  /  THE FIX}
+\renewcommand{\track}{05  /  WHY}
 \begin{frame}[t,fragile]
-% title: Keep the answers on the runner
-% time: 10:20-11:30
-% cue: Left file moves to the right.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-\frametitle{Keep the answers on the runner}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\textwidth}
-\labeltext{CHECKOUT}
-\begin{lstlisting}
-handler.py
-\end{lstlisting}
-\end{column}
-\begin{column}{.48\textwidth}
-\labeltext{RUNNER}
-\begin{lstlisting}
-expected.json
-checker.py
-\end{lstlisting}
-\end{column}
-\end{columns}
-\takeaway{The agent can change the code.}
-\note{Move the answer file to the runner, beside the workflow. Leave the program in the checkout.
-
-The agent can change the code. The agent cannot change the grade. The honest cases fail the open admin page. The runner rejects that program. The fixed program is accepted and can be published. The checkout remains the place where the agent writes handler.py. The answers move to the side that merges.}
-\end{frame}
-
-\renewcommand{\track}{10  /  YOUR JOB}
-\begin{frame}[t]
-% title: On your job
-% time: 11:30-12:40
-% cue: Four rows. Then stop.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{On your job}
-{\fontsize{11}{14}\selectfont\renewcommand{\arraystretch}{1.35}\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}p{.24\textwidth}p{.34\textwidth}p{.34\textwidth}@{}}
-\textcolor{acid}{} & \textcolor{acid}{Refuse} & \textcolor{acid}{Still allow}\\\midrule
-Token & another project & this job's input\\
-Disk & the next job & this job's output\\
-Host & another account & the team report\\
-Answers & an edited file & the real fix\\
-\end{tabular}}
-\takeaway{Then run the real ticket again.}
-\note{On your own job, check four places. The token may read this job's input and is refused on another project. The disk may take this job's output and refuses a write to the next job. The host delivers the team report and refuses another account. The check publishes the real fix and refuses an edited answer file.
-
-Do that on the runner. Then run the real ticket again, so the job can still ship. A check that can only refuse will also refuse the fix. Each row needs both columns.}
-\end{frame}
-
-\renewcommand{\track}{11  /  ORDER}
-\begin{frame}[t]
-% title: Compare, then approve
-% time: 12:40-13:20
-% cue: Three words. Denied, published, denied.
+% title: The file defines success
+% time: 07:00-08:00
+% cue: Point at the load. Then at who can write it.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{Compare, then approve}
-\vspace{6mm}
-{\fontsize{22}{28}\selectfont Denied.\\Published.\\Denied.\par}
-\takeaway{One approval. The judged program only.}
-\note{Say the order once more. Denied. Published. Denied. One fresh approval. The bad program first, while the approval is still live. Then the program that was judged. Then a replay, which is refused. If the replay is refused before the bad program is tried, the demonstration hides the swap.
+\frametitle{The file defines success}
+\begin{lstlisting}
+expected = json.loads(Path("expected.json").read_text())
+# PASS when the program matches expected
+\end{lstlisting}
+\vspace{4mm}
+{\fontsize{15}{19}\selectfont The workspace can write it.\\The checker treats it as the grade.\par}
+\takeaway{Write permission included the acceptance criteria.}
+\note{This is why the green result happened. expected.json looks like ordinary project data. The checker gives that file the authority to define success. The significance comes from the decision that reads it.
 
-The publication stores those exact bytes and spends the approval in the same write. What leaves the job is the program that was compared, and it leaves once.}
+The worker can write the workspace. The checker runs with that workspace as its working directory. So a workspace write is a write to the acceptance criteria. An inventory of protected executables still leaves this input on the worker's side of the line.
+
+The worker here is a script with that write in it. The recording shows the action is permitted. It does not measure whether a particular model would choose it. For an engineer or a CISO, the useful question is which input the trusted decision treats as the definition of success, and who is allowed to write that input. A list of locked binaries still leaves that question open on the table tonight.}
+\end{frame}
+
+\renewcommand{\track}{06  /  SAME PROGRAM}
+\begin{frame}[t]
+% title: Controller-owned criteria
+% time: 08:00-09:15
+% cue: REJECT the same program. The fix is the next slide.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{Controller-owned criteria}
+{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.4}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{.28\textwidth}p{.28\textwidth}p{.36\textwidth}@{}}
+\textcolor{acid}{Program} & \textcolor{acid}{Criteria} & \textcolor{acid}{Verdict}\\\midrule
+\texttt{76fcb0904f51} & controller-owned cases & \textcolor{acid}{REJECT}\\
+\end{tabular}}
+\takeaway{The same bad program is rejected.}
+\scope{Separate acceptance path. Controller compares outputs with its own cases.}
+\note{The repair uses a different acceptance path. The controller runs the frozen program and compares the integers with cases it owns. It does not load expected.json from the workspace.
+
+Program 76fcb0904f51, the one that prints 200, is REJECT. The demonstrated edit no longer moves this verdict. This path is the controller's comparison. It is a separate implementation from the workspace checker whose hash is f5d8d3468bbe.}
+\end{frame}
+
+\renewcommand{\track}{07  /  THE FIX}
+\begin{frame}[t]
+% title: The corrected program
+% time: 09:15-10:30
+% cue: Different hash. Five numbers. ACCEPT.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{The corrected program}
+\vspace{2mm}
+{\fontsize{16}{20}\selectfont Program \texttt{5ead8eab70e0}\par}
+\vspace{3mm}
+{\ttfamily 401\quad 200\quad 403\quad 200\quad 401\par}
+\vspace{4mm}
+{\color{acid}\fontsize{28}{32}\selectfont\bfseries ACCEPT}
+\takeaway{The legitimate task still passes.}
+\scope{Same controller-owned cases. A different program.}
+\note{The corrected program has hash 5ead8eab70e0. It returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public route, and 401 for an expired login. The controller accepts it.
+
+The repair stops the demonstrated edit and keeps the legitimate task. The accepted program is not the program from the failing run. Its hash is different, and the criteria are the controller's cases.}
+\end{frame}
+
+\renewcommand{\track}{08  /  PUBLISH}
+\begin{frame}[t]
+% title: One unused approval
+% time: 10:30-12:00
+% cue: Say unused. Then denied, published, denied.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{One unused approval}
+{\tablefont
+\begin{tabular}{@{}p{.08\textwidth}p{.62\textwidth}p{.22\textwidth}@{}}
+1 & Bad bytes, approval still unused & \textcolor{danger}{DENIED}\\\addlinespace
+2 & Approved bytes, same approval & \textcolor{acid}{PUBLISHED}\\\addlinespace
+3 & Approved bytes, approval now used & \textcolor{acid}{DENIED}\\
+\end{tabular}}
+\takeaway{Publication stores the approved bytes.}
+\scope{Local gate. Exact bytes and the spent approval, one transaction.}
+\note{Acceptance and publication are separate. The approval on this slide was issued for the corrected program and has not been used yet. The first attempt offers the bad program under that fresh approval. The gate returns DENIED. The second attempt offers the approved bytes and returns PUBLISHED. The third attempt offers those bytes again and returns DENIED.
+
+Because the first denial happens while the approval is unused, the refusal is the byte check. A used approval would also deny a replay, and that would hide a bad swap. An earlier version of this gate consumed the approval first. The published row is the corrected program, compared by the controller and stored as those bytes. The first row is the important one for the question people will ask: the denial happens before the approval is spent, so replay protection is not what rejected the bad program.}
+\end{frame}
+
+\renewcommand{\track}{08  /  THREE QUESTIONS}
+\begin{frame}[t]
+% title: Three questions for another system
+% time: 12:00-13:15
+% cue: Read the three questions. Do not name a vendor.
+% source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+\frametitle{Three questions for another system}
+{\fontsize{14}{18}\selectfont
+1. Who can change the inputs that define acceptance?\par
+\vspace{3mm}
+2. Which bytes were the candidate, the checker, and the criteria?\par
+\vspace{3mm}
+3. Does publication store exactly the approved bytes?\par}
+\takeaway{Ask these before calling a green check a release.}
+\note{Take these three questions to another system. Who can change the inputs that define acceptance? What evidence identifies the candidate, the checker, and the criteria used for this decision? Does publication consume exactly the approved bytes?
+
+These questions inspect a pipeline. They do not by themselves show that another product has this bug. On our recording, the worker can change expected.json, and that file defines acceptance for the workspace checker. The hashes name the candidate, the checker, and the criteria for this comparison. The unused approval shows that publication stored the approved bytes, because the bad bytes were refused while that approval was still unused.}
+\end{frame}
+
+\renewcommand{\track}{09  /  NEXT}
+\begin{frame}[t]
+% title: Next experiment
+% time: 13:15-13:40
+% cue: Read it as a question. Label it unfinished.
+% source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+\frametitle{Next experiment}
+\vspace{4mm}
+{\color{danger}\ttfamily NEXT EXPERIMENT\par}
+\vspace{4mm}
+{\fontsize{15}{19}\selectfont Once the checker and the answer file are protected, which remaining input can the worker use to change the verdict?\par}
+\note{Leave this up long enough to read. Once the checker and the answer file are both protected, which remaining input can the worker use to change the verdict? That experiment is not in this recording. If a later run finds such an input, that input becomes the result. If none does, the repair held for the inputs we tried. I am leaving it labeled as the next experiment so the boundary of this talk stays visible.}
 \end{frame}
 
 \begin{frame}[plain,t]
-% title: Who merged it?
-% time: 13:20-14:00
-% cue: Leave the question up.
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
+% title: The worker changed what counted as correct
+% time: 13:40-14:00
+% cue: PASS beside the unchanged program. Stop.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \vspace{8mm}
-{\color{danger}\ttfamily\fontsize{8}{9}\selectfont 12  /  CLOSE}\hspace{2mm}{\color{acid}\rule{14mm}{0.7pt}}\par
+{\fontsize{22}{27}\selectfont\bfseries The worker changed\\what counted as correct.\par}
 \vspace{6mm}
-{\fontsize{28}{34}\selectfont\bfseries Who merged it?\par}
-\vspace{6mm}
-{\fontsize{16}{20}\selectfont The agent changed the answers.\\The check went green.\par}
+{\ttfamily program \texttt{76fcb0904f51}\\
+checker \texttt{f5d8d3468bbe}\\
+answers \texttt{0494f1a01dee} $\longrightarrow$ \texttt{390e5e764916}\\[2mm]
+\textcolor{acid}{\bfseries PASS}}
 \vfill
 {\color{acid}\ttfamily\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}\par}
 {\color{muted}\small Pier Sixty\quad 21 October 2026\par}
-\note{The agent changed the answers. The check went green.
+\note{The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
 
-Who merged it?
-
-Keep the answers with the workflow. Freeze the program. Publish those bytes. Run the open-admin case again, and run the real fix again.
-
-The repository has the source and the Linux recordings from the Boat machine: the token, the mounts, the upload, the answer file, and the merge. Open expected.json in the job you run tomorrow. If that file is in the checkout, the grade belongs to whoever edits the pull request. Thank you.}
+The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording. Thank you.}
 \end{frame}
 
 \appendix
+
 
 \renewcommand{\track}{A1  /  CASES}
 \begin{frame}[t]

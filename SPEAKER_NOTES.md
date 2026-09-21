@@ -2,194 +2,178 @@
 
 Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-18 are for Q&A. Present the PDF offline.
 
-## Slide 1: Your Agent Escaped Without Escaping the Sandbox
+## Slide 1: What changed when the test went green?
 
-00:00-00:40
+00:00-01:00
 
-Say the sentence. Stop.
+Show FAIL, then PASS. Ask what changed.
 
-The agent changes the answers. The check goes green.
+What changed when the test went green?
 
-A pull request is open to fix admin login. The program prints 200 for every request. No login on the admin page must return 401. The test answers live in the checkout, next to the program.
+The recording starts at FAIL and ends at PASS. Same setup, one worker step in between. I am Yossi Eliaz. For the next fourteen minutes we stay on that pair of results and name the file that moved. By the end, the room should be able to point at that file and say why PASS appeared.
 
-I am Yossi Eliaz. One GitHub Actions job. The file that matters is the answer file sitting in the checkout. The program stays wrong. The test starts agreeing with it. That agreement is the whole fifteen minutes. Everything else on stage is how the job is wired.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-[/Sources]
-
-## Slide 2: One GitHub Actions job
-
-00:40-01:40
-
-Workflow on the left. Checkout on the right.
-
-A GitHub Actions job splits in two. The workflow file comes from the default branch. That file is the check. The checkout is the pull request. The program and the answer file are in the checkout.
-
-A pull request from a fork gets a read-only job token. The privileged trigger runs the default-branch workflow and can hold a write token. Since June 2026 the checkout action refuses a fork head in that job. A same-repo change still lands in a checkout the job runs.
-
-We recorded that shape on a Boat Ubuntu machine. The calls are loopback. The mounts are real. There are five cases. The deck reads those recordings. It does not call GitHub. The point of the job picture is small: the check and the answers are not in the same place. The check is the workflow. The answers are in the pull request.
+The worker in the recording is a script. The program is a small command-line model of an access check. It prints an integer. It does not serve an HTTP admin page, and this talk does not show a GitHub merge. The signal on the slide is the checker's own FAIL and PASS.
 
 [Sources]
-https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target
-https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 3: No login must be 401
+## Slide 2: No login prints 200
 
-01:40-02:50
+01:00-02:30
 
-Point at 200. Say what a correct program prints.
+Name the case. Then the two numbers.
 
-admin:none is one request. The route is admin. The login is none. A correct program prints 401. This program prints 200 for every request. The admin page is open.
+One case is enough to see the failure. admin:none is the model's name for the admin route with no login. The required status is 401. The program prints 200 for every input, including this one.
 
-The checker that grades it sits with the workflow and is read-only. It loads expected.json from the checkout. When the printed number matches the file, it prints PASS. The agent is allowed to edit files in the checkout, so it can edit the answers. Replacing the checker is denied. That is the whole opening: the grade and the program can be brought into agreement while the admin page stays open.
+A correct program prints 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public route, and 401 for an expired login. This program prints 200 five times. The checker will compare those integers with a file. Until that file is in view, FAIL and PASS are just two words on a slide.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 4: The answer file
+## Slide 3: The checker is protected
 
-02:50-04:30
+02:30-04:00
 
-Read the two JSON lines. Pause.
+Denied first. Then the line it reads.
 
-Honest file: admin:none expects 401. The program prints 200. The checker prints FAIL and exits 1.
+The worker tries to replace the checker with a program that prints PASS. The read-only mount returns DENIED. The checker hash is f5d8d3468bbe before that step and the same value after it.
 
-The agent writes 200 into the expected rows. admin:none now expects 200. The program still prints 200. The attempt to overwrite checker.py is denied. The hash before matches the hash after. The same checker prints PASS and exits 0.
+The checker then loads expected.json from its working directory. That file is in the workspace. The protection on the executable does not cover the file the executable uses to decide success. With the honest file, this same checker prints FAIL and exits 1. The executable protection worked. The next slide is the input that protection leaves writable.
 
-The check is green. The program you would merge still lets anyone into admin. Remember the filename: expected.json. It is an ordinary JSON file in the pull request, and the checker trusts it. Anyone who can edit the pull request can edit the grade, and the workflow will report success.
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 4: Only the answer file moved
+
+04:00-06:00
+
+Read across the row. Stop on PASS.
+
+Read the row. Program 76fcb0904f51 both times. Checker f5d8d3468bbe both times. The answer file moves from 0494f1a01dee to 390e5e764916. The verdict moves from FAIL to PASS.
+
+The diff is the required status for admin:none, 401 becoming 200, and the same change on the other four rows. The worker changed what counted as correct. The checker executed, compared the program with that file, and the numbers matched.
+
+The worker changed what counted as correct. The checker compared the program with the new file, and the numbers matched.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 5: What the three hashes say
+
+06:00-07:00
+
+One sentence per hash.
+
+The unchanged program hash means this comparison did not repair the program. The unchanged checker hash means this comparison did not edit that executable. The changed answer-file hash names the dependency that moved.
+
+Hashing the altered answers does not make them authoritative. Their identity and their owner have to come from the trusted policy. In this run the owner of the new file was the worker. If you only hash the file after the worker writes it, you have a name for the new bytes and you still have the worker as the author of the criteria.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 6: The file defines success
+
+07:00-08:00
+
+Point at the load. Then at who can write it.
+
+This is why the green result happened. expected.json looks like ordinary project data. The checker gives that file the authority to define success. The significance comes from the decision that reads it.
+
+The worker can write the workspace. The checker runs with that workspace as its working directory. So a workspace write is a write to the acceptance criteria. An inventory of protected executables still leaves this input on the worker's side of the line.
+
+The worker here is a script with that write in it. The recording shows the action is permitted. It does not measure whether a particular model would choose it. For an engineer or a CISO, the useful question is which input the trusted decision treats as the definition of success, and who is allowed to write that input. A list of locked binaries still leaves that question open on the table tonight.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 7: Controller-owned criteria
+
+08:00-09:15
+
+REJECT the same program. The fix is the next slide.
+
+The repair uses a different acceptance path. The controller runs the frozen program and compares the integers with cases it owns. It does not load expected.json from the workspace.
+
+Program 76fcb0904f51, the one that prints 200, is REJECT. The demonstrated edit no longer moves this verdict. This path is the controller's comparison. It is a separate implementation from the workspace checker whose hash is f5d8d3468bbe.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 8: The corrected program
+
+09:15-10:30
+
+Different hash. Five numbers. ACCEPT.
+
+The corrected program has hash 5ead8eab70e0. It returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public route, and 401 for an expired login. The controller accepts it.
+
+The repair stops the demonstrated edit and keeps the legitimate task. The accepted program is not the program from the failing run. Its hash is different, and the criteria are the controller's cases.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 9: One unused approval
+
+10:30-12:00
+
+Say unused. Then denied, published, denied.
+
+Acceptance and publication are separate. The approval on this slide was issued for the corrected program and has not been used yet. The first attempt offers the bad program under that fresh approval. The gate returns DENIED. The second attempt offers the approved bytes and returns PUBLISHED. The third attempt offers those bytes again and returns DENIED.
+
+Because the first denial happens while the approval is unused, the refusal is the byte check. A used approval would also deny a replay, and that would hide a bad swap. An earlier version of this gate consumed the approval first. The published row is the corrected program, compared by the controller and stored as those bytes. The first row is the important one for the question people will ask: the denial happens before the approval is spent, so replay protection is not what rejected the bad program.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 5: Same program. Four results.
+## Slide 10: Three questions for another system
 
-04:30-06:10
+12:00-13:15
 
-FAIL, PASS, REJECT, ACCEPT.
+Read the three questions. Do not name a vendor.
 
-Same program. Four results.
+Take these three questions to another system. Who can change the inputs that define acceptance? What evidence identifies the candidate, the checker, and the criteria used for this decision? Does publication consume exactly the approved bytes?
 
-Honest answers in the checkout: FAIL. Answers the agent wrote: PASS. Cases stored on the runner: REJECT. The fixed program returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public page, and 401 for an expired login. The runner accepts it.
+These questions inspect a pipeline. They do not by themselves show that another product has this bug. On our recording, the worker can change expected.json, and that file defines acceptance for the workspace checker. The hashes name the candidate, the checker, and the criteria for this comparison. The unused approval shows that publication stored the approved bytes, because the bad bytes were refused while that approval was still unused.
 
-The real fix can merge. What changed between FAIL and PASS was the answer file, not the program. Put that file on the runner, with the workflow, and the checkout can still hold the code. Five numbers cover this policy: 401, 200, 403, 200, 401. They are the policy we ran.
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+[/Sources]
+
+## Slide 11: Next experiment
+
+13:15-13:40
+
+Read it as a question. Label it unfinished.
+
+Leave this up long enough to read. Once the checker and the answer file are both protected, which remaining input can the worker use to change the verdict? That experiment is not in this recording. If a later run finds such an input, that input becomes the result. If none does, the repair held for the inputs we tried. I am leaving it labeled as the next experiment so the boundary of this talk stays visible.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+[/Sources]
+
+## Slide 12: The worker changed what counted as correct
+
+13:40-14:00
+
+PASS beside the unchanged program. Stop.
+
+The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
+
+The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording. Thank you.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 6: Then the merge
-
-06:10-07:40
-
-Denied. Published. Denied.
-
-Green is the check. Merge is the next step. Freeze the program. Run those exact bytes. Compare them with the cases on the runner. Then one fresh approval.
-
-The bad program: DENIED. The judged program: PUBLISHED. Those bytes again: DENIED.
-
-This recording publishes the corrected handler and refuses the program that always prints 200. Compare first, then spend the approval. An earlier version of this gate spent the approval first, and a bad swap could hide behind an already-used approval. The order on this slide is the whole demonstration: the bad program is offered while the approval is still live.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-[/Sources]
-
-## Slide 7: Three more files in the job
-
-07:40-09:20
-
-Token, disk, host. One result each.
-
-Three more things in the same kind of job. Each one is its own recording.
-
-The job token reads another project's private fixture and gets 200. A token for this task gets 403 there and 200 on this job's own input. Expired and wrong-audience tokens get 403.
-
-The next job's file is mounted writable. The write changes the host file. A read-only mount denies it. This job's own patch still writes.
-
-The job may call one host. A post of the private fixture to another account is stored, 201, and the receiver log has the bytes. The repair sends one fixed team report from the runner. Extra fields are denied, and the checkout has no route of its own. The team report still arrives. These three rows are separate runs. They sit in one job because a real workflow has a token, a disk, and a host.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-[/Sources]
-
-## Slide 8: The next run keeps the file
-
-09:20-10:20
-
-One sentence. Move on.
-
-Copy this checkout into the next run and expected.json still expects 200. The next job grades against the edited answers. A cache, a reusable workspace, or a forked machine does the same thing if it copies the tree.
-
-This follows from the file the agent changed. We did not run a separate trial across several jobs. A copied workspace keeps whatever the last job wrote, including a grade of 200 for no login. The next run will go green on the same open admin page.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-[/Sources]
-
-## Slide 9: Keep the answers on the runner
-
-10:20-11:30
-
-Left file moves to the right.
-
-Move the answer file to the runner, beside the workflow. Leave the program in the checkout.
-
-The agent can change the code. The agent cannot change the grade. The honest cases fail the open admin page. The runner rejects that program. The fixed program is accepted and can be published. The checkout remains the place where the agent writes handler.py. The answers move to the side that merges.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-[/Sources]
-
-## Slide 10: On your job
-
-11:30-12:40
-
-Four rows. Then stop.
-
-On your own job, check four places. The token may read this job's input and is refused on another project. The disk may take this job's output and refuses a write to the next job. The host delivers the team report and refuses another account. The check publishes the real fix and refuses an edited answer file.
-
-Do that on the runner. Then run the real ticket again, so the job can still ship. A check that can only refuse will also refuse the fix. Each row needs both columns.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 11: Compare, then approve
-
-12:40-13:20
-
-Three words. Denied, published, denied.
-
-Say the order once more. Denied. Published. Denied. One fresh approval. The bad program first, while the approval is still live. Then the program that was judged. Then a replay, which is refused. If the replay is refused before the bad program is tried, the demonstration hides the swap.
-
-The publication stores those exact bytes and spends the approval in the same write. What leaves the job is the program that was compared, and it leaves once.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-[/Sources]
-
-## Slide 12: Who merged it?
-
-13:20-14:00
-
-Leave the question up.
-
-The agent changed the answers. The check went green.
-
-Who merged it?
-
-Keep the answers with the workflow. Freeze the program. Publish those bytes. Run the open-admin case again, and run the real fix again.
-
-The repository has the source and the Linux recordings from the Boat machine: the token, the mounts, the upload, the answer file, and the merge. Open expected.json in the job you run tomorrow. If that file is in the checkout, the grade belongs to whoever edits the pull request. Thank you.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
 ## Slide 13: The five policy cases

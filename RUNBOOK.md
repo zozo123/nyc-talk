@@ -10,25 +10,25 @@ The spoken script contains 1,200 words. The timings are budgets for speech, paus
 
 | Clock | Slide | Stage action |
 |---|---:|---|
-| 00:00-00:40 | 1 | The agent changes the answers. The check goes green. |
-| 00:40-01:40 | 2 | Workflow on the default branch. Answers in the checkout. |
-| 01:40-02:50 | 3 | No login must be 401. This program prints 200. |
-| 02:50-04:30 | 4 | Honest file FAIL. Edited file PASS. Pause. |
-| 04:30-06:10 | 5 | FAIL, PASS, REJECT, ACCEPT. |
-| 06:10-07:40 | 6 | Denied, published, denied. |
-| 07:40-09:20 | 7 | Token, disk, host. One result each. |
-| 09:20-10:20 | 8 | The next run keeps the answer file. |
-| 10:20-11:30 | 9 | Answers move to the runner. Code stays in the checkout. |
-| 11:30-12:40 | 10 | Four rows. Refuse, and still allow. |
-| 12:40-13:20 | 11 | Compare, then approve. |
-| 13:20-14:00 | 12 | Who merged it? Leave it up. |
+| 00:00-01:00 | 1 | FAIL, then PASS. Ask what changed. |
+| 01:00-02:30 | 2 | No login must be 401. The program prints 200. |
+| 02:30-04:00 | 3 | Checker write denied. It reads expected.json. |
+| 04:00-06:00 | 4 | Same program, same checker, new answer file, PASS. |
+| 06:00-07:00 | 5 | Say what each hash rules out. |
+| 07:00-08:00 | 6 | The workspace write included the acceptance criteria. |
+| 08:00-09:15 | 7 | Controller-owned cases reject the same program. |
+| 09:15-10:30 | 8 | The corrected program is accepted. |
+| 10:30-12:00 | 9 | Unused approval: denied, published, denied. |
+| 12:00-13:15 | 10 | Three questions for another system. |
+| 13:15-13:40 | 11 | Read the next experiment. Label it unfinished. |
+| 13:40-14:00 | 12 | PASS beside the unchanged program. Stop. |
 | 14:00-15:00 | - | Margin for transitions or the host. |
 
 ## Rehearsal
 
-Rehearse with an audible timer. The sentence is up in the first minute. The answer file is on screen by minute three. The merge order is on screen by minute seven. The question is up by minute thirteen.
+Rehearse with an audible timer. FAIL and PASS are up in the first minute. The hash row is on screen by minute five. The unused approval is on screen by minute eleven. The next-experiment question is up by minute thirteen.
 
-If behind, read slide 7 as the table only and slide 8 in one sentence. Keep the edited-file PASS, the runner REJECT, the real fix ACCEPT, and denied, published, denied. Do not read hashes aloud. The fixtures have the shape of a GitHub Actions job and were recorded on a Boat Ubuntu machine. State that once.
+If behind, keep slides 4, 7, 8, and 9. Say the token, mount, and host only if asked. Do not read full hashes aloud. The prefixes on the slide are enough. The payload is a CLI fixture and the worker is a script. State that once.
 
 ## Evidence on stage
 
