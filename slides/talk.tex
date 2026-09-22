@@ -385,15 +385,15 @@ Immutable byte entries\\Digest derived from those bytes\\Publication stores the 
 {\fontsize{10}{12.5}\selectfont\renewcommand{\arraystretch}{1.28}\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}p{.30\textwidth}p{.14\textwidth}p{.48\textwidth}@{}}
 \textcolor{acid}{Evidence} & \textcolor{acid}{Checks} & \textcolor{acid}{Scope}\\\midrule
-Linux lab & 29 & Token, mounts, loopback publish\\
-Isolated checker & 11 & Read-only checker, key, promote\\
-Local factory & 6 & Promote protocol\\
-Regressions & 37 & Controller and evidence\\
+Linux lab & 30 & Token, mounts, loopback publish\\
+Isolated checker & 13 & Read-only checker, key, promote\\
+Local factory & 8 & Promote protocol\\
+Regressions & 48 & Controller and evidence\\
 Old gate audit & 1 & Controller-object misuse\\
 \end{tabular}}
 \takeaway{Four fixtures, one factory story.}
-\scope{Boat Ubuntu sandbox for the Linux run. The fork slide is a consequence.}
-\note{The records bind their source. The dev sandbox recordings use bubblewrap on a Boat Ubuntu machine. The harness under test is a script. The prod step in the recording is the runner's publication of exact bytes, the shape of what a prod sandbox is allowed to execute. The forked-disk slide follows from that workspace file. The timings are a delivery budget.}
+\scope{Ubuntu sandbox for the Linux run. The fork slide is a consequence.}
+\note{The records bind their source. The dev sandbox recordings use bubblewrap on an Ubuntu machine. The harness under test is a script. The prod step in the recording is the runner's publication of exact bytes, the shape of what a prod sandbox is allowed to execute. The forked-disk slide follows from that workspace file. The timings are a delivery budget.}
 \end{frame}
 
 \renewcommand{\track}{A6  /  REPRO}

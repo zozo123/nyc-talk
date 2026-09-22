@@ -50,7 +50,7 @@ After changing experiment source, first run `make record-all` on disposable Linu
 sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 ```
 
-The recorded run used that setting on kernel 6.8.0-117. Inspect the compiled PDF and keep it offline. `make replay` is an optional explicitly labeled recording. No cloud login or live terminal is part of the delivery.
+The current records come from a privileged Ubuntu 22.04 container on kernel 6.8.0-64, where that sysctl is not needed; on a stock Ubuntu 24.04 host it is. Inspect the compiled PDF and keep it offline. `make replay` is an optional explicitly labeled recording. No cloud login or live terminal is part of the delivery.
 
 ## Organizer and AV
 

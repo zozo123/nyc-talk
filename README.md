@@ -41,15 +41,15 @@ make deck              # validate evidence, export notes, compile build/talk.pdf
 make paper             # compile the leave-behind paper
 make final             # snapshot the deck, then the paper
 make snapshot          # update slides/talk.pdf and the offline replay
-make test              # 37 controller / evidence regression tests
-make factory           # six local fixture checks; NO OS isolation
-make demo              # 29 Linux isolation / loopback HTTP checks
-make factory-isolated  # 11 checker / release checks with real read-only mounts
+make test              # 48 controller / evidence regression tests
+make factory           # eight local fixture checks; NO OS isolation
+make demo              # 30 Linux isolation / loopback HTTP checks
+make factory-isolated  # 13 checker / release checks with real read-only mounts
 make record-all        # refresh source-bound evidence after experiment changes
 make replay            # replay recorded observations; no new experiment
 ```
 
-The evidence in this tree was reproduced on 21 September 2026 on Ubuntu 24.04 x86_64 (kernel 6.8.0-117, Python 3.12.3). That run passed 37 regressions, 29 isolation-lab checks, 11 isolated-checker checks, and 6 local factory checks. `slides/talk.pdf` is the build from that machine.
+The evidence in this tree was reproduced on 22 September 2026 in a privileged Ubuntu 22.04 aarch64 container (kernel 6.8.0-64, Python 3.10.12). That run passed 30 isolation-lab checks, 13 isolated-checker checks, and 8 local factory checks; the 48 regressions pass on the same tree. `slides/talk.pdf` is the build from that container.
 
 Edit the LaTeX, then run `make snapshot`. Do not independently edit generated `TALK.md` or `SPEAKER_NOTES.md`. The deck build rejects stale, missing or skipped evidence, checks slide notes and timing, and rejects overfull TeX layouts. It never provisions cloud resources. CI reproduces the Linux fixtures and builds the same LaTeX package.
 
@@ -59,7 +59,7 @@ The local factory executor runs only the committed synthetic fixtures. It is not
 
 [Research dossier](research/DOSSIER.md) · [Evidence ledger](research/RESULTS.md) · [Original gate audit](research/AUDIT.md) · [Technical questions](QUESTIONS.md)
 
-The 29 lab, 11 isolated-checker and 6 local-factory assertions describe coverage, **not vulnerability counts**. The 37 regression tests are separate. The source-bound records support the read-only checker result, independent rejection, legitimate acceptance and exact-byte local publication.
+The 30 lab, 13 isolated-checker and 8 local-factory assertions describe coverage, **not vulnerability counts**. The 48 regression tests are separate. The source-bound records support the read-only checker result, independent rejection, legitimate acceptance and exact-byte local publication.
 
 The archived gate audit demonstrates an internal API integrity flaw in our previous implementation. It requires controller-object access; no worker-to-controller exploit path was shown. Multi-agent and snapshot implications are labeled as architectural inferences. Hash-chain history detects a rewrite against a separately protected anchor; it does not establish a correct decision.
 

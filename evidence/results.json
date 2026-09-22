@@ -99,12 +99,17 @@
     {
       "check": "gate.invalid",
       "status": "PASS",
-      "detail": "Rejected artifact cannot publish."
+      "detail": "The gate compared the verifier's own case values and derived reject. No publication."
     },
     {
       "check": "gate.substitution",
       "status": "PASS",
       "detail": "Approval does not authorize substituted bytes."
+    },
+    {
+      "check": "gate.destination",
+      "status": "PASS",
+      "detail": "Approval for the team report does not authorize the other account."
     },
     {
       "check": "gate.cross_run",
@@ -153,7 +158,7 @@
       "network_namespace": false,
       "mode": "isolated",
       "exit_code": 0,
-      "stdout": "{\"user\": \"user:[4026532552]\", \"pid\": \"pid:[4026532551]\", \"mnt\": \"mnt:[4026532548]\"}",
+      "stdout": "{\"user\": \"user:[4026532446]\", \"pid\": \"pid:[4026532450]\", \"mnt\": \"mnt:[4026532447]\"}",
       "stderr": "",
       "mounts": []
     },
@@ -266,11 +271,11 @@
       "mounts": []
     },
     {
-      "agent_sha256": "07a93dad925297bcdc93342184c0fa7f4731aaf25b3e001f8028fd029d53a0bd",
+      "agent_sha256": "e640364b1a11bab27676601a0f5151dcbb85e8058fb512c2c9df2188f7f6d93e",
       "network_namespace": true,
       "mode": "isolated",
       "exit_code": 0,
-      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:43657/accounts/other/uploads\"}",
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:40303/accounts/other/uploads\"}",
       "stderr": "",
       "mounts": []
     },
@@ -594,14 +599,14 @@
     }
   ],
   "source_sha256": {
-    "lab/run.py": "9f111728533aa2d2454583da2f883a6ae5d47df30fcdb137b2dafcc92570d4e7"
+    "lab/run.py": "46455370143da9fe4e0c1013060add61b0969f036e9780d4653665e3c90b23b2"
   },
   "platform": {
     "system": "Linux",
-    "machine": "x86_64",
-    "python": "3.12.3"
+    "machine": "aarch64",
+    "python": "3.10.12"
   },
-  "commit": "850e5483c067138f889a276ff14abe178556c14e",
+  "commit": null,
   "status": "PASS",
   "limitations": [
     "Synthetic, deterministic worker scripts; no model-driven prompt injection claim.",

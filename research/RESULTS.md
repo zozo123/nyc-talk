@@ -4,10 +4,10 @@ Run `make record-all` on disposable Linux, then `make evidence`. Each record bin
 
 | Evidence class | Record | Checks | What the passing record establishes |
 |---|---|---:|---|
-| Linux lab | `evidence/results.json` | 29 | Actual namespace/mount observations, fixture-token HTTP access, stored loopback uploads, broker denials, positive controls, original parser/gate/history cases |
-| Read-only checker experiment | `evidence/isolated-factory.json` | 11 | Direct checker write denied; unchanged checker and candidate; mutable answer key changes FAIL to PASS; independent rejection and positive control; fresh substitution, exact-byte local publication, replay |
-| Local factory protocol | `evidence/factory-results.json` | 6 | Local acceptance/rejection, fresh substitution and replay, two deliberately weakened detectors; no OS-isolation claim |
-| Regression suite | `tests/test_factory.py`, `tests/test_evidence.py`; CI test log | 37 | Controller protocol and fail-closed evidence regressions, including concurrent nonce use |
+| Linux lab | `evidence/results.json` | 30 | Actual namespace/mount observations, fixture-token HTTP access, stored loopback uploads, broker denials, positive controls, original parser/gate/history cases, destination-bound approvals |
+| Read-only checker experiment | `evidence/isolated-factory.json` | 13 | Direct checker write denied; unchanged checker and candidate; mutable answer key changes FAIL to PASS; independent rejection and positive control; gate-derived reject; fresh substitution, wrong-destination refusal, exact-byte local publication, replay |
+| Local factory protocol | `evidence/factory-results.json` | 8 | Local acceptance/rejection, gate-derived decision, fresh substitution, wrong-destination refusal and replay, two deliberately weakened detectors; no OS-isolation claim |
+| Regression suite | `tests/test_factory.py`, `tests/test_evidence.py`, `tests/test_redteam.py`; CI test log | 48 | Controller protocol, fail-closed evidence and red-team decision-integrity regressions, including concurrent nonce use |
 | Archived gate audit | `evidence/baseline-audit.json` | one reproduction | Internal API can retain stale digest after bytes mutate; requires controller-object access |
 
 These are assertion counts, not vulnerability or attack-success counts. A passing deliberately weakened check means the unwanted acceptance was successfully reproduced.

@@ -232,7 +232,7 @@ Appendix only
 
 Use only in Q&A.
 
-The records bind their source. The dev sandbox recordings use bubblewrap on a Boat Ubuntu machine. The harness under test is a script. The prod step in the recording is the runner's publication of exact bytes, the shape of what a prod sandbox is allowed to execute. The forked-disk slide follows from that workspace file. The timings are a delivery budget.
+The records bind their source. The dev sandbox recordings use bubblewrap on an Ubuntu machine. The harness under test is a script. The prod step in the recording is the runner's publication of exact bytes, the shape of what a prod sandbox is allowed to execute. The forked-disk slide follows from that workspace file. The timings are a delivery budget.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md

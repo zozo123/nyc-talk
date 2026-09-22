@@ -18,8 +18,9 @@ PASS egress.positive: Broker constructs a fixed report for the team account.
 PASS verifier.before: Changed checker returns success while buggy parser bytes remain unchanged.
 PASS verifier.after: External cases reject the same buggy parser on empty fields and empty input.
 PASS verifier.positive: Fixed parser passes all five external cases.
-PASS gate.invalid: Rejected artifact cannot publish.
+PASS gate.invalid: The gate compared the verifier's own case values and derived reject. No publication.
 PASS gate.substitution: Approval does not authorize substituted bytes.
+PASS gate.destination: Approval for the team report does not authorize the other account.
 PASS gate.cross_run: Other run rejects approval.
 PASS gate.stale_run: Authentic approval with the same MAC key cannot authorize a different run.
 PASS gate.verifier_changed: Authentic approval cannot authorize a changed verifier identity.
