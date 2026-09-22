@@ -1,6 +1,6 @@
 """Controller protocol regressions; OS boundary checks are a separate CI job."""
-import copy
 import sqlite3
+import sys
 import tempfile
 import unittest
 from concurrent.futures import ThreadPoolExecutor
@@ -8,11 +8,15 @@ from dataclasses import FrozenInstanceError
 from pathlib import Path
 from unittest.mock import patch
 
-from factory.core import (BAD, CASES, GOOD, SUBJECT, Gate, execute_frozen,
-                          execute_weak_checker, freeze, judge, WORKER_EXPECTED)
+from factory.core import (BAD, CASES, GOOD, SUBJECT, VERIFIER_TCB, Gate,
+                          execute_frozen, execute_weak_checker, freeze, judge,
+                          verifier_bundle_digest, WORKER_EXPECTED)
 
 LAUNCH = {"executor": "fixture", "compare": "controller"}
 ENV = {"role": "accept", "worker_write_access": False}
+DEST = {"operation": "publish_release", "environment": "test-release-store",
+        "account": "controller-owned", "subject": SUBJECT}
+OTHER_DEST = dict(DEST, environment="test-staging-store")
 
 
 class FactoryTests(unittest.TestCase):
@@ -25,13 +29,18 @@ class FactoryTests(unittest.TestCase):
         self.good = freeze({SUBJECT: GOOD.encode()})
         self.bad = freeze({SUBJECT: BAD.encode()})
 
-    def approval(self, **kw):
+    def issue(self, **kw):
         return self.gate.issue(artifact=kw.get("artifact", self.good),
-                               accepted=kw.get("accepted", True), launch=LAUNCH,
-                               env_manifest=ENV, ttl=kw.get("ttl", 300))
+                               launch=LAUNCH, env_manifest=ENV,
+                               destination=kw.get("destination", DEST),
+                               ttl=kw.get("ttl", 300))
 
-    def publish(self, approval, artifact=None, launch=None, env=None):
-        return self.gate.publish(approval, artifact or self.good, launch or LAUNCH, env or ENV)
+    def approval(self, **kw):
+        return self.issue(**kw).approval
+
+    def publish(self, approval, artifact=None, launch=None, env=None, destination=None):
+        return self.gate.publish(approval, artifact or self.good, launch or LAUNCH,
+                                 env or ENV, destination or DEST)
 
     def test_good_passes_five_cases(self):
         self.assertTrue(judge(execute_frozen(GOOD.encode()))["accepted"])
@@ -70,6 +79,32 @@ class FactoryTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     freeze(value)
 
+    def test_gate_derives_accept_from_good_bytes(self):
+        auth = self.issue()
+        self.assertEqual(auth.approval["value"]["decision"], "accept")
+        self.assertTrue(auth.verdict["accepted"])
+        self.assertEqual(len(auth.observations), len(CASES))
+
+    def test_gate_derives_reject_from_bad_bytes(self):
+        auth = self.issue(artifact=self.bad)
+        self.assertEqual(auth.approval["value"]["decision"], "reject")
+        self.assertFalse(auth.verdict["accepted"])
+        self.assertEqual(self.publish(auth.approval, self.bad), "DENIED")
+
+    def test_no_approval_on_malformed_observations(self):
+        auth = self.gate.issue(artifact=self.good, observe=lambda data: ["garbage"],
+                               launch=LAUNCH, env_manifest=ENV, destination=DEST)
+        self.assertIsNone(auth.approval)
+        self.assertEqual(auth.verdict["kind"], "no_approval")
+
+    def test_observer_receives_the_named_bytes(self):
+        seen = []
+        auth = self.gate.issue(artifact=self.good,
+                               observe=lambda data: seen.append(data) or execute_frozen(data),
+                               launch=LAUNCH, env_manifest=ENV, destination=DEST)
+        self.assertEqual(seen, [GOOD.encode()])
+        self.assertEqual(auth.approval["value"]["decision"], "accept")
+
     def test_fresh_swap_then_positive(self):
         approval = self.approval()
         self.assertEqual(self.publish(approval, self.bad), "DENIED")
@@ -95,15 +130,17 @@ class FactoryTests(unittest.TestCase):
         self.assertEqual(outcomes.count("PUBLISHED"), 1)
         self.assertEqual(outcomes.count("DENIED"), 15)
 
-    def test_rejected_decision(self):
-        self.assertEqual(self.publish(self.approval(accepted=False)), "DENIED")
-
     def test_tampered_mac(self):
         approval = self.approval(); approval["mac"] = "0" * 64
         self.assertEqual(self.publish(approval), "DENIED")
 
     def test_tampered_artifact_digest(self):
         approval = self.approval(); approval["value"]["artifact_manifest_digest"] = self.bad.digest
+        self.assertEqual(self.publish(approval, self.bad), "DENIED")
+
+    def test_tampered_decision(self):
+        approval = self.approval(artifact=self.bad)
+        approval["value"]["decision"] = "accept"
         self.assertEqual(self.publish(approval, self.bad), "DENIED")
 
     def test_wrong_run_even_with_same_key(self):
@@ -113,13 +150,26 @@ class FactoryTests(unittest.TestCase):
     def test_controller_restart_fails_closed(self):
         approval = self.approval()
         replacement = Gate(self.store, clock=lambda: self.now[0])
-        self.assertEqual(replacement.publish(approval, self.good, LAUNCH, ENV), "DENIED")
+        self.assertEqual(replacement.publish(approval, self.good, LAUNCH, ENV, DEST), "DENIED")
 
     def test_changed_launch(self):
         self.assertEqual(self.publish(self.approval(), launch={"executor": "other"}), "DENIED")
 
     def test_changed_environment(self):
         self.assertEqual(self.publish(self.approval(), env={"role": "worker"}), "DENIED")
+
+    def test_changed_destination(self):
+        approval = self.approval()
+        self.assertEqual(self.publish(approval, destination=OTHER_DEST), "DENIED")
+        self.assertEqual(self.publish(approval), "PUBLISHED")
+
+    def test_malformed_destination_refused_at_issue(self):
+        for value in (None, [], {}, {"operation": "publish_release"},
+                      dict(DEST, subject="other.py"), dict(DEST, account=""),
+                      dict(DEST, extra="field"), dict(DEST, account=7)):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    self.issue(destination=value)
 
     def test_changed_verifier(self):
         approval = self.approval()
@@ -152,9 +202,9 @@ class FactoryTests(unittest.TestCase):
 
     def test_authorize_is_not_consumption(self):
         approval = self.approval()
-        self.assertTrue(self.gate.authorize(approval, self.good, LAUNCH, ENV))
+        self.assertTrue(self.gate.authorize(approval, self.good, LAUNCH, ENV, DEST))
         self.assertEqual(self.publish(approval), "PUBLISHED")
-        self.assertFalse(self.gate.authorize(approval, self.good, LAUNCH, ENV))
+        self.assertFalse(self.gate.authorize(approval, self.good, LAUNCH, ENV, DEST))
 
     def test_missing_observations_no_approval(self):
         self.assertEqual(judge([])["kind"], "no_approval")
@@ -178,6 +228,28 @@ class FactoryTests(unittest.TestCase):
             db.execute("UPDATE publications SET candidate = ?", (BAD.encode(),))
         with self.assertRaises(ValueError):
             self.gate.published_bytes(approval["value"]["nonce"])
+
+    def test_verifier_tcb_covers_imported_modules(self):
+        import factory.boat  # noqa: F401
+        import factory.isolated  # noqa: F401
+        import factory.run  # noqa: F401
+        import lab.run  # noqa: F401
+        root = Path(__file__).resolve().parents[1]
+        for module in list(sys.modules.values()):
+            path = getattr(module, "__file__", None)
+            if not path:
+                continue
+            try:
+                rel = Path(path).resolve().relative_to(root)
+            except ValueError:
+                continue
+            if rel.parts[0] in ("factory", "lab"):
+                self.assertIn(str(rel), VERIFIER_TCB,
+                              f"{rel} shapes controller observations but is outside VERIFIER_TCB")
+
+    def test_verifier_digest_fails_closed_on_missing_member(self):
+        with self.assertRaises(OSError):
+            verifier_bundle_digest(LAUNCH, tcb=VERIFIER_TCB + ("factory/absent.py",))
 
 
 if __name__ == "__main__":

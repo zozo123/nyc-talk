@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import os
 import platform
@@ -15,12 +16,14 @@ from factory.core import (
     BAD,
     CASES,
     GOOD,
+    POLICY,
     SUBJECT,
     TASK,
     WEAK_CHECKER,
     WORKER_EXPECTED,
     Frozen,
     Gate,
+    acceptance_environment,
     digest,
     execute_frozen,
     execute_weak_checker,
@@ -36,13 +39,22 @@ LAUNCH = {
     "compare": "controller",
     "cases": len(CASES),
 }
-ACCEPT_ENV = {
-    "role": "accept",
-    "inherits_producer_disk": False,
-    "checker_in_vm": False,
-    "expected_results_in_vm": False,
-    "api_credential": "none",
+ACCEPT_ENV = acceptance_environment(
+    "accept",
+    inherits_producer_disk=False,
+    checker_in_vm=False,
+    expected_results_in_vm=False,
+    api_credential="none",
+)
+# The approval names where these bytes may go. An approval for the release
+# store is not an approval for the staging store next to it.
+RELEASE_TARGET = {
+    "operation": "publish_release",
+    "environment": "local-sqlite-release-store",
+    "account": "controller-owned",
+    "subject": SUBJECT,
 }
+OTHER_TARGET = dict(RELEASE_TARGET, environment="local-sqlite-staging-store")
 
 
 def classify(execution, observed, configuration, attribution, prior):
@@ -56,38 +68,40 @@ def classify(execution, observed, configuration, attribution, prior):
 
 
 def intended(store: Path, candidate: bytes) -> dict:
+    """The gate observes the frozen bytes and derives its own decision.
+
+    Nothing in this function can tell the gate what the answer is: `issue`
+    takes no decision, and the bytes it evaluates are the bytes it names."""
     frozen = freeze({SUBJECT: candidate})
     persist(frozen, store)
-    outputs = execute_frozen(frozen.files[SUBJECT])
-    verdict = judge(outputs)
     gate = Gate(store)
-    published = "NO_APPROVAL"
-    if verdict["kind"] == "verdict":
-        approval = gate.issue(
-            artifact=frozen, accepted=verdict["accepted"],
-            launch=LAUNCH, env_manifest=ACCEPT_ENV,
-        )
+    auth = gate.issue(artifact=frozen, launch=LAUNCH,
+                      env_manifest=ACCEPT_ENV, destination=RELEASE_TARGET)
+    outputs, verdict, approval = auth.observations, auth.verdict, auth.approval
+    published, swap, replay = "NO_APPROVAL", "n/a", "n/a"
+    wrong_destination = "n/a"
+    if approval is not None:
         if verdict["accepted"]:
+            # Both negative tests run while the approval is still unused, so a
+            # refusal cannot be an already-spent nonce wearing a disguise.
             swapped = freeze({SUBJECT: BAD.encode() if candidate != BAD.encode() else GOOD.encode()})
-            swap = gate.replay_or_swap(approval, swapped, LAUNCH, ACCEPT_ENV)
-            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV)
+            swap = gate.replay_or_swap(approval, swapped, LAUNCH, ACCEPT_ENV, RELEASE_TARGET)
+            wrong_destination = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV, OTHER_TARGET)
+            published = gate.publish(approval, frozen, LAUNCH, ACCEPT_ENV, RELEASE_TARGET)
             if gate.published_bytes(approval["value"]["nonce"]) != candidate:
                 raise AssertionError("published bytes differ from evaluated bytes")
-            replay = gate.replay_or_swap(approval, frozen, LAUNCH, ACCEPT_ENV)
+            replay = gate.replay_or_swap(approval, frozen, LAUNCH, ACCEPT_ENV, RELEASE_TARGET)
         else:
             published = "NOT_PUBLISHED"
-            swap = "n/a"
-            replay = "n/a"
-    else:
-        swap = "n/a"
-        replay = "n/a"
     return {
         "config": "reference-intended",
         "artifact": frozen.digest,
         "outputs": outputs,
         "verdict": verdict,
+        "gate_decision": approval["value"]["decision"] if approval else "no_approval",
         "published": published,
         "swap_after_freeze": swap,
+        "wrong_destination": wrong_destination,
         "replay": replay,
         "worker_pass_file_consulted": False,
     }
@@ -97,7 +111,7 @@ def weakened_report(candidate: bytes) -> dict:
     """Deliberate defect: controller treats a worker PASS file as acceptance."""
     workspace = {SUBJECT: candidate, "PASS.txt": b"PASS\n"}
     trusted_report = workspace["PASS.txt"].strip() == b"PASS"
-    real = judge(execute_frozen(candidate))
+    real = judge(execute_frozen(candidate, POLICY), POLICY)
     return {
         "config": "deliberately-weakened-worker-report",
         "controller_used_worker_report": True,
@@ -111,7 +125,7 @@ def weakened_report(candidate: bytes) -> dict:
 def weakened_deps(candidate: bytes) -> dict:
     """Protected checker file. Worker-controlled expected.json in the same cwd."""
     result = execute_weak_checker(candidate, WORKER_EXPECTED)
-    independent = judge(execute_frozen(candidate))
+    independent = judge(execute_frozen(candidate, POLICY), POLICY)
     return {
         "config": "deliberately-weakened-untrusted-deps",
         "checker_sha256": digest(WEAK_CHECKER.encode()),
@@ -154,9 +168,24 @@ def run_local(store: Path) -> dict:
                  "our_factory", "known_mechanism"),
     )
     check(
+        "intended.derived",
+        "accepted" not in set(inspect.signature(Gate.issue).parameters)
+        and good.get("gate_decision") == "accept" and bad.get("gate_decision") == "reject",
+        "The gate has no acceptance parameter. It derived accept and reject from its own observations.",
+        classify("completed", "successful_defense", "reference-intended",
+                 "our_factory", "known_mechanism"),
+    )
+    check(
         "intended.swap",
         good.get("swap_after_freeze") == "DENIED",
         "Fresh, unused approval rejects substituted bytes, then still publishes the intended bytes.",
+        classify("completed", "successful_defense", "reference-intended",
+                 "our_factory", "known_mechanism"),
+    )
+    check(
+        "intended.destination",
+        good.get("wrong_destination") == "DENIED",
+        "The same unused approval does not authorize a second destination; publication is bound to one target.",
         classify("completed", "successful_defense", "reference-intended",
                  "our_factory", "known_mechanism"),
     )
@@ -249,8 +278,8 @@ def run_boat(store: Path) -> dict:
 
         good_out = eval_on_boat(GOOD)
         bad_out = eval_on_boat(BAD)
-        good_v = judge(good_out)
-        bad_v = judge(bad_out)
+        good_v = judge(good_out, POLICY)
+        bad_v = judge(bad_out, POLICY)
         boat.stop(sandbox_id)
         ledger["stopped"] = True
         ledger["execution_status"] = "completed"
