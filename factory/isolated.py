@@ -13,11 +13,21 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from factory.core import (BAD, CASES, GOOD, SUBJECT, WEAK_CHECKER, WORKER_EXPECTED,
-                          Gate, canonical, digest, freeze, judge)
+from factory.core import (BAD, CASES, GOOD, POLICY, SUBJECT, WEAK_CHECKER,
+                          WORKER_EXPECTED, Gate, acceptance_environment,
+                          canonical, digest, freeze, judge)
 from lab.run import Runner
 
 ROOT = Path(__file__).resolve().parents[1]
+# The approval names one destination. The staging store is a different target
+# for the same bytes, and the same approval must not reach it.
+RELEASE_TARGET = {
+    "operation": "publish_release",
+    "environment": "isolated-lab-release-store",
+    "account": "controller-owned",
+    "subject": SUBJECT,
+}
+OTHER_TARGET = dict(RELEASE_TARGET, environment="isolated-lab-staging-store")
 
 
 def run() -> dict:
@@ -69,8 +79,12 @@ print(checker_write)
                                  mounts=[(work, "/work", False), (verifier, "/verifier", False)], network=False)
         check("answer_key.weak_pass", weak_stdout == "PASS", "Unchanged, read-only checker accepts the open-admin fixture.")
 
-        def evaluate(source):
-            candidate = freeze({SUBJECT: source.encode()})
+        def observe(data: bytes) -> list:
+            """Controller-owned observer: bytes in, raw observations out.
+
+            It has no way to return a decision, and the gate hands it the exact
+            frozen bytes the approval will name."""
+            candidate = freeze({SUBJECT: data})
             path = root / candidate.digest
             path.mkdir(exist_ok=True)
             (path / SUBJECT).write_bytes(candidate.files[SUBJECT])
@@ -79,7 +93,12 @@ print(checker_write)
                 out = runner.run('import runpy\nrunpy.run_path("/candidate/handler.py", run_name="__main__")',
                                  mounts=[(path, "/candidate", False)], network=False, args=[value])
                 outputs.append({"status": "ok", "value": json.loads(out)})
-            return candidate, outputs, judge(outputs)
+            return outputs
+
+        def evaluate(source):
+            candidate = freeze({SUBJECT: source.encode()})
+            outputs = observe(candidate.files[SUBJECT])
+            return candidate, outputs, judge(outputs, POLICY)
 
         bad, bad_outputs, bad_verdict = evaluate(BAD)
         good, good_outputs, good_verdict = evaluate(GOOD)
@@ -88,15 +107,28 @@ print(checker_write)
         check("answer_key.positive", good_verdict.get("accepted") is True,
               "Fixed handler satisfies all five controller-owned cases.")
         launch = {"executor": "bubblewrap", "compare": "controller", "cases": len(CASES)}
-        environment = {"worker_network": False, "candidate_mount": "read-only", "expected_results_in_child": False}
-        gate = Gate(root / "release")
-        approval = gate.issue(artifact=good, accepted=True, launch=launch, env_manifest=environment)
-        check("release.fresh_swap", gate.publish(approval, bad, launch, environment) == "DENIED",
+        environment = acceptance_environment(
+            "accept", worker_network=False, candidate_mount="read-only",
+            expected_results_in_child=False)
+        gate = Gate(root / "release", policy=POLICY)
+        refused = gate.issue(artifact=bad, observe=observe, launch=launch,
+                             env_manifest=environment, destination=RELEASE_TARGET)
+        check("release.derived_reject",
+              refused.approval["value"]["decision"] == "reject"
+              and gate.publish(refused.approval, bad, launch, environment, RELEASE_TARGET) == "DENIED",
+              "The gate re-ran the always-200 bytes itself and signed reject. No caller states the decision.")
+        auth = gate.issue(artifact=good, observe=observe, launch=launch,
+                          env_manifest=environment, destination=RELEASE_TARGET)
+        approval = auth.approval
+        check("release.fresh_swap", gate.publish(approval, bad, launch, environment, RELEASE_TARGET) == "DENIED",
               "Substitution is tested BEFORE the approval nonce is consumed.")
-        check("release.exact_bytes", gate.publish(approval, good, launch, environment) == "PUBLISHED"
+        check("release.wrong_destination",
+              gate.publish(approval, good, launch, environment, OTHER_TARGET) == "DENIED",
+              "The still-unused approval names one destination and does not authorize the staging store.")
+        check("release.exact_bytes", gate.publish(approval, good, launch, environment, RELEASE_TARGET) == "PUBLISHED"
               and gate.published_bytes(approval["value"]["nonce"]) == GOOD.encode(),
               "The same unused approval still publishes the exact accepted bytes into the local database.")
-        check("release.replay", gate.publish(approval, good, launch, environment) == "DENIED",
+        check("release.replay", gate.publish(approval, good, launch, environment, RELEASE_TARGET) == "DENIED",
               "A second publication with the consumed approval is rejected.")
         return {"mode": "isolated", "status": "PASS", "host": platform.platform(),
                 "checker_sha256_before": checker_before, "checker_sha256_after": digest(checker.read_bytes()),

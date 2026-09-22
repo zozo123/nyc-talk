@@ -1,7 +1,9 @@
 MODE local / STATUS PASS
 PASS intended.good: Frozen locked-admin fixture is accepted; exact bytes are stored in the publication database.
 PASS intended.bad: Frozen open-admin handler is rejected. No publication.
+PASS intended.derived: The gate has no acceptance parameter. It derived accept and reject from its own observations.
 PASS intended.swap: Fresh, unused approval rejects substituted bytes, then still publishes the intended bytes.
+PASS intended.destination: The same unused approval does not authorize a second destination; publication is bound to one target.
 PASS intended.replay: Consumed approval cannot publish twice; nonce and published bytes commit in one SQLite transaction.
 PASS weakened.report: Detector: worker PASS file accepted an open /admin the independent judge rejects.
 PASS weakened.deps: Detector: unchanged checker still PASSed via worker expected.json (local logic run).

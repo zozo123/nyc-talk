@@ -7,6 +7,8 @@ PASS answer_key.expected_changed: Worker changed only the answer key to expect 2
 PASS answer_key.weak_pass: Unchanged, read-only checker accepts the open-admin fixture.
 PASS answer_key.independent_reject: Controller-owned cases reject the same always-200 bytes.
 PASS answer_key.positive: Fixed handler satisfies all five controller-owned cases.
+PASS release.derived_reject: The gate re-ran the always-200 bytes itself and signed reject. No caller states the decision.
 PASS release.fresh_swap: Substitution is tested BEFORE the approval nonce is consumed.
+PASS release.wrong_destination: The still-unused approval names one destination and does not authorize the staging store.
 PASS release.exact_bytes: The same unused approval still publishes the exact accepted bytes into the local database.
 PASS release.replay: A second publication with the consumed approval is rejected.

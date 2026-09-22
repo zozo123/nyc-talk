@@ -1,12 +1,12 @@
 {
   "local": {
     "mode": "local",
-    "host": "Linux-6.8.0-117-generic-x86_64-with-glibc2.39",
+    "host": "Linux-6.8.0-64-generic-aarch64-with-glibc2.35",
     "task": "lock-admin",
     "status": "PASS",
     "good": {
       "config": "reference-intended",
-      "artifact": "bf2a3a3791fd4f71eeb57da4a1841da918149c655a5d478bc9babc4df85acc05",
+      "artifact": "956b6d893f2e9aee3ccdaf4720875c8d9e702bcf6c843f5d009c564af8d2841e",
       "outputs": [
         {
           "status": "ok",
@@ -40,14 +40,16 @@
           true
         ]
       },
+      "gate_decision": "accept",
       "published": "PUBLISHED",
       "swap_after_freeze": "DENIED",
+      "wrong_destination": "DENIED",
       "replay": "DENIED",
       "worker_pass_file_consulted": false
     },
     "bad": {
       "config": "reference-intended",
-      "artifact": "d14afeb642bce2d713440d19cc6015114a51a10339fee84335c2e0c2fdea4848",
+      "artifact": "44664c8b1980749268f802856ef739cacfa2511f110e003835f03ffab3ea4cc0",
       "outputs": [
         {
           "status": "ok",
@@ -81,8 +83,10 @@
           false
         ]
       },
+      "gate_decision": "reject",
       "published": "NOT_PUBLISHED",
       "swap_after_freeze": "n/a",
+      "wrong_destination": "n/a",
       "replay": "n/a",
       "worker_pass_file_consulted": false
     },
@@ -149,9 +153,33 @@
         }
       },
       {
+        "check": "intended.derived",
+        "status": "PASS",
+        "detail": "The gate has no acceptance parameter. It derived accept and reject from its own observations.",
+        "classification": {
+          "execution_status": "completed",
+          "observed_result": "successful_defense",
+          "configuration": "reference-intended",
+          "attribution": "our_factory",
+          "prior_work": "known_mechanism"
+        }
+      },
+      {
         "check": "intended.swap",
         "status": "PASS",
         "detail": "Fresh, unused approval rejects substituted bytes, then still publishes the intended bytes.",
+        "classification": {
+          "execution_status": "completed",
+          "observed_result": "successful_defense",
+          "configuration": "reference-intended",
+          "attribution": "our_factory",
+          "prior_work": "known_mechanism"
+        }
+      },
+      {
+        "check": "intended.destination",
+        "status": "PASS",
+        "detail": "The same unused approval does not authorize a second destination; publication is bound to one target.",
         "classification": {
           "execution_status": "completed",
           "observed_result": "successful_defense",
@@ -200,16 +228,16 @@
     "source_sha256": {
       "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
       "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
-      "factory/core.py": "cf198c881093f1e2c590494d352ce25eba33d7ab475e59abe4b27baeefcca22c",
-      "factory/isolated.py": "0d599e566def58bc9d150f259f4e9fb9b6c36b4117012ed07eb1bfb101272977",
-      "factory/run.py": "d44a1ad803066fd8aeaa8f362ab1ceea920bbba3ad004a9dc709c6b60d0032ae"
+      "factory/core.py": "83f42b1cd70134cfa4dbd7b420a6fc9893b604d53d8225b738ab0d31b2e34c00",
+      "factory/isolated.py": "eef6d73329f300bd55fcec35f0605b3b3c82f64be3c3cf266ab4a230a69c4351",
+      "factory/run.py": "c0ea9f241d70c93bf2994832d1b27e1ecf0a198e5b18a29ecde29239d5a962c2"
     }
   },
   "source_sha256": {
     "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
     "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
-    "factory/core.py": "cf198c881093f1e2c590494d352ce25eba33d7ab475e59abe4b27baeefcca22c",
-    "factory/isolated.py": "0d599e566def58bc9d150f259f4e9fb9b6c36b4117012ed07eb1bfb101272977",
-    "factory/run.py": "d44a1ad803066fd8aeaa8f362ab1ceea920bbba3ad004a9dc709c6b60d0032ae"
+    "factory/core.py": "83f42b1cd70134cfa4dbd7b420a6fc9893b604d53d8225b738ab0d31b2e34c00",
+    "factory/isolated.py": "eef6d73329f300bd55fcec35f0605b3b3c82f64be3c3cf266ab4a230a69c4351",
+    "factory/run.py": "c0ea9f241d70c93bf2994832d1b27e1ecf0a198e5b18a29ecde29239d5a962c2"
   }
 }

@@ -13,12 +13,14 @@ LAB = set("""isolation.namespaces credentials.before credentials.after credentia
 credentials.fixture-expired credentials.fixture-wrong-audience mount.before mount.after
 mount.positive egress.before egress.recipient egress.payload egress.url egress.no_delivery
 egress.bypass egress.positive verifier.before verifier.after verifier.positive gate.invalid
-gate.substitution gate.cross_run gate.stale_run gate.verifier_changed gate.forgery
-gate.positive gate.replay history.rewrite final.task""".split())
-LOCAL = set("intended.good intended.bad intended.swap intended.replay weakened.report weakened.deps".split())
+gate.substitution gate.destination gate.cross_run gate.stale_run gate.verifier_changed
+gate.forgery gate.positive gate.replay history.rewrite final.task""".split())
+LOCAL = set("""intended.good intended.bad intended.derived intended.swap
+intended.destination intended.replay weakened.report weakened.deps""".split())
 ISOLATED = set("""answer_key.honest_key_fails answer_key.checker_write_denied
 answer_key.checker_unchanged answer_key.candidate_unchanged answer_key.expected_changed
-answer_key.weak_pass answer_key.independent_reject answer_key.positive release.fresh_swap
+answer_key.weak_pass answer_key.independent_reject answer_key.positive
+release.derived_reject release.fresh_swap release.wrong_destination
 release.exact_bytes release.replay""".split())
 
 
@@ -70,10 +72,10 @@ def verify_all(root=ROOT):
 
 def main():
     verify_all()
-    text = (r'\newcommand{\evidencecount}{29 isolation-lab checks; '
-            r'11 isolated checker/gate checks; 6 local factory checks}' + '\n')
+    text = (r'\newcommand{\evidencecount}{30 isolation-lab checks; '
+            r'13 isolated checker/gate checks; 8 local factory checks}' + '\n')
     (ROOT / 'slides/evidence.tex').write_text(text)
-    print('Evidence verified: 29 lab + 11 isolated checker/gate + 6 local checks. No skips. Source sets match.')
+    print('Evidence verified: 30 lab + 13 isolated checker/gate + 8 local checks. No skips. Source sets match.')
 
 
 if __name__ == '__main__':
