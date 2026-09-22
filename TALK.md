@@ -4,7 +4,7 @@
 
 Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,200 words.
+Spoken manuscript: 1,205 words.
 ## 1. What changed when the test went green?
 
 **00:00-01:00**
@@ -46,8 +46,6 @@ The checker then loads expected.json from its working directory. That file is in
 Read the row. Program 76fcb0904f51 both times. Checker f5d8d3468bbe both times. The answer file moves from 0494f1a01dee to 390e5e764916. The verdict moves from FAIL to PASS.
 
 The diff is the required status for admin:none, 401 becoming 200, and the same change on the other four rows. The worker changed what counted as correct. The checker executed, compared the program with that file, and the numbers matched.
-
-The worker changed what counted as correct. The checker compared the program with the new file, and the numbers matched.
 
 ## 5. What the three hashes say
 
@@ -111,20 +109,22 @@ Take these three questions to another system. Who can change the inputs that def
 
 These questions inspect a pipeline. They do not by themselves show that another product has this bug. On our recording, the worker can change expected.json, and that file defines acceptance for the workspace checker. The hashes name the candidate, the checker, and the criteria for this comparison. The unused approval shows that publication stored the approved bytes, because the bad bytes were refused while that approval was still unused.
 
-## 11. Next experiment
+## 11. The sandbox held
 
 **13:15-13:40**
 
-*Read it as a question. Label it unfinished.*
+*Say what did not happen. Then name the allowed write.*
 
-Leave this up long enough to read. Once the checker and the answer file are both protected, which remaining input can the worker use to change the verdict? That experiment is not in this recording. If a later run finds such an input, that input becomes the result. If none does, the repair held for the inputs we tried. I am leaving it labeled as the next experiment so the boundary of this talk stays visible.
+The title is literal in this experiment. Nothing escaped the sandbox. The worker used a workspace write it was supposed to have. The checker overwrite was denied, and both the program and checker bytes stayed fixed. The failure was that expected.json lived inside the worker-writable area while the checker treated that file as the definition of success.
+
+So sandbox isolation and release authorization are different boundaries. You can have a sandbox that holds and still let the worker control an input that decides whether its own work is accepted. That is the boundary I want you to inspect.
 
 ## 12. The worker changed what counted as correct
 
 **13:40-14:00**
 
-*PASS beside the unchanged program. Stop.*
+*Say the sandbox held. Leave PASS beside the unchanged program. Stop.*
 
-The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
+The sandbox held. The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
 
 The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording. Thank you.

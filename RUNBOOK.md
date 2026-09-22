@@ -20,15 +20,15 @@ The spoken script contains 1,200 words. The timings are budgets for speech, paus
 | 09:15-10:30 | 8 | The corrected program is accepted. |
 | 10:30-12:00 | 9 | Unused approval: denied, published, denied. |
 | 12:00-13:15 | 10 | Three questions for another system. |
-| 13:15-13:40 | 11 | Read the next experiment. Label it unfinished. |
-| 13:40-14:00 | 12 | PASS beside the unchanged program. Stop. |
+| 13:15-13:40 | 11 | The sandbox held: denied overwrite, fixed bytes, allowed workspace write changed the decision. |
+| 13:40-14:00 | 12 | “The sandbox held. The worker changed what counted as correct.” Stop. |
 | 14:00-15:00 | - | Margin for transitions or the host. |
 
 ## Rehearsal
 
-Rehearse with an audible timer. FAIL and PASS are up in the first minute. The hash row is on screen by minute five. The unused approval is on screen by minute eleven. The next-experiment question is up by minute thirteen.
+Rehearse with an audible timer. FAIL and PASS are up in the first minute. The hash row is on screen by minute five. The unused approval is on screen by minute eleven. The title payoff is up by minute thirteen.
 
-If behind, keep slides 4, 7, 8, and 9. Say the token, mount, and host only if asked. Do not read full hashes aloud. The prefixes on the slide are enough. The payload is a CLI fixture and the worker is a script. State that once.
+If behind, keep slides 4, 7, 8, 9, 11, and 12. Say the token, mount, and host only if asked. Do not read full hashes aloud. The prefixes on the slide are enough. The payload is a CLI fixture and the worker is a script. State that once.
 
 ## Evidence on stage
 
