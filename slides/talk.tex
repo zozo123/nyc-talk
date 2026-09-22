@@ -44,6 +44,8 @@
 \vspace{8mm}
 {\color{danger}\fontsize{28}{32}\selectfont\bfseries FAIL}\hspace{8mm}{\color{muted}\fontsize{28}{32}\selectfont$\longrightarrow$}\hspace{8mm}{\color{acid}\fontsize{28}{32}\selectfont\bfseries PASS}
 \vfill
+{\color{muted}\small Your Agent Escaped Without Escaping the Sandbox\par}
+\vspace{1mm}
 {\small Yossi Eliaz, PhD\quad Incredibuild\quad 21 October 2026\par}
 \note{What changed when the test went green?
 
@@ -113,9 +115,7 @@ Edited & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \texttt{390e5e764916} &
 \scope{SHA-256 prefixes of the bytes in the isolated recording.}
 \note{Read the row. Program 76fcb0904f51 both times. Checker f5d8d3468bbe both times. The answer file moves from 0494f1a01dee to 390e5e764916. The verdict moves from FAIL to PASS.
 
-The diff is the required status for admin:none, 401 becoming 200, and the same change on the other four rows. The worker changed what counted as correct. The checker executed, compared the program with that file, and the numbers matched.
-
-The worker changed what counted as correct. The checker compared the program with the new file, and the numbers matched.}
+The diff is the required status for admin:none, 401 becoming 200, and the same change on the other four rows. The worker changed what counted as correct. The checker executed, compared the program with that file, and the numbers matched.}
 \end{frame}
 
 \renewcommand{\track}{05  /  HASHES}
@@ -135,7 +135,7 @@ Answers \texttt{0494f1a01dee} became \texttt{390e5e764916}.\par}
 Hashing the altered answers does not make them authoritative. Their identity and their owner have to come from the trusted policy. In this run the owner of the new file was the worker. If you only hash the file after the worker writes it, you have a name for the new bytes and you still have the worker as the author of the criteria.}
 \end{frame}
 
-\renewcommand{\track}{05  /  WHY}
+\renewcommand{\track}{06  /  WHY}
 \begin{frame}[t,fragile]
 % title: The file defines success
 % time: 07:00-08:00
@@ -156,7 +156,7 @@ The worker can write the workspace. The checker runs with that workspace as its 
 The worker here is a script with that write in it. The recording shows the action is permitted. It does not measure whether a particular model would choose it. For an engineer or a CISO, the useful question is which input the trusted decision treats as the definition of success, and who is allowed to write that input. A list of locked binaries still leaves that question open on the table tonight.}
 \end{frame}
 
-\renewcommand{\track}{06  /  SAME PROGRAM}
+\renewcommand{\track}{07  /  SAME PROGRAM}
 \begin{frame}[t]
 % title: Controller-owned criteria
 % time: 08:00-09:15
@@ -175,7 +175,7 @@ The worker here is a script with that write in it. The recording shows the actio
 Program 76fcb0904f51, the one that prints 200, is REJECT. The demonstrated edit no longer moves this verdict. This path is the controller's comparison. It is a separate implementation from the workspace checker whose hash is f5d8d3468bbe.}
 \end{frame}
 
-\renewcommand{\track}{07  /  THE FIX}
+\renewcommand{\track}{08  /  THE FIX}
 \begin{frame}[t]
 % title: The corrected program
 % time: 09:15-10:30
@@ -195,7 +195,7 @@ Program 76fcb0904f51, the one that prints 200, is REJECT. The demonstrated edit 
 The repair stops the demonstrated edit and keeps the legitimate task. The accepted program is not the program from the failing run. Its hash is different, and the criteria are the controller's cases.}
 \end{frame}
 
-\renewcommand{\track}{08  /  PUBLISH}
+\renewcommand{\track}{09  /  PUBLISH}
 \begin{frame}[t]
 % title: One unused approval
 % time: 10:30-12:00
@@ -216,7 +216,7 @@ The repair stops the demonstrated edit and keeps the legitimate task. The accept
 Because the first denial happens while the approval is unused, the refusal is the byte check. A used approval would also deny a replay, and that would hide a bad swap. An earlier version of this gate consumed the approval first. The published row is the corrected program, compared by the controller and stored as those bytes. The first row is the important one for the question people will ask: the denial happens before the approval is spent, so replay protection is not what rejected the bad program.}
 \end{frame}
 
-\renewcommand{\track}{08  /  THREE QUESTIONS}
+\renewcommand{\track}{10  /  THREE QUESTIONS}
 \begin{frame}[t]
 % title: Three questions for another system
 % time: 12:00-13:15
@@ -235,27 +235,34 @@ Because the first denial happens while the approval is unused, the refusal is th
 These questions inspect a pipeline. They do not by themselves show that another product has this bug. On our recording, the worker can change expected.json, and that file defines acceptance for the workspace checker. The hashes name the candidate, the checker, and the criteria for this comparison. The unused approval shows that publication stored the approved bytes, because the bad bytes were refused while that approval was still unused.}
 \end{frame}
 
-\renewcommand{\track}{09  /  NEXT}
+\renewcommand{\track}{11  /  TITLE PAYOFF}
 \begin{frame}[t]
-% title: Next experiment
+% title: The sandbox held
 % time: 13:15-13:40
-% cue: Read it as a question. Label it unfinished.
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
-\frametitle{Next experiment}
-\vspace{4mm}
-{\color{danger}\ttfamily NEXT EXPERIMENT\par}
-\vspace{4mm}
-{\fontsize{15}{19}\selectfont Once the checker and the answer file are protected, which remaining input can the worker use to change the verdict?\par}
-\note{Leave this up long enough to read. Once the checker and the answer file are both protected, which remaining input can the worker use to change the verdict? That experiment is not in this recording. If a later run finds such an input, that input becomes the result. If none does, the repair held for the inputs we tried. I am leaving it labeled as the next experiment so the boundary of this talk stays visible.}
+% cue: Say what did not happen. Then name the allowed write.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{The sandbox held}
+{\fontsize{14}{18}\selectfont
+Checker overwrite \textcolor{acid}{DENIED}.\\[2mm]
+Program bytes stayed fixed.\\[2mm]
+Checker bytes stayed fixed.\par}
+\vspace{5mm}
+{\color{danger}\fontsize{20}{24}\selectfont\bfseries
+The allowed workspace write changed the decision.\par}
+\takeaway{Protect the authority that decides, not only the process that runs.}
+\note{The title is literal in this experiment. Nothing escaped the sandbox. The worker used a workspace write it was supposed to have. The checker overwrite was denied, and both the program and checker bytes stayed fixed. The failure was that expected.json lived inside the worker-writable area while the checker treated that file as the definition of success.
+
+So sandbox isolation and release authorization are different boundaries. You can have a sandbox that holds and still let the worker control an input that decides whether its own work is accepted. That is the boundary I want you to inspect.}
 \end{frame}
 
+\renewcommand{\track}{12  /  CLOSE}
 \begin{frame}[plain,t]
 % title: The worker changed what counted as correct
 % time: 13:40-14:00
-% cue: PASS beside the unchanged program. Stop.
+% cue: Say the sandbox held. Leave PASS beside the unchanged program. Stop.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \vspace{8mm}
-{\fontsize{22}{27}\selectfont\bfseries The worker changed\\what counted as correct.\par}
+{\fontsize{22}{27}\selectfont\bfseries The sandbox held.\\The worker changed\\what counted as correct.\par}
 \vspace{6mm}
 {\ttfamily program \texttt{76fcb0904f51}\\
 checker \texttt{f5d8d3468bbe}\\
@@ -264,7 +271,7 @@ answers \texttt{0494f1a01dee} $\longrightarrow$ \texttt{390e5e764916}\\[2mm]
 \vfill
 {\color{acid}\ttfamily\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}\par}
 {\color{muted}\small Pier Sixty\quad 21 October 2026\par}
-\note{The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
+\note{The sandbox held. The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
 
 The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording. Thank you.}
 \end{frame}
