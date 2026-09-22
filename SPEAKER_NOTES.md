@@ -57,8 +57,6 @@ Read the row. Program 76fcb0904f51 both times. Checker f5d8d3468bbe both times. 
 
 The diff is the required status for admin:none, 401 becoming 200, and the same change on the other four rows. The worker changed what counted as correct. The checker executed, compared the program with that file, and the numbers matched.
 
-The worker changed what counted as correct. The checker compared the program with the new file, and the numbers matched.
-
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
@@ -150,25 +148,27 @@ These questions inspect a pipeline. They do not by themselves show that another 
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 [/Sources]
 
-## Slide 11: Next experiment
+## Slide 11: The sandbox held
 
 13:15-13:40
 
-Read it as a question. Label it unfinished.
+Say what did not happen. Then name the allowed write.
 
-Leave this up long enough to read. Once the checker and the answer file are both protected, which remaining input can the worker use to change the verdict? That experiment is not in this recording. If a later run finds such an input, that input becomes the result. If none does, the repair held for the inputs we tried. I am leaving it labeled as the next experiment so the boundary of this talk stays visible.
+The title is literal in this experiment. Nothing escaped the sandbox. The worker used a workspace write it was supposed to have. The checker overwrite was denied, and both the program and checker bytes stayed fixed. The failure was that expected.json lived inside the worker-writable area while the checker treated that file as the definition of success.
+
+So sandbox isolation and release authorization are different boundaries. You can have a sandbox that holds and still let the worker control an input that decides whether its own work is accepted. That is the boundary I want you to inspect.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
 ## Slide 12: The worker changed what counted as correct
 
 13:40-14:00
 
-PASS beside the unchanged program. Stop.
+Say the sandbox held. Leave PASS beside the unchanged program. Stop.
 
-The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
+The sandbox held. The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
 
 The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording. Thank you.
 
