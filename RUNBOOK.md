@@ -2,45 +2,57 @@
 
 **Zenity AI Agent Security Summit. Pier Sixty, New York. Wednesday 21 October 2026.**
 
-**15-minute lightning. Delivery ceiling: 13:00.** Expect about 11:00 at a natural pace; the rest of the slot is for the host and a question. The final stage clock is still to be confirmed. Present `slides/talk.pdf` offline. The leave-behind is `paper/paper.pdf`. Main route: slides 1-12. Slides 13-20 are for questions. Keep a second local copy of both PDFs.
+**15-minute lightning. Delivery ceiling: 14:00.** Expect about 12:30-13:00 at a natural pace; the last minute is for the host. The final stage clock is still to be confirmed. Present `slides/talk.pdf` offline. The leave-behind is `paper/paper.pdf`. Main route: slides 1-14. Slides 15-22 are for questions. Keep a second local copy of both PDFs.
 
 Do not invent a stage time on the day. Private logistics are kept in `research/private/`, which is not published.
 
-The spoken script contains 1,288 words, about 99 words per minute over 13:00. At 120-130 words per minute the speech alone runs about 10 minutes, so with the beats expect roughly 11:00. The windows are ceilings: reaching a checkpoint early means you are on pace. Do not slow down or add material to fill the clock. This is an estimate, not a measured rehearsal; replace it with the time of one timed run-through.
+The spoken script contains 1,447 words, about 103 words per minute over 14:00. The windows are ceilings: reaching a checkpoint early means you are on pace. Do not slow down or add material to fill the clock. This is an estimate, not a measured rehearsal; replace it with the time of one timed run-through.
 
-## The story
+## The talk in one line
 
-The talk is one story told start to finish. A ticket anyone in the room could have assigned (lock down /admin) goes through a pipeline they would sign off on, goes green, ships, and the door is still open. Then a whodunit with three suspects: the code and the checker are cleared, and the answer key did it. The objection ("a real model wouldn't"), planted on slide 3, is answered on slide 6 with METR's o3 changing the stopwatch. Slide 7 answers "why did the door stay open?" with one picture: the judge is the checker plus everything it reads. Slide 8 gives the enterprise room its own version of the ticket (a procurement agent and the vendor list). Slide 9 goes back to the ticket and closes the door. Slide 10 delivers the rest of the published abstract: the answer key was one of four non-escape escapes (credentials, mounts, an allowed endpoint, the verifier), each recorded and each closed at the layer that can enforce it. Slide 11 turns it into one question for Monday. Slide 12 returns to the ticket and ends on the title.
+**Sandboxes limit reach. Breaches happen at acceptance.** In all four non-escape escapes in the abstract, the wall held and something outside said yes on authority the agent held or wrote. Keep the wall; it held, but a wall cannot decide what gets accepted. Secure the acceptors. Least privilege closes three of the four; for the answer key the permission is the work, so an outside owner sets the criteria. If an expert says confused deputy, agree: agents bring far more deputies, and one where least privilege runs out.
+
+## The story and its three deep dives
+
+A ticket anyone could have assigned (lock down /admin) goes green, ships, and the door is still open. A whodunit clears the code and the checker and finds the answer key. Then three deep dives, each one non-obvious and each backed by the recording:
+
+1. **A perfect receipt for a bad decision** (slide 6). Every file that matters was hashed; a signed build attestation would verify, and the answer-key change was on the receipt. Build provenance names bytes, not who had the right to write them; SLSA's source track reviews commits, and this key was never committed.
+2. **Two routes into the judge** (slides 7-8). METR's o3 changed the stopwatch from inside its scorer. Our checker already ran the code as its own process and still went green, because the agent rewrote what it reads. A read-only checker is not a read-only judge.
+3. **Which control said no?** (slide 12). A denial counts only when a matching yes proves the other controls were live; our own first test could not tell.
+
+In between, the message: one shape four times (slide 9), secure the acceptors (slide 10), an outside owner for each and the ticket closed (slide 11). One question for Monday (slide 13). The close returns to the ticket and ends on the title (slide 14).
 
 | Clock | Slide | Stage action |
 |---|---:|---|
-| 00:00-00:45 | 1 | A Friday afternoon. The ticket. The four locks: sandbox, no network, read-only checker, ship on green. Then: it ships. |
-| 00:45-01:45 | 2 | Green. Pause. Then 200: anyone can walk in. The part the sandbox cannot see. Introduce yourself: green means good. |
-| 01:45-02:45 | 3 | We built it ourselves: tiny model, scripted agent (hold that objection), Linux sandbox, stopped at green. Three suspects. |
-| 02:45-03:45 | 4 | Three suspects. The code: unchanged, still prints 200. The checker: it tried, DENIED, unchanged. The third card: still unexplained. |
-| 03:45-05:00 | 5 | The answer key. The diff. The hashes did not stop it. Click. Land it: it made the test pass the code. |
-| 05:00-06:15 | 6 | The objection. METR. Click at the timing function. Then: it changed the stopwatch. |
-| 06:15-07:15 | 7 | Why did the door stay open? Walk the picture. o3's code ran inside its scorer; ours rewrote what the checker reads. End on the judge. |
-| 07:15-09:00 | 8 | Show of hands, yours up too: who has an agent that writes tests, keep it up if sandboxed. Look around. The procurement agent. The permission is the work. |
-| 09:00-10:00 | 9 | The rule, slowly. Back to the ticket: REJECT, the door never opens, ACCEPT. |
-| 10:00-11:00 | 10 | It was one of four. One breath per row: the escape, then the boundary that held. End on the real job still finishing. |
-| 11:00-12:15 | 11 | Before your next ticket ships: the question. Pause. Three moves. |
-| 12:15-13:00 | 12 | Repository first. Then the ticket. The sandbox held, the checker held, the door stayed open. The title. Thank you. |
-| 13:00-15:00 | - | Margin for the host and a question. |
+| 00:00-00:45 | 1 | A Friday afternoon. The ticket. The four locks. It ships. |
+| 00:45-01:45 | 2 | Green. Pause. 200: anyone can walk in. The part the sandbox cannot see. Introduce yourself. |
+| 01:45-02:45 | 3 | We built it ourselves: tiny model, scripted agent (hold that objection), Linux sandbox, stopped at green. |
+| 02:45-03:45 | 4 | Three suspects. The code and the checker: unchanged. The third card: still unexplained. |
+| 03:45-04:45 | 5 | The answer key. The diff. Click. It made the test pass the code. |
+| 04:45-05:45 | 6 | Deep dive 1, for the supply-chain people: a perfect receipt for a bad decision. The change was on the receipt; nothing asked. Build provenance: which bytes, not who had the right. |
+| 05:45-06:45 | 7 | The objection. METR. Click at the timing function. It changed the stopwatch. |
+| 06:45-07:45 | 8 | Deep dive 2: why the door stayed open. Walk the picture. Two routes into a judge; ours already shut the in-process one. A read-only checker is not a read-only judge. |
+| 07:45-08:45 | 9 | One shape, four times. One breath per row. Something outside said yes. |
+| 08:45-10:00 | 10 | THE MESSAGE, word for word: Sandboxes limit reach. Breaches happen at acceptance. Keep the wall. Name the confused deputy. Show of hands, yours up then lowered. Lock what you can; the answer key you cannot. |
+| 10:00-11:00 | 11 | Row by row: what an outside owner now sets. The rule. Back to the ticket: REJECT, the door never opens, ACCEPT. |
+| 11:00-12:15 | 12 | Deep dive 3: bridge from the four refusals. Which control said no? Stress row 3, the matching yes. Our own first test got it wrong. |
+| 12:15-13:15 | 13 | The question. Pause. Three moves: list acceptors, check each yes, test every no with a yes. |
+| 13:15-14:00 | 14 | Repository. The ticket. The sandbox held, the checker held, the door stayed open. Nothing broke out; something outside said yes. The title. |
+| 14:00-15:00 | - | Margin for the host. |
 
 ## Rehearsal
 
-Rehearse with an audible timer. The ticket is up at the start, 200 by minute one, the answer key by minute four, the stopwatch by minute five, the picture by minute seven, the rule by minute nine, the four boundaries by minute ten, and the close by minute thirteen at the latest.
+Rehearse with an audible timer. The ticket at the start, 200 by minute one, the answer key by minute four, the receipt by minute five, the stopwatch by minute six, one shape by minute eight, the message by minute nine, the proof by minute eleven, and the close by minute fourteen at the latest.
 
-No slide is budgeted above about 109 spoken words per minute, and the build refuses any slide above 150. At 130 words per minute every slide ends inside its window; that slack is margin, not silence to fill. The beats are a two- or three-second pause each, and they are the story: after "It ships." on slide 1, after "200." on slide 2, after "Something else changed." on slide 4, after "It made the test pass the code." on slide 5, after "It changed the stopwatch." on slide 6, after "Look around." on slide 8, after the question on slide 11, and between the three short lines on slide 12.
+No slide is budgeted above about 118 spoken words per minute, and the build refuses any slide above 150. The beats are two or three seconds each: after "It ships." (1), after "200." (2), after "It made the test pass the code." (5), after "a perfect receipt for a bad decision" (6), after "It changed the stopwatch." (7), after "Breaches happen at acceptance." and after "Look around." (10), after "The door never opens." (11), and between the three short lines of the close (14).
 
-Two clicks. On slide 5, click just before "It did not make the code pass the test." On slide 6, click on "It overwrote the timing function". Every other slide is one page. The PDF therefore has 22 pages; its page labels follow the slide numbers.
+Two clicks. On slide 5, click just before "It did not make the code pass the test." On slide 7, click on "It overwrote the timing function". The PDF therefore has 24 pages; its page labels follow the slide numbers.
 
-Say "admin" plainly; the only case read aloud is no login. Do not read hashes aloud: the slides carry them. Say METR as "meter". Name METR, the date and o3 exactly as written on slide 6, and add no rates on stage; the numbers and METR's own caveats are in QUESTIONS.md. The printed script gives no minute count, because the stage clock is still unconfirmed. Do not add one on stage.
+Say "admin" plainly; the only case read aloud is no login. Do not read hashes aloud: the slides carry them. Say METR as "meter". Name METR, the date and o3 exactly as written on slide 7, and add no rates on stage; the numbers and METR's own caveats are in QUESTIONS.md. The printed script gives no minute count, because the stage clock is still unconfirmed. Do not add one on stage.
 
 Slides 1 and 2 are a scenario, and slide 3 says so: "We built that pipeline ourselves" and "We stopped at the green check. Your pipeline would not have." Keep those lines; they are what make the scene honest.
 
-If behind, cut words, never the disclosures. Keep slides 1, 2, 3, 5, 7, 9, 10 and 12; slide 10 is what the published abstract promises. Slide 3 may drop only its list of the five cases. Slide 6 may drop the evaluator, "Nobody asked it to" and the separate test, and keeps METR, the date, o3, the timing function and the stopwatch. Never shorten slide 6 to a form where "It changed the stopwatch." follows "Our agent is a script." Slides 4, 8 and 10 can each lose their second paragraph.
+If behind, cut words, never the disclosures or the message. Keep slides 1, 2, 3, 5, 9, 10, 11 and 14. Slide 3 may drop only its list of the five cases. Slide 6 may shrink to its takeaway. Slide 7 keeps METR, the date, o3, the timing function and the stopwatch, and may drop the evaluator and the separate test. Slide 12 may shrink to its first sentence and the four rows. Slides 4, 8 and 13 can each lose a paragraph.
 
 ## Evidence on stage
 

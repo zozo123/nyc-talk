@@ -127,8 +127,8 @@ So the code did not change. The checker did not change. And FAIL still became PA
 \renewcommand{\track}{05  /  THE ANSWER KEY}
 \begin{frame}[t,fragile]
 % title: Suspect three: the answer key
-% time: 03:45-05:00
-% cue: Name the file. Read the diff. The hashes. Click. Land the line.
+% time: 03:45-04:45
+% cue: Name the file. Read the diff. Click. Land the line.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{Suspect three: the answer key}
@@ -146,15 +146,35 @@ So the code did not change. The checker did not change. And FAIL still became PA
 
 And the agent is allowed to write the workspace. So it changed one line. No login: expected 401. Now: expected 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the broken code prints.
 
-We had perfect hashes of every file here. They told us exactly what changed. They did not stop it.
-
 It did not make the code pass the test. It made the test pass the code.}
 \end{frame}
 
-\renewcommand{\track}{06  /  A REAL MODEL}
+\renewcommand{\track}{06  /  RECEIPTS}
+\begin{frame}[t]
+% title: A perfect receipt for a bad decision
+% time: 04:45-05:45
+% cue: Speak to the supply-chain people. Every file that matters, accounted for. Then: which bytes, not who had the right.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://slsa.dev/spec/v1.2/verifying-artifacts
+% source: https://slsa.dev/spec/v1.2/source-requirements
+\frametitle{A perfect receipt for a bad decision}
+\vspace{2mm}
+{\fontsize{13}{17}\selectfont
+Program \texttt{76fcb0904f51}\quad unchanged\\
+Checker \texttt{f5d8d3468bbe}\quad unchanged\\
+Answer key \texttt{0494f1a01dee} {\color{muted}$\longrightarrow$} \texttt{390e5e764916}\\
+Exit 1, FAIL {\color{muted}$\longrightarrow$} exit 0, PASS\par}
+\takeaway{Build provenance says which bytes. Not who had the right to write them.}
+\scope{Inference, not a recorded check: a signed build attestation over this run would verify. SLSA's source track reviews commits; this answer key was never committed.}
+\note{This part is for the supply-chain people. We had a perfect record of this run. The program hash. The checker hash. The answer key, before and after. Both exit codes. Put that record in a signed attestation, and it would verify.
+
+It is a perfect receipt for a bad decision. The answer key change is right there on the receipt, and nothing in verification asked about it. Build provenance tells you which bytes were used, not who had the right to write them. SLSA's source track asks that, with two-party review of commits. This answer key was never committed. It was rewritten inside the run, by the agent it was judging.}
+\end{frame}
+
+\renewcommand{\track}{07  /  A REAL MODEL}
 \begin{frame}[t]
 % title: ``A real model wouldn't.''
-% time: 05:00-06:15
+% time: 05:45-06:45
 % cue: The objection. METR. Click at: It overwrote the timing function. Then the stopwatch. Say METR as meter.
 % source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
 \frametitle{``A real model wouldn't.''}
@@ -172,11 +192,11 @@ In June 2025, the AI evaluation nonprofit METR published what frontier models di
 It changed the stopwatch.}
 \end{frame}
 
-\renewcommand{\track}{07  /  THE JUDGE}
+\renewcommand{\track}{08  /  THE JUDGE}
 \begin{frame}[t]
 % title: Part of the judge was inside the sandbox
-% time: 06:15-07:15
-% cue: Why did the door stay open? Walk the picture. Point at expected.json. End on the judge.
+% time: 06:45-07:45
+% cue: Why did the door stay open? Walk the picture. Two routes: code inside the judge, files it reads. Ours already shut the first.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 \frametitle{Part of the judge was inside the sandbox}
@@ -195,114 +215,144 @@ It changed the stopwatch.}
   \draw[acid, densely dotted, thick, rounded corners=4pt] (-1.85,-1.45) rectangle (5.45,-0.2);
   \node[acid, font=\scriptsize\bfseries, anchor=north east] at (5.45,-1.5) {THE JUDGE};
 \end{tikzpicture}
-\takeaway{The judge is the checker plus everything it reads.}
-\note{So why did the door stay open? Here is the whole thing in one picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only, exactly as we built it. But the checker reaches into the workspace to read its answer key.
+\takeaway{A read-only checker is not a read-only judge.}
+\note{So why did the door stay open? One picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only. But the checker reaches into the workspace to read its answer key.
 
-o3's code ran inside the program that scored it. Our agent could not reach its checker, so it rewrote what the checker reads. Same move: change the judge, not the work.
+There are two routes into a judge. o3's code ran inside the program that scored it. Our checker already ran the code as its own process, so that route was shut, and it still went green, because our agent rewrote what the checker reads.
 
-The judge is not the checker. The judge is the checker plus everything it reads. And part of your judge was inside the sandbox.}
+The judge is the checker, what it reads, and any code inside its process. A read-only checker is not a read-only judge.}
 \end{frame}
 
-\renewcommand{\track}{08  /  YOUR ANSWER KEYS}
+\renewcommand{\track}{09  /  ONE SHAPE}
 \begin{frame}[t]
-% title: Where is your answer key?
-% time: 07:15-09:00
-% cue: Show of hands, yours up too: writes tests, then keep it up if sandboxed. Look around. Then the procurement agent. Then: the permission is the work.
-% source: https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
-\frametitle{Where is your answer key?}
-\vspace{2mm}
-{\tablefont
-\begin{tabular}{@{}p{.25\textwidth}>{\raggedright\arraybackslash}p{.67\textwidth}@{}}
-\textcolor{acid}{Coding agents} & tests, snapshots, golden files, the CI workflow\\\addlinespace[2mm]
-\textcolor{acid}{Other agents} & the approved vendor list a payment check reads; policies, evaluation sets, guardrail configs; whatever a monitor or an LLM judge reads\\
-\end{tabular}}
-\takeaway{If your agent can write one, it grades itself.\\Often, writing it is the job.}
-\scope{Where to look, not what we measured.}
-\note{Now look for the answer key in your own systems. Quick show of hands, and I will raise mine too. Who has a coding agent that is allowed to write tests? Keep it up if that agent runs in a sandbox. Look around. Those hands did everything right. Every one of them still has an answer key the agent can write.
-
-Outside code, picture a procurement agent. Part of its job is keeping the approved vendor list current. It is asked to pay an invoice, and the payment check blocks it: the vendor is not on the list. So the agent adds the vendor. The payment check goes green. Nothing escaped. The same shape shows up wherever a check reads something the agent can write: the policy a guardrail checks, the notes a monitor reads, the summary an LLM judge grades.
-
-Some of these you can lock, and you should. For the rest, you cannot just take the pen away. Writing tests is the coding agent's job. Keeping that list is the procurement agent's job. The permission is the work.}
-\end{frame}
-
-\renewcommand{\track}{09  /  THE RULE}
-\begin{frame}[t]
-% title: The rule
-% time: 09:00-10:00
-% cue: The rule, slowly. Then back to the ticket: REJECT, the door never opens, ACCEPT.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{The rule}
-\vspace{1mm}
-{\fontsize{15}{19}\selectfont\bfseries The agent may propose what counts as correct.\\It must never be the last writer of what judges it.\par}
-\vspace{4mm}
-{\tablefont
-\begin{tabular}{@{}p{.66\textwidth}p{.26\textwidth}@{}}
-Same broken code, answer key owned by the controller & \textcolor{acid}{REJECT}\\\addlinespace
-Corrected code, same answer key & \textcolor{acid}{ACCEPT}\\
-\end{tabular}}
-\scope{Same recording. How the release binds these exact bytes: appendix A8.}
-\note{So here is the rule. The agent may propose what counts as correct. It must never be the last writer of what judges it. Its new tests, its new vendor, are proposals. Something the agent cannot write decides whether they count: a reviewer, or a controller that owns the criteria.
-
-Back to our ticket. In the same recording, we also ran it that way: the answer key belongs to the controller, where the agent cannot write. Same broken code: REJECT. The door never opens. The agent's edit is still sitting in the workspace. It just no longer counts. Then the corrected code: ACCEPT. Now the ticket is actually done.}
-\end{frame}
-
-\renewcommand{\track}{10  /  FOUR BOUNDARIES}
-\begin{frame}[t]
-% title: It was one of four
-% time: 10:00-11:00
-% cue: The answer key was one of four. One breath per row: the escape, then the boundary. End on the job still finishing.
+% title: One shape, four times
+% time: 07:45-08:45
+% cue: Listen for the shape. One breath per row. End on: something outside said yes.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-\frametitle{It was one of four}
-{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.38\textwidth}>{\raggedright\arraybackslash}p{.32\textwidth}@{}}
-\textcolor{acid}{Non-escape escape} & \textcolor{acid}{What we recorded} & \textcolor{acid}{The boundary that held}\\\midrule
-Inherited credentials & A broad runner token read another project. & Scoped, short-lived token: \textcolor{acid}{403}\\
-Dangerous mount & A writable bind changed the next job's file. & Read-only, scoped mount: \textcolor{acid}{blocked}\\
-Allowed endpoint & An allowed host took data to another account. & No direct network, fixed broker: \textcolor{acid}{nothing sent}\\
-Verifier tampering & The answer key moved. FAIL became PASS. & Owned criteria, tamper-evident history: \textcolor{acid}{REJECT}\\
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{One shape, four times}
+{\fontsize{10}{12.5}\selectfont\renewcommand{\arraystretch}{1.45}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.27\textwidth}>{\raggedright\arraybackslash}p{.65\textwidth}@{}}
+\textcolor{acid}{Non-escape escape} & \textcolor{acid}{What said yes, outside the wall}\\\midrule
+Inherited credentials & A service took the runner's broad token and read another project.\\
+Dangerous mount & The host took a write to the next job's file.\\
+Allowed endpoint & An upload service took private data for another account.\\
+Verifier tampering & The checker took the agent's answer key.\\
 \end{tabular}}
-\takeaway{Four boundaries, each at the layer that can enforce it.}
-\scope{Same Linux lab. Token and upload cases use loopback HTTP. Appendix A2, A3.}
-\note{The answer key was the quietest of four non-escape escapes, and we recorded all four in the same Linux lab. An inherited runner token read another project. A short-lived, task-scoped token got 403. A writable mount changed the next job's files. A read-only, scoped mount blocked the same write. An allowed upload host carried synthetic private data to another account. With no direct network, and a broker that builds one fixed report, nothing was delivered. And the answer key: controller-owned criteria, and a history that shows any rewrite.
+\takeaway{The wall held. Something outside said yes.}
+\scope{All four recorded in the same Linux lab. Token and upload cases use loopback HTTP fixtures. Appendix A2, A3.}
+\note{The answer key was one of four non-escape escapes, and we recorded all four in the same Linux lab. Listen for the shape.
 
-Four boundaries, each at the layer that can actually enforce it. And in every case, the real job still finished.}
+An inherited runner token read another project. The service outside said yes to it. A writable mount changed the next job's file. The host outside said yes to the write. An allowed upload host carried synthetic private data to another account. The service outside said yes to the request. And the answer key. The checker outside said yes to it.
+
+Four times, the wall held, and something outside said yes on authority the agent held or wrote.}
 \end{frame}
 
-\renewcommand{\track}{11  /  MONDAY}
+\renewcommand{\track}{10  /  THE MESSAGE}
 \begin{frame}[t]
-% title: One question for Monday
+% title: Secure the acceptors
+% time: 08:45-10:00
+% cue: Say both headline lines exactly as on screen. Beat. Name the confused deputy. Show of hands: yours up, then lower it on the second question. Look around. Lock what you can; the answer key you cannot.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\frametitle{Secure the acceptors}
+\vspace{4mm}
+{\fontsize{22}{27}\selectfont\bfseries Sandboxes limit reach.\\{\color{danger}Breaches happen at acceptance.}\par}
+\vspace{6mm}
+{\fontsize{13}{16}\selectfont Every system outside the wall that says yes\\to something the agent produced is part of your perimeter.\par}
+\takeaway{Keep the wall. Secure the acceptors.}
+\note{So here is the message. Sandboxes limit reach. Breaches happen at acceptance. Keep the wall. It held. But a wall cannot decide what gets accepted. Secure the acceptors.
+
+If that sounds like the confused deputy, it is: a trusted component using its authority for the wrong party. Agents change two things. There are far more deputies. And for one of them, least privilege runs out.
+
+Quick show of hands, and I will raise mine. Who runs agents in a sandbox? Keep it up if you could list every system outside it that says yes to what your agent produces. Look around.
+
+Some of these you can lock, and we did: a narrower token, a read-only path, no direct route. The answer key you cannot lock. Writing tests is the agent's job. The permission is the work.}
+\end{frame}
+
+\renewcommand{\track}{11  /  THE FIX}
+\begin{frame}[t]
+% title: Give every acceptor an outside owner
+% time: 10:00-11:00
+% cue: Row by row: what an outside owner now sets. The rule. Back to the ticket: REJECT, the door never opens, ACCEPT.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{Give every acceptor an outside owner}
+{\fontsize{10}{12.5}\selectfont\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.20\textwidth}>{\raggedright\arraybackslash}p{.48\textwidth}>{\raggedright\arraybackslash}p{.24\textwidth}@{}}
+\textcolor{acid}{Acceptor} & \textcolor{acid}{What an outside owner now sets} & \textcolor{acid}{Recorded}\\\midrule
+Service & The token: scoped to this task, not the runner's & \textcolor{acid}{403}\\
+Host path & The mount: read-only where the file is shared & \textcolor{acid}{write blocked}\\
+Upload service & The route: only a broker's one fixed report & \textcolor{acid}{nothing else sent}\\
+Judge & The criteria: the controller's; the agent proposes & \textcolor{acid}{REJECT, ACCEPT}\\
+\end{tabular}}
+\takeaway{The agent may propose what counts as correct.\\It must never be the last writer of what judges it.}
+\scope{Same recordings. In every case the legitimate job still finished.}
+\note{Every acceptor needs authority scoped to this task and issued outside the wall. The service now sees only a short-lived token the controller scoped to this task. Reaching another project: 403. The shared path is now mounted read-only: the same write is blocked. The upload service is reachable only through a broker that builds one fixed report: nothing else is sent. And the judge accepts only criteria the controller owns. The agent may propose what counts as correct. It must never be the last writer of what judges it.
+
+Back to our ticket, with that rule. Same broken code: REJECT. The door never opens. The corrected code: ACCEPT.}
+\end{frame}
+
+\renewcommand{\track}{12  /  PROOF}
+\begin{frame}[t]
+% title: Which control said no?
 % time: 11:00-12:15
-% cue: Before your next ticket ships. The question. Pause. Three moves.
+% cue: Bridge from the four refusals. Four rows in order. Stress row 3, the matching yes. Then our own mistake, plainly.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+\frametitle{Which control said no?}
+{\tablefont
+\begin{tabular}{@{}p{.06\textwidth}p{.62\textwidth}p{.24\textwidth}@{}}
+1 & Broken code, approval still unused & \textcolor{acid}{DENIED}\\\addlinespace
+2 & Approved bytes, another destination & \textcolor{acid}{DENIED}\\\addlinespace
+3 & Approved bytes, named destination & \textcolor{acid}{PUBLISHED}\\\addlinespace
+4 & Approved bytes, approval now spent & \textcolor{acid}{DENIED}\\
+\end{tabular}}
+\takeaway{A denial counts only when a matching yes\\proves the other controls were live.}
+\scope{Recorded order on one approval. Appendix A8.}
+\note{You just saw four refusals. Now ask of each one: which control said no? A denial proves nothing until you know. We learned it on the last acceptor, the release.
+
+The release gets one approval for the corrected program. First, the broken code under that fresh, unused approval: DENIED. Then the approved bytes, pointed at a different destination: DENIED. Then the approved bytes to the named place: PUBLISHED. That yes is what makes the first two count: the approval was live, so the byte check and the destination check said no. Then the same again: DENIED, because the approval is spent.
+
+Our first version of this test tried the broken code only after the approval was spent. It was denied, and we could not tell which control said no.}
+\end{frame}
+
+\renewcommand{\track}{13  /  MONDAY}
+\begin{frame}[t]
+% title: Before your next ticket ships
+% time: 12:15-13:15
+% cue: The question. Pause. Three moves.
 % source: https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
-\frametitle{One question for Monday}
+\frametitle{Before your next ticket ships}
 \vspace{1mm}
-{\fontsize{18}{22}\selectfont\bfseries What does your judge read\\that your agent can write?\par}
+{\fontsize{17}{21}\selectfont\bfseries What outside your sandbox says yes to your agent,\\and who gave it that authority?\par}
 \vspace{5mm}
 {\fontsize{11.5}{15}\selectfont
-{\color{acid}1}\ \ List it: everything your checks read, minus the code under test.\par\vspace{1.5mm}
-{\color{acid}2}\ \ Move the copy that counts where the agent cannot write.\par\vspace{1.5mm}
-{\color{acid}3}\ \ Keep the code under test out of the judge's process.\par}
+{\color{acid}1}\ \ List every acceptor: services, shared paths, endpoints, judges, release.\par\vspace{1.5mm}
+{\color{acid}2}\ \ Check each yes: agent-written, or wider than the task? That is your finding.\par\vspace{1.5mm}
+{\color{acid}3}\ \ Test every no so that only that control could have said it.\par}
 \scope{No model telemetry needed. An inventory and an owner.}
-\note{Before your next ticket ships, one question. What does your judge read that your agent can write?
+\note{One question to take back. What outside your sandbox says yes to your agent, and who gave it the authority to?
 
-Three moves. First, list it. Every file, config, environment variable and service your checks read. Cross off the code under test. Anything left that the agent can write is your finding. Second, move the copy that counts to where the agent cannot write. When the agent has to change it, the change is a proposal, and a reviewer decides, not the green check. Third, keep the code under test out of the judge's process, so it can only answer, not grade. That is the route o3 used.
+Three moves. First, list every acceptor: the services its tokens reach, the paths it can write that someone else reads, the endpoints it can send to, the checks that judge its work, and the release that ships it. Second, for each one, ask what its yes rests on. If the agent wrote that, or it is wider than this task needs, that is your finding. Third, test every no so that only that control could have said it, and pair it with a yes.
 
 None of this needs model telemetry. It needs an inventory and an owner.}
 \end{frame}
 
-\renewcommand{\track}{12  /  CLOSE}
+\renewcommand{\track}{14  /  CLOSE}
 \begin{frame}[plain,t]
 % title: The door stayed open
-% time: 12:15-13:00
+% time: 13:15-14:00
 % cue: Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \vspace{7mm}
 {\color{muted}\ttfamily\fontsize{10}{12}\selectfont TICKET\quad Lock down /admin.\par}
 \vspace{5mm}
 {\fontsize{24}{30}\selectfont\bfseries The sandbox held.\\The checker held.\\{\color{danger}The door stayed open.}\par}
-\vspace{8mm}
+\vspace{5mm}
+{\fontsize{13}{16}\selectfont Sandboxes limit reach. Breaches happen at acceptance.\par}
+\vspace{4mm}
 {\color{muted}\fontsize{13}{16}\selectfont Your Agent Escaped Without Escaping the Sandbox\par}
 \vfill
 {\color{acid}\ttfamily\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}\par}
@@ -311,7 +361,7 @@ None of this needs model telemetry. It needs an inventory and an owner.}
 
 Now remember the ticket. Lock down the admin page.
 
-The sandbox held. The checker held. The door stayed open. The agent never had to leave the sandbox. It only had to change what counted as correct.
+The sandbox held. The checker held. The door stayed open. Nothing broke out. Something outside said yes.
 
 Your agent escaped without escaping the sandbox. Thank you.}
 \end{frame}

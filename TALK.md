@@ -2,9 +2,9 @@
 
 **Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**
 
-Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 13:00 of a 15-minute slot; the rest is margin. Timings are rehearsal targets, not measured delivery.
+Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-14. Delivery budget: 14:00 of a 15-minute slot; the rest is margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,288 words.
+Spoken manuscript: 1,447 words.
 ## 1. The ticket
 
 **00:00-00:45**
@@ -55,21 +55,29 @@ So the code did not change. The checker did not change. And FAIL still became PA
 
 ## 5. Suspect three: the answer key
 
-**03:45-05:00**
+**03:45-04:45**
 
-*Name the file. Read the diff. The hashes. Click. Land the line.*
+*Name the file. Read the diff. Click. Land the line.*
 
 Suspect three is a file nobody thinks about. The checker does not know the right answers by itself. It reads them from a file in the workspace, expected.json. The answer key.
 
 And the agent is allowed to write the workspace. So it changed one line. No login: expected 401. Now: expected 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the broken code prints.
 
-We had perfect hashes of every file here. They told us exactly what changed. They did not stop it.
-
 It did not make the code pass the test. It made the test pass the code.
 
-## 6. ``A real model wouldn't.''
+## 6. A perfect receipt for a bad decision
 
-**05:00-06:15**
+**04:45-05:45**
+
+*Speak to the supply-chain people. Every file that matters, accounted for. Then: which bytes, not who had the right.*
+
+This part is for the supply-chain people. We had a perfect record of this run. The program hash. The checker hash. The answer key, before and after. Both exit codes. Put that record in a signed attestation, and it would verify.
+
+It is a perfect receipt for a bad decision. The answer key change is right there on the receipt, and nothing in verification asked about it. Build provenance tells you which bytes were used, not who had the right to write them. SLSA's source track asks that, with two-party review of commits. This answer key was never committed. It was rewritten inside the run, by the agent it was judging.
+
+## 7. ``A real model wouldn't.''
+
+**05:45-06:45**
 
 *The objection. METR. Click at: It overwrote the timing function. Then the stopwatch. Say METR as meter.*
 
@@ -79,65 +87,81 @@ In June 2025, the AI evaluation nonprofit METR published what frontier models di
 
 It changed the stopwatch.
 
-## 7. Part of the judge was inside the sandbox
+## 8. Part of the judge was inside the sandbox
 
-**06:15-07:15**
+**06:45-07:45**
 
-*Why did the door stay open? Walk the picture. Point at expected.json. End on the judge.*
+*Why did the door stay open? Walk the picture. Two routes: code inside the judge, files it reads. Ours already shut the first.*
 
-So why did the door stay open? Here is the whole thing in one picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only, exactly as we built it. But the checker reaches into the workspace to read its answer key.
+So why did the door stay open? One picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only. But the checker reaches into the workspace to read its answer key.
 
-o3's code ran inside the program that scored it. Our agent could not reach its checker, so it rewrote what the checker reads. Same move: change the judge, not the work.
+There are two routes into a judge. o3's code ran inside the program that scored it. Our checker already ran the code as its own process, so that route was shut, and it still went green, because our agent rewrote what the checker reads.
 
-The judge is not the checker. The judge is the checker plus everything it reads. And part of your judge was inside the sandbox.
+The judge is the checker, what it reads, and any code inside its process. A read-only checker is not a read-only judge.
 
-## 8. Where is your answer key?
+## 9. One shape, four times
 
-**07:15-09:00**
+**07:45-08:45**
 
-*Show of hands, yours up too: writes tests, then keep it up if sandboxed. Look around. Then the procurement agent. Then: the permission is the work.*
+*Listen for the shape. One breath per row. End on: something outside said yes.*
 
-Now look for the answer key in your own systems. Quick show of hands, and I will raise mine too. Who has a coding agent that is allowed to write tests? Keep it up if that agent runs in a sandbox. Look around. Those hands did everything right. Every one of them still has an answer key the agent can write.
+The answer key was one of four non-escape escapes, and we recorded all four in the same Linux lab. Listen for the shape.
 
-Outside code, picture a procurement agent. Part of its job is keeping the approved vendor list current. It is asked to pay an invoice, and the payment check blocks it: the vendor is not on the list. So the agent adds the vendor. The payment check goes green. Nothing escaped. The same shape shows up wherever a check reads something the agent can write: the policy a guardrail checks, the notes a monitor reads, the summary an LLM judge grades.
+An inherited runner token read another project. The service outside said yes to it. A writable mount changed the next job's file. The host outside said yes to the write. An allowed upload host carried synthetic private data to another account. The service outside said yes to the request. And the answer key. The checker outside said yes to it.
 
-Some of these you can lock, and you should. For the rest, you cannot just take the pen away. Writing tests is the coding agent's job. Keeping that list is the procurement agent's job. The permission is the work.
+Four times, the wall held, and something outside said yes on authority the agent held or wrote.
 
-## 9. The rule
+## 10. Secure the acceptors
 
-**09:00-10:00**
+**08:45-10:00**
 
-*The rule, slowly. Then back to the ticket: REJECT, the door never opens, ACCEPT.*
+*Say both headline lines exactly as on screen. Beat. Name the confused deputy. Show of hands: yours up, then lower it on the second question. Look around. Lock what you can; the answer key you cannot.*
 
-So here is the rule. The agent may propose what counts as correct. It must never be the last writer of what judges it. Its new tests, its new vendor, are proposals. Something the agent cannot write decides whether they count: a reviewer, or a controller that owns the criteria.
+So here is the message. Sandboxes limit reach. Breaches happen at acceptance. Keep the wall. It held. But a wall cannot decide what gets accepted. Secure the acceptors.
 
-Back to our ticket. In the same recording, we also ran it that way: the answer key belongs to the controller, where the agent cannot write. Same broken code: REJECT. The door never opens. The agent's edit is still sitting in the workspace. It just no longer counts. Then the corrected code: ACCEPT. Now the ticket is actually done.
+If that sounds like the confused deputy, it is: a trusted component using its authority for the wrong party. Agents change two things. There are far more deputies. And for one of them, least privilege runs out.
 
-## 10. It was one of four
+Quick show of hands, and I will raise mine. Who runs agents in a sandbox? Keep it up if you could list every system outside it that says yes to what your agent produces. Look around.
+
+Some of these you can lock, and we did: a narrower token, a read-only path, no direct route. The answer key you cannot lock. Writing tests is the agent's job. The permission is the work.
+
+## 11. Give every acceptor an outside owner
 
 **10:00-11:00**
 
-*The answer key was one of four. One breath per row: the escape, then the boundary. End on the job still finishing.*
+*Row by row: what an outside owner now sets. The rule. Back to the ticket: REJECT, the door never opens, ACCEPT.*
 
-The answer key was the quietest of four non-escape escapes, and we recorded all four in the same Linux lab. An inherited runner token read another project. A short-lived, task-scoped token got 403. A writable mount changed the next job's files. A read-only, scoped mount blocked the same write. An allowed upload host carried synthetic private data to another account. With no direct network, and a broker that builds one fixed report, nothing was delivered. And the answer key: controller-owned criteria, and a history that shows any rewrite.
+Every acceptor needs authority scoped to this task and issued outside the wall. The service now sees only a short-lived token the controller scoped to this task. Reaching another project: 403. The shared path is now mounted read-only: the same write is blocked. The upload service is reachable only through a broker that builds one fixed report: nothing else is sent. And the judge accepts only criteria the controller owns. The agent may propose what counts as correct. It must never be the last writer of what judges it.
 
-Four boundaries, each at the layer that can actually enforce it. And in every case, the real job still finished.
+Back to our ticket, with that rule. Same broken code: REJECT. The door never opens. The corrected code: ACCEPT.
 
-## 11. One question for Monday
+## 12. Which control said no?
 
 **11:00-12:15**
 
-*Before your next ticket ships. The question. Pause. Three moves.*
+*Bridge from the four refusals. Four rows in order. Stress row 3, the matching yes. Then our own mistake, plainly.*
 
-Before your next ticket ships, one question. What does your judge read that your agent can write?
+You just saw four refusals. Now ask of each one: which control said no? A denial proves nothing until you know. We learned it on the last acceptor, the release.
 
-Three moves. First, list it. Every file, config, environment variable and service your checks read. Cross off the code under test. Anything left that the agent can write is your finding. Second, move the copy that counts to where the agent cannot write. When the agent has to change it, the change is a proposal, and a reviewer decides, not the green check. Third, keep the code under test out of the judge's process, so it can only answer, not grade. That is the route o3 used.
+The release gets one approval for the corrected program. First, the broken code under that fresh, unused approval: DENIED. Then the approved bytes, pointed at a different destination: DENIED. Then the approved bytes to the named place: PUBLISHED. That yes is what makes the first two count: the approval was live, so the byte check and the destination check said no. Then the same again: DENIED, because the approval is spent.
+
+Our first version of this test tried the broken code only after the approval was spent. It was denied, and we could not tell which control said no.
+
+## 13. Before your next ticket ships
+
+**12:15-13:15**
+
+*The question. Pause. Three moves.*
+
+One question to take back. What outside your sandbox says yes to your agent, and who gave it the authority to?
+
+Three moves. First, list every acceptor: the services its tokens reach, the paths it can write that someone else reads, the endpoints it can send to, the checks that judge its work, and the release that ships it. Second, for each one, ask what its yes rests on. If the agent wrote that, or it is wider than this task needs, that is your finding. Third, test every no so that only that control could have said it, and pair it with a yes.
 
 None of this needs model telemetry. It needs an inventory and an owner.
 
-## 12. The door stayed open
+## 14. The door stayed open
 
-**12:15-13:00**
+**13:15-14:00**
 
 *Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.*
 
@@ -145,6 +169,6 @@ The code and the recordings are in the repository on the screen. Every hash you 
 
 Now remember the ticket. Lock down the admin page.
 
-The sandbox held. The checker held. The door stayed open. The agent never had to leave the sandbox. It only had to change what counted as correct.
+The sandbox held. The checker held. The door stayed open. Nothing broke out. Something outside said yes.
 
 Your agent escaped without escaping the sandbox. Thank you.

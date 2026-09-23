@@ -192,17 +192,17 @@ External context, kept in its own lane: METR's June 2025 report of frontier mode
 
 \section{Leave with one question}
 
-The sandbox held. The checker held. The door stayed open. The candidate never improved: the worker changed the answer key, and \texttt{PASS} changed meaning. Isolation and acceptance are different boundaries. A sandbox decides what a process can touch. Acceptance decides whether anything it touches can declare its own work done. The judge is the checker plus everything it reads.
+The sandbox held. The checker held. The door stayed open. The candidate never improved: the worker changed the answer key, and \texttt{PASS} changed meaning. The judge is the checker plus everything it reads and runs, and a perfect build provenance record of that run would still be a receipt for a bad decision: it names which bytes decided, not who had the right to write them.
 
-When you leave Pier Sixty, take one question back to the host that runs your agents: what does your judge read that your agent can write?
+The same shape recurs across all four boundaries in this paper. Each time the wall held, and something outside it said yes to something the worker handed it: a service to an inherited token, a host to a write on a shared mount, an upload service to data for another account, a judge to an answer key. Sandboxes limit reach. Breaches happen at acceptance. Least privilege closes three of them: a task-scoped token, a read-only shared mount, one brokered route out. It cannot close the fourth, because the worker has to write its tests; there the permission is the work, and what changes is where the authority to say yes comes from. Security readers will recognise the confused deputy; agents multiply the deputies, and for the answer key least privilege runs out.
+
+When you leave Pier Sixty, take one question back to the host that runs your agents: what outside your sandbox says yes to your agent, and who gave it that authority?
 
 \begin{enumerate}
-\item List it: every file, config, environment variable and service your checks read, minus the code under test. Anything left that the agent can write is the finding.
-\item Keep the code under test out of the judge's process, so it can only answer, not grade. That is the route o3 used in METR's report.
-\item Hash the answer key when the task starts and again at the verdict, as a tripwire rather than a policy.
+\item List every acceptor: the services its tokens reach, the paths it writes that someone else reads, the endpoints it can send to, the checks that judge its work, and the release that ships it.
+\item Check what each yes rests on. If the agent wrote it, or it is wider than the task needs, that is the finding. The agent may propose what counts as correct; it must never be the last writer of what judges it.
+\item Test every no so that only the control under test could have said it, and pair it with a yes: a denial counts only when a matching yes proves the other controls were live.
 \end{enumerate}
-
-Then bind what ships to what was judged: one approval, the exact bytes, one destination, once. The four boundaries above remain the checklist for the rest of the pipeline: which credential the worker receives, which paths it can write, which URLs it can reach, and which object is compared before release.
 
 The component that returns \texttt{403}, a read-only denial, \texttt{DENIED}, or reject has to sit outside the worker. After you put it there, run the legitimate ticket again. A system that can no longer do the job has gone quiet. It has not become safe.
 
