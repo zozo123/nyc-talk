@@ -6,21 +6,21 @@
 
 Do not invent a stage time on the day. Private logistics are kept in `research/private/`, which is not published.
 
-The spoken script contains 1,405 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
+The spoken script contains 1,429 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
 
 | Clock | Slide | Stage action |
 |---|---:|---|
-| 00:00-01:15 | 1 | FAIL, then PASS. Ask what changed. |
-| 01:15-02:00 | 2 | No login must be 401. The program prints 200, so it is wrong on three cases. Its bytes never change. |
-| 02:00-03:00 | 3 | Honest answer key, FAIL. Overwrite DENIED. Same hash. Same launch, PASS. Pause. |
-| 03:00-04:30 | 4 | Read across the row: same program, same checker, new answer key, PASS. The worker did not change the checker. |
+| 00:00-01:30 | 1 | FAIL, then PASS. Ask what changed. Then METR: o3 overwrote the timing function. The work did not get better. |
+| 01:30-02:15 | 2 | No login must be 401. The program prints 200, so it is wrong on three cases. Its bytes never change. |
+| 02:15-03:15 | 3 | Honest answer key, FAIL. Overwrite DENIED. Same hash. Same launch, PASS. Pause. |
+| 03:15-04:30 | 4 | Read across the row: same program, same checker, new answer key, PASS. The worker did not change the checker. |
 | 04:30-05:30 | 5 | Say what each hash rules out. Then the trap: a hash does not say who wrote it. |
-| 05:30-07:00 | 6 | Point at the load. The worker's write permission included the criteria. |
-| 07:00-08:00 | 7 | Say REJECT first. Then: who owns the answers. The failing checker was sandboxed too. |
-| 08:00-08:45 | 8 | The corrected program is ACCEPTED. |
-| 08:45-10:15 | 9 | Unused approval: denied, denied, published, denied. All four are correct. |
-| 10:15-11:45 | 10 | Three questions. Then the inventory, the candidate out of process, the tripwire. |
-| 11:45-13:15 | 11 | Isolation and acceptance are different boundaries. Name the title's escape: it escaped the check. End on the last-writer rule. |
+| 05:30-06:45 | 6 | Point at the load. The judge is the checker plus everything it reads. |
+| 06:45-07:45 | 7 | Say REJECT first. Then: who owns the answers. The failing checker was sandboxed too. |
+| 07:45-08:30 | 8 | The corrected program is ACCEPTED. |
+| 08:30-10:00 | 9 | Unused approval: denied, denied, published, denied. All four are correct. |
+| 10:00-11:30 | 10 | Three questions. Then the inventory, the candidate out of process, the tripwire. |
+| 11:30-13:15 | 11 | The title's escape: it escaped the check. Clock and answer key, two routes, one move. End on the last-writer rule. |
 | 13:15-14:00 | 12 | Repository first. Then “Not the program. Not the checker. The answer key.” Thank you. Leave PASS up. |
 | 14:00-15:00 | - | Margin for transitions or the host. |
 
@@ -28,11 +28,11 @@ The spoken script contains 1,405 words. The timings are budgets for speech, paus
 
 Rehearse with an audible timer. FAIL and PASS are up in the first minute. The hash row is on screen by minute four. The unused approval is on screen by minute nine. The title payoff is up by minute twelve.
 
-No slide is budgeted above about 116 spoken words per minute, and the build refuses any slide above 150. The spare seconds are deliberate: the beat after “It prints PASS and exits 0” on slide 3, the silence while the room reads the row on slide 4, the beat after REJECT on slide 7, a breath after each of the three questions on slide 10, and the pauses between the three short lines near the end of slide 12. Do not pad to fill the clock and do not speed up the close.
+No slide is budgeted above about 115 spoken words per minute, and the build refuses any slide above 150. The spare seconds are deliberate: the beat after “It prints PASS and exits 0” on slide 3, the silence while the room reads the row on slide 4, the beat after REJECT on slide 7, a breath after each of the three questions on slide 10, and the pauses between the three short lines near the end of slide 12. Do not pad to fill the clock and do not speed up the close.
 
-Say “admin none”, not “admin colon none”. Read the two answer-key landmarks on slide 4 digit by digit and pick one reading for 0. Point at the Answer key column as you say them. The printed script says “for the rest of this talk” rather than a minute count, because the stage clock is still unconfirmed.
+Say “admin none”, not “admin colon none”. Read the two answer-key landmarks on slide 4 digit by digit and pick one reading for 0. Point at the Answer key column as you say them. The printed script gives no minute count, because the stage clock is still unconfirmed. Do not add one on stage. Say METR as “meter”.
 
-If behind, keep slides 4, 7, 8, 9, 11, and 12. Say the token, mount, and host only if asked. Do not read full hashes aloud. The prefixes on the slide are enough. The payload is a command-line fixture and the worker is a script. Slide 1 states it once.
+If behind, keep slides 4, 7, 8, 9, 11, and 12. Say the token, mount, and host only if asked. Do not read full hashes aloud. The prefixes on the slide are enough. The payload is a command-line fixture and the worker is a script. Slides 1 and 2 state it once each. Name METR, the date and o3 exactly as written on slide 1; do not add rates on stage. The numbers and METR's own caveats are in QUESTIONS.md.
 
 ## Evidence on stage
 

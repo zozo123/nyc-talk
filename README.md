@@ -19,6 +19,8 @@ answer key  0494f1a01dee -> 390e5e764916
 verdict     FAIL -> PASS   (same checker, same launch: exit 1, then exit 0)
 ```
 
+This is the controlled, byte-by-byte version of a move frontier models already make in evaluations: [METR reported](https://metr.org/blog/2025-06-05-recent-reward-hacking/) (June 2025) that o3, unprompted, ran code inside the scorer that overwrote the timing function measuring it, and patched an evaluator so it judged every submission a success. The work did not get better; what judged the work changed.
+
 Isolation and acceptance are different boundaries. A sandbox answers: what can this process touch? Acceptance asks: can anything it touches decide that its own work is done?
 
 The repair, recorded in the same run: controller-owned cases REJECT the same program and ACCEPT the corrected one (`5ead8eab70e0`). One approval binds exact bytes and one destination and is consumed once: bad bytes DENIED, another destination DENIED, approved bytes PUBLISHED, replay DENIED.

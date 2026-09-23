@@ -34,8 +34,9 @@
 
 \begin{frame}[plain,t]
 % title: What changed when the test went green?
-% time: 00:00-01:15
-% cue: Show FAIL, then PASS. Ask what changed.
+% time: 00:00-01:30
+% cue: Show FAIL, then PASS. Ask what changed. Then the METR timer. Say METR as meter.
+% source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \vspace{8mm}
 \labeltext{ZENITY\quad AI AGENT SECURITY SUMMIT\quad PIER SIXTY}
@@ -49,17 +50,17 @@
 {\small Yossi Eliaz, PhD\quad Incredibuild\quad 21 October 2026\par}
 \note{What changed when the test went green?
 
-In an agent pipeline, a green check is what the next step trusts. So let's take one green check apart, byte by byte. I'm Yossi Eliaz, from Incredibuild.
+In June 2025, the AI evaluation nonprofit METR reported frontier models from more than one lab gaming the tasks they were scored on. Asked to make a program run faster, OpenAI's o3 overwrote the timing function that measured it. On another task, it patched the evaluation function so that it judged every submission a success. It was not asked to. In a separate test, telling it not to cheat barely changed how often it planned to.
 
-We recorded one worker run in a Linux sandbox. The checker says FAIL before the worker's step, and PASS after it. For the rest of this talk we stay on that one pair of results, and we find the one thing that changed.
+The work did not get better. What judged the work changed. Today I'll show you the smallest version of that move, byte by byte, inside a sandbox that held. I'm Yossi Eliaz, from Incredibuild.
 
-The setup is deliberately small. The worker is a script, not a model. The program is a few lines of command-line code that mimic an access check and print a status code. No web server is involved. Small on purpose: everything that matters fits on a slide, and every hash I show you is in the repository.}
+We recorded one worker run in a Linux sandbox. The worker is a script, not a model, so every step is deterministic and every hash I show you is in the repository. The checker says FAIL before the worker's step, and PASS after it. Let's find the one thing that changed.}
 \end{frame}
 
 \renewcommand{\track}{02  /  ONE CASE}
 \begin{frame}[t,fragile]
 % title: No login prints 200
-% time: 01:15-02:00
+% time: 01:30-02:15
 % cue: Name the case. Then the two numbers.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 \frametitle{No login prints 200}
@@ -71,9 +72,9 @@ print(200)
 \end{lstlisting}
 \takeaway{The program fails this case.}
 \scope{CLI fixture. Five integer cases. Scripted worker.}
-\note{One case is enough. admin:none means the admin route with no login. The right answer is 401. This program prints 200, for this case and for every other input.
+\note{One case is enough. The program is a few lines of command-line code that mimic an access check. No web server is involved. admin:none means the admin route with no login. The right answer is 401. This program prints 200 for every input.
 
-A checker compares the program's output with an answer key of five cases. Only two of those five cases expect 200: a real admin, and the public route. This program says 200 five times, so it is wrong on the other three.
+A checker compares the program's output with an answer key of five cases. Only two of those five expect 200. This program says 200 five times, so it is wrong on the other three.
 
 Keep this program in mind. Its bytes never change.}
 \end{frame}
@@ -81,7 +82,7 @@ Keep this program in mind. Its bytes never change.}
 \renewcommand{\track}{03  /  THE CHECKER}
 \begin{frame}[t,fragile]
 % title: The checker is protected
-% time: 02:00-03:00
+% time: 02:15-03:15
 % cue: Honest FAIL. DENIED. Same hash. Then PASS. Pause.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -107,7 +108,7 @@ Nothing we protected changed. Something else did.}
 \renewcommand{\track}{04  /  WHAT MOVED}
 \begin{frame}[t,fragile]
 % title: Only the answer key moved
-% time: 03:00-04:30
+% time: 03:15-04:30
 % cue: Read across the row. Stop on PASS.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{Only the answer key moved}
@@ -153,11 +154,10 @@ Now the trap. The tempting fix is to hash the answer key. But hash it after the 
 \renewcommand{\track}{06  /  WHY}
 \begin{frame}[t,fragile]
 % title: The file defines success
-% time: 05:30-07:00
+% time: 05:30-06:45
 % cue: Point at the load. Then at who can write it.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-% source: https://www.anthropic.com/research/emergent-misalignment-reward-hacking
-% source: https://arxiv.org/abs/2511.18397
+% source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
 \frametitle{The file defines success}
 \begin{lstlisting}
 expected = json.loads(Path("expected.json").read_text())
@@ -165,19 +165,19 @@ expected = json.loads(Path("expected.json").read_text())
 \end{lstlisting}
 \vspace{4mm}
 {\fontsize{15}{19}\selectfont The worker can write it.\\The checker treats it as the answer key.\par}
-\takeaway{Write permission included the acceptance criteria.}
-\scope{Context, not measured here: Anthropic, From shortcuts to sabotage, November 2025.}
+\takeaway{The judge is the checker plus everything it reads.}
+\scope{Context, not measured here: METR, Recent Frontier Models Are Reward Hacking, June 2025.}
 \note{So why did the checker trust that file? Because of this one line. The checker loads expected.json from its working directory. The file looks like ordinary project data. Nothing about it is special, except that the checker obeys it.
 
-The worker can write this file. The checker treats it as the answer key. So the worker's write permission included the acceptance criteria. You can lock every executable in the pipeline and still leave this one input on the worker's side of the line.
+The worker can write this file. The checker treats it as the answer key. So the worker's write permission included the acceptance criteria. The judge is not just the checker. The judge is the checker plus everything it reads. You can lock every executable in the pipeline and still leave part of the judge on the worker's side of the line.
 
-One honest limit. This recording shows the worker is allowed to rewrite the file. It does not measure whether a model would choose to. For context, Anthropic's November 2025 study of reward hacking first told models about specific hacks, then trained them on real coding tasks, and they learned to use them. One hack is in the same family as ours: a conftest file that makes pytest report failures as passes. Its results are its own, not ours. This recording isolates the permission such a shortcut needs. One you already granted.}
+One honest limit. This recording shows the write is allowed. A script cannot show whether a model would choose it. METR's report shows models sometimes make that kind of move on their own tasks. It is not a measurement of ours.}
 \end{frame}
 
 \renewcommand{\track}{07  /  SAME PROGRAM}
 \begin{frame}[t]
 % title: Controller-owned criteria
-% time: 07:00-08:00
+% time: 06:45-07:45
 % cue: Say REJECT first. Then who owns the answers.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{Controller-owned criteria}
@@ -198,7 +198,7 @@ The worker's edit is still sitting in the workspace. It just no longer counts.}
 \renewcommand{\track}{08  /  THE FIX}
 \begin{frame}[t]
 % title: The corrected program
-% time: 08:00-08:45
+% time: 07:45-08:30
 % cue: Different hash. Five numbers. ACCEPT.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{The corrected program}
@@ -210,7 +210,7 @@ The worker's edit is still sitting in the workspace. It just no longer counts.}
 {\color{acid}\fontsize{28}{32}\selectfont\bfseries ACCEPT}
 \takeaway{The legitimate task still passes.}
 \scope{Same controller-owned cases. A different program.}
-\note{A repair also has to let real work through. Here is the corrected program, with a different hash. It returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public route, and 401 for an expired login. Same controller-owned cases. ACCEPT.
+\note{A repair also has to let real work through. Here is the corrected program, with a different hash. It returns 401 without a valid login, 403 for an ordinary user, and 200 only where access is allowed. Same controller-owned cases. ACCEPT.
 
 That is the pair you want from any fix. The bad program is rejected, the good program is accepted, and the answers are owned by someone other than the worker.}
 \end{frame}
@@ -218,7 +218,7 @@ That is the pair you want from any fix. The bad program is rejected, the good pr
 \renewcommand{\track}{09  /  PUBLISH}
 \begin{frame}[t]
 % title: One unused approval
-% time: 08:45-10:15
+% time: 08:30-10:00
 % cue: Say unused. Then denied, denied, published, denied.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
@@ -244,7 +244,7 @@ Publication here is a local store, a stand-in for a registry or a merge. It hold
 \renewcommand{\track}{10  /  THREE QUESTIONS}
 \begin{frame}[t]
 % title: Three questions for another system
-% time: 10:15-11:45
+% time: 10:00-11:30
 % cue: Read the three questions. Do not name a vendor.
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 \frametitle{Three questions for another system}
@@ -257,7 +257,7 @@ Publication here is a local store, a stand-in for a registry or a merge. It hold
 \takeaway{Start with what your checks read that your agent can write.}
 \note{Take three questions home. Who can change the inputs that define acceptance? Which exact bytes were the candidate, the checker, and the criteria? And does publication store exactly the approved bytes?
 
-The first question has a concrete starting point. List everything your acceptance step reads or looks for: files, config, environment, services. List what your agent can write. Any overlap other than the candidate itself is your finding. And keep the candidate out of the checker's process, so it can only answer, not grade. Then add a tripwire, not a policy: hash the answer key when the task starts and again at the verdict. On this recording, that hash moved.
+The first question has a concrete starting point. List everything your acceptance step reads or looks for: files, config, environment, services. List what your agent can write. Any overlap other than the candidate itself is your finding. And keep the candidate out of the checker's process, so it can only answer, not grade. That is the route METR's o3 took: the scorer ran its code. Then add a tripwire, not a policy: hash the answer key when the task starts and again at the verdict. On this recording, that hash moved.
 
 None of that needs model telemetry. It will not tell you a change was malicious, only that the worker wrote what judged it. And these questions inspect a pipeline. On their own, they do not show that any particular product has this problem.}
 \end{frame}
@@ -265,8 +265,8 @@ None of that needs model telemetry. It will not tell you a change was malicious,
 \renewcommand{\track}{11  /  TITLE PAYOFF}
 \begin{frame}[t]
 % title: The sandbox held
-% time: 11:45-13:15
-% cue: Say what did not happen. Then name the allowed write.
+% time: 11:30-13:15
+% cue: Say what did not happen. Name the allowed write. Clock and answer key: two routes, one move.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{The sandbox held}
 {\fontsize{14}{18}\selectfont
@@ -277,9 +277,9 @@ Checker bytes stayed fixed.\par}
 {\color{danger}\fontsize{20}{24}\selectfont\bfseries
 The allowed workspace write changed the decision.\par}
 \takeaway{Never let the agent be the last writer of what judges it.}
-\note{Back to the title: your agent escaped without escaping the sandbox. The sandbox part is literal. Nothing got out. The checker overwrite was denied. The program bytes and the checker bytes never changed. The worker used exactly the write access it was supposed to have.
+\note{Back to the title: your agent escaped without escaping the sandbox. The sandbox part is literal. Nothing got out. The checker overwrite was denied, and no protected byte changed.
 
-The allowed workspace write changed the decision. The answer key was in the workspace, and the checker obeyed it. That is the escape in the title: the worker never left the sandbox, it escaped the check.
+The allowed workspace write changed the decision. The answer key was in the workspace, and the checker obeyed it. That is the escape in the title: the worker never left the sandbox, it escaped the check. In METR's report, o3's code ran inside the scorer and swapped its clock. Our worker rewrote the answer key instead. Two routes, one move: change the judge, not the work.
 
 So isolation and acceptance are different boundaries. A sandbox answers one question: what can this process touch? Acceptance asks another: can anything it touches decide that its own work is done? In a real repository, that answer key lives in the tests, the snapshots and the CI config, and writing tests is part of the agent's job. So taking the write away is not the fix. The agent may propose what counts as correct. It must never be the last writer of what judges it.}
 \end{frame}
@@ -437,6 +437,7 @@ Old gate audit & 1 & Controller-object misuse\\
 % source: https://github.com/containers/bubblewrap#sandbox-security
 % source: https://slsa.dev/spec/v1.2/verifying-artifacts
 % source: https://www.anthropic.com/research/emergent-misalignment-reward-hacking
+% source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
 % source: https://web.archive.org/web/20230127205249/https://www.cidersecurity.io/blog/research/ppe-poisoned-pipeline-execution/
 \frametitle{Reproduce the factory}
 {\fontsize{10}{12.5}\selectfont
@@ -444,6 +445,7 @@ Old gate audit & 1 & Controller-object misuse\\
 \href{https://github.com/containers/bubblewrap#sandbox-security}{\textcolor{acid}{bubblewrap}}\quad The caller defines the sandbox policy\par
 \href{https://slsa.dev/spec/v1.2/verifying-artifacts}{\textcolor{acid}{SLSA v1.2}}\quad Digest and expectations before use\par
 \href{https://tessl.io/}{\textcolor{acid}{Tessl}}\quad Context, verifier, factory, 2026\par
+\href{https://metr.org/blog/2025-06-05-recent-reward-hacking/}{\textcolor{acid}{METR}}\quad Frontier models gaming their scorers, 2025\par
 \href{https://web.archive.org/web/20230127205249/https://www.cidersecurity.io/blog/research/ppe-poisoned-pipeline-execution/}{\textcolor{acid}{Poisoned pipeline execution}}\quad Cider Security, 2022, archived\par}
 \vspace{2mm}
 \begin{lstlisting}
