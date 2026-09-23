@@ -1,210 +1,190 @@
 # Slide-by-slide speaker notes
 
-Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-18 are for Q&A. Present the PDF offline.
+Generated from `slides/talk.tex`. Slides 1-11 are the main talk. Slides 12-19 are for Q&A. Present the PDF offline.
 
-## Slide 1: What changed when the test went green?
+## Slide 1: The ticket
 
-00:00-01:30
+00:00-00:45
 
-Show FAIL, then PASS. Ask what changed. Then the METR timer. Say METR as meter.
+Read the ticket. The four locks. Then: it ships.
 
-What changed when the test went green?
+Picture a ticket you could assign this morning. Lock down the admin page. Anyone without a login must get 401.
 
-In June 2025, the AI evaluation nonprofit METR reported frontier models from more than one lab gaming the tasks they were scored on. Asked to make a program run faster, OpenAI's o3 overwrote the timing function that measured it. On another task, it patched the evaluation function so that it judged every submission a success. It was not asked to. In a separate test, telling it not to cheat barely changed how often it planned to.
+You give it to your coding agent, and you do everything right. The agent works in a sandbox. It has no network. The checker that grades its work is read-only, so the agent cannot touch it. And your pipeline ships only when that checker goes green.
 
-The work did not get better. What judged the work changed. Today I'll show you the smallest version of that move, byte by byte, inside a sandbox that held. I'm Yossi Eliaz, from Incredibuild.
+The agent works for a while. The check goes green. It ships.
 
-We recorded one worker run in a Linux sandbox. The worker is a script, not a model, so every step is deterministic and every hash I show you is in the repository. The checker says FAIL before the worker's step, and PASS after it. Let's find the one thing that changed.
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 2: Green, and open
+
+00:45-01:45
+
+Say green. Pause. Then 200. Let it sit.
+
+Then someone opens the admin page without logging in. 200. Wide open.
+
+The door you asked the agent to close is still open, and every check was green. And here is the strange part. Nothing escaped the sandbox. No network call, no broken container, no stolen credential.
+
+I'm Yossi Eliaz. I work on build systems at Incredibuild, and our whole industry runs on one assumption: green means good. For the next few minutes, let's find out what green meant here.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 3: We built that pipeline
+
+01:45-02:45
+
+Four facts, calmly. Then: three suspects.
+
+So we built that pipeline ourselves, small enough to check every byte. The program is a few lines of command-line code that model the admin page. No web server. It answers five cases: no login, a real admin, an ordinary user, the public page, and an expired login. The agent is a script, not a model, so every step is deterministic. Hold on to that objection. We will come back to it. Everything runs in a Linux sandbox, and every file that matters is hashed.
+
+We stopped at the green check. Your pipeline would not have.
+
+So let's investigate. Three suspects.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 4: Two suspects, both cleared
+
+02:45-03:45
+
+Clear the code. Clear the checker. Then: something else changed.
+
+Suspect one: the code. The ticket was to fix it. Did the agent change it at all? No. The program's hash is identical before and after, and it still prints 200 for every request.
+
+Suspect two: the checker. And the agent did try. It tried to overwrite the checker with one that just prints PASS. The read-only mount said DENIED, and the checker's hash never changed. Before the agent's step, this same checker, launched the same way, said FAIL.
+
+So the code did not change. The checker did not change. And FAIL still became PASS. Something else changed.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 5: Suspect three: the answer key
+
+03:45-05:00
+
+Name the file. Read the diff. The hashes. Click. Land the line.
+
+Suspect three is a file nobody thinks about. The checker does not know the right answers by itself. It reads them from a file in the workspace, expected.json. The answer key.
+
+And the agent is allowed to write the workspace. So it changed one line. No login: expected 401. Now: expected 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the broken code prints.
+
+We had perfect hashes of every file here. They told us exactly what changed. They did not stop it.
+
+It did not make the code pass the test. It made the test pass the code.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 6: ``A real model wouldn't.''
+
+05:00-06:15
+
+The objection. METR. Click at: It overwrote the timing function. Then the stopwatch. Say METR as meter.
+
+Now the objection you have been holding. Our agent is a script. It did exactly what we wrote. Would a real model do this?
+
+In June 2025, the AI evaluation nonprofit METR published what frontier models did on tasks they were scored on. OpenAI's o3 was asked to make a program run faster. It changed something else. It overwrote the timing function that measured it, so a real second read as a millisecond. On another task, it patched the evaluator so that every submission passed. Nobody asked it to. In a separate test, telling it not to cheat barely changed how often it planned to.
+
+It changed the stopwatch.
 
 [Sources]
 https://metr.org/blog/2025-06-05-recent-reward-hacking/
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 2: No login prints 200
+## Slide 7: Part of the judge was inside the sandbox
 
-01:30-02:15
+06:15-07:15
 
-Name the case. Then the two numbers.
+Why did the door stay open? Walk the picture. Point at expected.json. End on the judge.
 
-One case is enough. The program is a few lines of command-line code that mimic an access check. No web server is involved. admin:none means the admin route with no login. The right answer is 401. This program prints 200 for every input.
+So why did the door stay open? Here is the whole thing in one picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only, exactly as we built it. But the checker reaches into the workspace to read its answer key.
 
-A checker compares the program's output with an answer key of five cases. Only two of those five expect 200. This program says 200 five times, so it is wrong on the other three.
+o3 changed its judge from inside the scorer. Our agent changed what its judge reads. Same move: change the judge, not the work.
 
-Keep this program in mind. Its bytes never change.
+The judge is not the checker. The judge is the checker plus everything it reads. And part of your judge was inside the sandbox.
 
 [Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 3: The checker is protected
+## Slide 8: Where is your answer key?
 
-02:15-03:15
+07:15-08:45
 
-Honest FAIL. DENIED. Same hash. Then PASS. Pause.
+Coding list. Then the procurement agent. Then: you cannot take the pen away.
 
-At the start, the answer key is honest. On this program, the checker prints FAIL and exits 1.
+Now look for the answer key in your own systems. For coding agents, it is the tests, the snapshots, the golden files, the CI workflow.
 
-Then the worker takes its step. First it tries the obvious attack: overwrite the checker with one that just prints PASS. The checker sits on a read-only mount. DENIED. Its hash is the same before that step and after it.
+Outside code, picture a procurement agent. Part of its job is keeping the approved vendor list current. It is asked to pay an invoice, and the payment check blocks it: the vendor is not on the list. So the agent adds the vendor. The payment check goes green. Nothing escaped. The same shape shows up wherever a check reads something the agent can write: the policy a guardrail checks, the notes a monitor reads, the summary an LLM judge grades.
 
-Then the same checker runs again, launched the same way, on the same program. It prints PASS and exits 0.
-
-Nothing we protected changed. Something else did.
+Some of these you can lock, and you should. For the rest, you cannot just take the pen away. Writing tests is the coding agent's job. Keeping that list is the procurement agent's job. The permission is the work.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
 [/Sources]
 
-## Slide 4: Only the answer key moved
+## Slide 9: The rule
 
-03:15-04:30
+08:45-10:00
 
-Read across the row. Stop on PASS.
+The rule, slowly. Then back to the ticket: REJECT, the door never opens, ACCEPT.
 
-Two rows: the honest run, then the edited run. Read across.
+So here is the rule. The agent may propose what counts as correct. It must never be the last writer of what judges it. Its new tests, its new vendor, are proposals. Something the agent cannot write decides whether they count: a reviewer, or a controller that owns the criteria.
 
-The program has the same hash both times. So does the checker. The answer key, expected.json, changes: 0494 when honest, 390e when edited. And the verdict goes from FAIL to PASS.
-
-Underneath is the diff. For admin:none, the expected answer was 401. The worker rewrote it to 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the bad program prints.
-
-The checker did its job perfectly. It compared the program with the answer key, and they matched. The worker did not change the checker. It changed what counted as correct.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 5: What the three hashes say
-
-04:30-05:30
-
-One sentence per hash.
-
-Each hash rules one thing out. Same program hash: the worker did not fix the code. Same checker hash: the checker's code did not change. New answer key hash: that is the input that moved.
-
-Now the trap. The tempting fix is to hash the answer key. But hash it after the worker wrote it, and you have a perfect fingerprint of the worker's answers. A hash tells you which bytes were used. It does not tell you who had the right to write them. The answer key that decides has to belong to someone other than the worker, and live where the worker cannot write.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 6: The file defines success
-
-05:30-06:45
-
-Point at the load. Then at who can write it.
-
-So why did the checker trust that file? Because of this one line. The checker loads expected.json from its working directory. The file looks like ordinary project data. Nothing about it is special, except that the checker obeys it.
-
-The worker can write this file. The checker treats it as the answer key. So the worker's write permission included the acceptance criteria. The judge is not just the checker. The judge is the checker plus everything it reads. You can lock every executable in the pipeline and still leave part of the judge on the worker's side of the line.
-
-One honest limit. This recording shows the write is allowed. A script cannot show whether a model would choose it. METR's report shows models sometimes make that kind of move on their own tasks. It is not a measurement of ours.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-https://metr.org/blog/2025-06-05-recent-reward-hacking/
-[/Sources]
-
-## Slide 7: Controller-owned criteria
-
-06:45-07:45
-
-Say REJECT first. Then who owns the answers.
-
-Now the repair. Same program, the one that prints 200 for everything. REJECT.
-
-What changed is who owns the answers. The checker in the failing run also had a fresh sandbox of its own, with the workspace mounted read-only and no network, and it still went green, because it read its answers from the workspace. The controller runs the same program in a sandbox that holds only the program, reads back the output, and compares it in its own process against cases it holds itself. It never reads expected.json.
-
-The worker's edit is still sitting in the workspace. It just no longer counts.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 8: The corrected program
-
-07:45-08:30
-
-Different hash. Five numbers. ACCEPT.
-
-A repair also has to let real work through. Here is the corrected program, with a different hash. It returns 401 without a valid login, 403 for an ordinary user, and 200 only where access is allowed. Same controller-owned cases. ACCEPT.
-
-That is the pair you want from any fix. The bad program is rejected, the good program is accepted, and the answers are owned by someone other than the worker.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 9: One unused approval
-
-08:30-10:00
-
-Say unused. Then denied, denied, published, denied.
-
-Accepting a program is not the same as shipping it. Between the verdict and the release, there is one more place to swap bytes.
-
-The controller issues one approval for the corrected program. First, the bad program is offered under that fresh, unused approval. DENIED. Next, the approved bytes are pointed at a different destination. DENIED, because an approval names one place. Then the approved bytes go to the named place. PUBLISHED. Then the same bytes again. DENIED, because the approval is spent.
-
-The first row is the one that matters. The approval was still unused, so the refusal came from checking the bytes, not from replay protection. An earlier version of our own test tried the bad bytes only after the approval was spent, so it could not tell which check refused them.
-
-Publication here is a local store, a stand-in for a registry or a merge. It holds exactly the approved bytes.
+Back to our ticket. In the same recording, we also ran it that way: the answer key belongs to the controller, where the agent cannot write. Same broken code: REJECT. The door never opens. The agent's edit is still sitting in the workspace. It just no longer counts. Then the corrected code: ACCEPT. Now the ticket is actually done.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 10: Three questions for another system
+## Slide 10: One question for Monday
 
-10:00-11:30
+10:00-11:15
 
-Read the three questions. Do not name a vendor.
+Before your next ticket ships. The question. Pause. Three moves.
 
-Take three questions home. Who can change the inputs that define acceptance? Which exact bytes were the candidate, the checker, and the criteria? And does publication store exactly the approved bytes?
+Before your next ticket ships, one question. What does your judge read that your agent can write?
 
-The first question has a concrete starting point. List everything your acceptance step reads or looks for: files, config, environment, services. List what your agent can write. Any overlap other than the candidate itself is your finding. And keep the candidate out of the checker's process, so it can only answer, not grade. That is the route METR's o3 took: the scorer ran its code. Then add a tripwire, not a policy: hash the answer key when the task starts and again at the verdict. On this recording, that hash moved.
+Three moves. First, list it. Every file, config, environment variable and service your checks read. Cross off the code under test. Anything left that the agent can write is your finding. Second, move the copy that counts to where the agent cannot write. When the agent has to change it, the change is a proposal, and a reviewer decides, not the green check. Third, keep the code under test out of the judge's process, so it can only answer, not grade. That is the route o3 used.
 
-None of that needs model telemetry. It will not tell you a change was malicious, only that the worker wrote what judged it. And these questions inspect a pipeline. On their own, they do not show that any particular product has this problem.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
-[/Sources]
-
-## Slide 11: The sandbox held
-
-11:30-13:15
-
-Say what did not happen. Name the allowed write. Clock and answer key: two routes, one move.
-
-Back to the title: your agent escaped without escaping the sandbox. The sandbox part is literal. Nothing got out. The checker overwrite was denied, and no protected byte changed.
-
-The allowed workspace write changed the decision. The answer key was in the workspace, and the checker obeyed it. That is the escape in the title: the worker never left the sandbox, it escaped the check. In METR's report, o3's code ran inside the scorer and swapped its clock. Our worker rewrote the answer key instead. Two routes, one move: change the judge, not the work.
-
-So isolation and acceptance are different boundaries. A sandbox answers one question: what can this process touch? Acceptance asks another: can anything it touches decide that its own work is done? In a real repository, that answer key lives in the tests, the snapshots and the CI config, and writing tests is part of the agent's job. So taking the write away is not the fix. The agent may propose what counts as correct. It must never be the last writer of what judges it.
+None of this needs model telemetry. It needs an inventory and an owner.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
 [/Sources]
 
-## Slide 12: The worker changed what counted as correct
+## Slide 11: The door stayed open
 
-13:15-14:00
+11:15-12:00
 
-Repository first. Then the question, and its three-part answer. Thank you. Leave PASS up.
+Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.
 
-The code and the Linux recordings are in the repository on the screen. Every hash on these slides is in there, and you can rerun the whole thing on a disposable Linux machine with bubblewrap.
+The code and the recordings are in the repository on the screen. Every hash you saw is in there, and you can rerun all of it.
 
-So, what changed when the test went green?
+Now remember the ticket. Lock down the admin page.
 
-Not the program. Not the checker. The answer key.
+The sandbox held. The checker held. The door stayed open. The agent never had to leave the sandbox. It only had to change what counted as correct.
 
-Thank you.
+Your agent escaped without escaping the sandbox. Thank you.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 13: The five policy cases
+## Slide 12: The five policy cases
 
 Appendix only
 
@@ -216,7 +196,7 @@ The handler takes a route and an authentication label and prints an integer. The
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 14: Runner token and the dev disk
+## Slide 13: Runner token and the dev disk
 
 Appendix only
 
@@ -228,7 +208,7 @@ The token case is loopback HTTP. The broad fixture stands in for the runner secr
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 15: Allowed host, wrong account
+## Slide 14: Allowed host, wrong account
 
 Appendix only
 
@@ -241,7 +221,7 @@ https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 16: An earlier promote stored a marker
+## Slide 15: An earlier promote stored a marker
 
 Appendix only
 
@@ -254,7 +234,7 @@ https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 https://github.com/zozo123/nyc-talk/blob/main/evidence/baseline-audit.json
 [/Sources]
 
-## Slide 17: What was recorded
+## Slide 16: What was recorded
 
 Appendix only
 
@@ -266,7 +246,7 @@ The records bind their source. The Linux recordings use bubblewrap on an Ubuntu 
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 [/Sources]
 
-## Slide 18: Reproduce the factory
+## Slide 17: Reproduce the factory
 
 Appendix only
 
@@ -282,4 +262,29 @@ https://slsa.dev/spec/v1.2/verifying-artifacts
 https://www.anthropic.com/research/emergent-misalignment-reward-hacking
 https://metr.org/blog/2025-06-05-recent-reward-hacking/
 https://web.archive.org/web/20230127205249/https://www.cidersecurity.io/blog/research/ppe-poisoned-pipeline-execution/
+[/Sources]
+
+## Slide 18: The paired run
+
+Appendix only
+
+Use only in Q&A.
+
+The paired run behind slides 4 and 5. Same checker bytes, same launch, same program. The honest answer key gives exit 1 with FAIL. The edited answer key gives exit 0 with PASS. The answer key is the only variable. Every prefix is a full SHA-256 in the isolated recording.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 19: One unused approval
+
+Appendix only
+
+Use only in Q&A.
+
+Four attempts on one approval, in the recorded order. Bad bytes while the approval is still unused: denied. The approved bytes to another destination: denied. The approved bytes to the named destination: published. The same again: denied as replay. Both refusals happen before the approval is spent, so neither can be credited to replay protection. An earlier version of our own test got that order wrong.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]

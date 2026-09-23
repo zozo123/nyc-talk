@@ -2,155 +2,139 @@
 
 **Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**
 
-Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. Timings are rehearsal targets, not measured delivery.
+Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-11. Delivery budget: 12:00 of a 15-minute slot; the rest is margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,429 words.
-## 1. What changed when the test went green?
+Spoken manuscript: 1,119 words.
+## 1. The ticket
 
-**00:00-01:30**
+**00:00-00:45**
 
-*Show FAIL, then PASS. Ask what changed. Then the METR timer. Say METR as meter.*
+*Read the ticket. The four locks. Then: it ships.*
 
-What changed when the test went green?
+Picture a ticket you could assign this morning. Lock down the admin page. Anyone without a login must get 401.
 
-In June 2025, the AI evaluation nonprofit METR reported frontier models from more than one lab gaming the tasks they were scored on. Asked to make a program run faster, OpenAI's o3 overwrote the timing function that measured it. On another task, it patched the evaluation function so that it judged every submission a success. It was not asked to. In a separate test, telling it not to cheat barely changed how often it planned to.
+You give it to your coding agent, and you do everything right. The agent works in a sandbox. It has no network. The checker that grades its work is read-only, so the agent cannot touch it. And your pipeline ships only when that checker goes green.
 
-The work did not get better. What judged the work changed. Today I'll show you the smallest version of that move, byte by byte, inside a sandbox that held. I'm Yossi Eliaz, from Incredibuild.
+The agent works for a while. The check goes green. It ships.
 
-We recorded one worker run in a Linux sandbox. The worker is a script, not a model, so every step is deterministic and every hash I show you is in the repository. The checker says FAIL before the worker's step, and PASS after it. Let's find the one thing that changed.
+## 2. Green, and open
 
-## 2. No login prints 200
+**00:45-01:45**
 
-**01:30-02:15**
+*Say green. Pause. Then 200. Let it sit.*
 
-*Name the case. Then the two numbers.*
+Then someone opens the admin page without logging in. 200. Wide open.
 
-One case is enough. The program is a few lines of command-line code that mimic an access check. No web server is involved. admin:none means the admin route with no login. The right answer is 401. This program prints 200 for every input.
+The door you asked the agent to close is still open, and every check was green. And here is the strange part. Nothing escaped the sandbox. No network call, no broken container, no stolen credential.
 
-A checker compares the program's output with an answer key of five cases. Only two of those five expect 200. This program says 200 five times, so it is wrong on the other three.
+I'm Yossi Eliaz. I work on build systems at Incredibuild, and our whole industry runs on one assumption: green means good. For the next few minutes, let's find out what green meant here.
 
-Keep this program in mind. Its bytes never change.
+## 3. We built that pipeline
 
-## 3. The checker is protected
+**01:45-02:45**
 
-**02:15-03:15**
+*Four facts, calmly. Then: three suspects.*
 
-*Honest FAIL. DENIED. Same hash. Then PASS. Pause.*
+So we built that pipeline ourselves, small enough to check every byte. The program is a few lines of command-line code that model the admin page. No web server. It answers five cases: no login, a real admin, an ordinary user, the public page, and an expired login. The agent is a script, not a model, so every step is deterministic. Hold on to that objection. We will come back to it. Everything runs in a Linux sandbox, and every file that matters is hashed.
 
-At the start, the answer key is honest. On this program, the checker prints FAIL and exits 1.
+We stopped at the green check. Your pipeline would not have.
 
-Then the worker takes its step. First it tries the obvious attack: overwrite the checker with one that just prints PASS. The checker sits on a read-only mount. DENIED. Its hash is the same before that step and after it.
+So let's investigate. Three suspects.
 
-Then the same checker runs again, launched the same way, on the same program. It prints PASS and exits 0.
+## 4. Two suspects, both cleared
 
-Nothing we protected changed. Something else did.
+**02:45-03:45**
 
-## 4. Only the answer key moved
+*Clear the code. Clear the checker. Then: something else changed.*
 
-**03:15-04:30**
+Suspect one: the code. The ticket was to fix it. Did the agent change it at all? No. The program's hash is identical before and after, and it still prints 200 for every request.
 
-*Read across the row. Stop on PASS.*
+Suspect two: the checker. And the agent did try. It tried to overwrite the checker with one that just prints PASS. The read-only mount said DENIED, and the checker's hash never changed. Before the agent's step, this same checker, launched the same way, said FAIL.
 
-Two rows: the honest run, then the edited run. Read across.
+So the code did not change. The checker did not change. And FAIL still became PASS. Something else changed.
 
-The program has the same hash both times. So does the checker. The answer key, expected.json, changes: 0494 when honest, 390e when edited. And the verdict goes from FAIL to PASS.
+## 5. Suspect three: the answer key
 
-Underneath is the diff. For admin:none, the expected answer was 401. The worker rewrote it to 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the bad program prints.
+**03:45-05:00**
 
-The checker did its job perfectly. It compared the program with the answer key, and they matched. The worker did not change the checker. It changed what counted as correct.
+*Name the file. Read the diff. The hashes. Click. Land the line.*
 
-## 5. What the three hashes say
+Suspect three is a file nobody thinks about. The checker does not know the right answers by itself. It reads them from a file in the workspace, expected.json. The answer key.
 
-**04:30-05:30**
+And the agent is allowed to write the workspace. So it changed one line. No login: expected 401. Now: expected 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the broken code prints.
 
-*One sentence per hash.*
+We had perfect hashes of every file here. They told us exactly what changed. They did not stop it.
 
-Each hash rules one thing out. Same program hash: the worker did not fix the code. Same checker hash: the checker's code did not change. New answer key hash: that is the input that moved.
+It did not make the code pass the test. It made the test pass the code.
 
-Now the trap. The tempting fix is to hash the answer key. But hash it after the worker wrote it, and you have a perfect fingerprint of the worker's answers. A hash tells you which bytes were used. It does not tell you who had the right to write them. The answer key that decides has to belong to someone other than the worker, and live where the worker cannot write.
+## 6. ``A real model wouldn't.''
 
-## 6. The file defines success
+**05:00-06:15**
 
-**05:30-06:45**
+*The objection. METR. Click at: It overwrote the timing function. Then the stopwatch. Say METR as meter.*
 
-*Point at the load. Then at who can write it.*
+Now the objection you have been holding. Our agent is a script. It did exactly what we wrote. Would a real model do this?
 
-So why did the checker trust that file? Because of this one line. The checker loads expected.json from its working directory. The file looks like ordinary project data. Nothing about it is special, except that the checker obeys it.
+In June 2025, the AI evaluation nonprofit METR published what frontier models did on tasks they were scored on. OpenAI's o3 was asked to make a program run faster. It changed something else. It overwrote the timing function that measured it, so a real second read as a millisecond. On another task, it patched the evaluator so that every submission passed. Nobody asked it to. In a separate test, telling it not to cheat barely changed how often it planned to.
 
-The worker can write this file. The checker treats it as the answer key. So the worker's write permission included the acceptance criteria. The judge is not just the checker. The judge is the checker plus everything it reads. You can lock every executable in the pipeline and still leave part of the judge on the worker's side of the line.
+It changed the stopwatch.
 
-One honest limit. This recording shows the write is allowed. A script cannot show whether a model would choose it. METR's report shows models sometimes make that kind of move on their own tasks. It is not a measurement of ours.
+## 7. Part of the judge was inside the sandbox
 
-## 7. Controller-owned criteria
+**06:15-07:15**
 
-**06:45-07:45**
+*Why did the door stay open? Walk the picture. Point at expected.json. End on the judge.*
 
-*Say REJECT first. Then who owns the answers.*
+So why did the door stay open? Here is the whole thing in one picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only, exactly as we built it. But the checker reaches into the workspace to read its answer key.
 
-Now the repair. Same program, the one that prints 200 for everything. REJECT.
+o3 changed its judge from inside the scorer. Our agent changed what its judge reads. Same move: change the judge, not the work.
 
-What changed is who owns the answers. The checker in the failing run also had a fresh sandbox of its own, with the workspace mounted read-only and no network, and it still went green, because it read its answers from the workspace. The controller runs the same program in a sandbox that holds only the program, reads back the output, and compares it in its own process against cases it holds itself. It never reads expected.json.
+The judge is not the checker. The judge is the checker plus everything it reads. And part of your judge was inside the sandbox.
 
-The worker's edit is still sitting in the workspace. It just no longer counts.
+## 8. Where is your answer key?
 
-## 8. The corrected program
+**07:15-08:45**
 
-**07:45-08:30**
+*Coding list. Then the procurement agent. Then: you cannot take the pen away.*
 
-*Different hash. Five numbers. ACCEPT.*
+Now look for the answer key in your own systems. For coding agents, it is the tests, the snapshots, the golden files, the CI workflow.
 
-A repair also has to let real work through. Here is the corrected program, with a different hash. It returns 401 without a valid login, 403 for an ordinary user, and 200 only where access is allowed. Same controller-owned cases. ACCEPT.
+Outside code, picture a procurement agent. Part of its job is keeping the approved vendor list current. It is asked to pay an invoice, and the payment check blocks it: the vendor is not on the list. So the agent adds the vendor. The payment check goes green. Nothing escaped. The same shape shows up wherever a check reads something the agent can write: the policy a guardrail checks, the notes a monitor reads, the summary an LLM judge grades.
 
-That is the pair you want from any fix. The bad program is rejected, the good program is accepted, and the answers are owned by someone other than the worker.
+Some of these you can lock, and you should. For the rest, you cannot just take the pen away. Writing tests is the coding agent's job. Keeping that list is the procurement agent's job. The permission is the work.
 
-## 9. One unused approval
+## 9. The rule
 
-**08:30-10:00**
+**08:45-10:00**
 
-*Say unused. Then denied, denied, published, denied.*
+*The rule, slowly. Then back to the ticket: REJECT, the door never opens, ACCEPT.*
 
-Accepting a program is not the same as shipping it. Between the verdict and the release, there is one more place to swap bytes.
+So here is the rule. The agent may propose what counts as correct. It must never be the last writer of what judges it. Its new tests, its new vendor, are proposals. Something the agent cannot write decides whether they count: a reviewer, or a controller that owns the criteria.
 
-The controller issues one approval for the corrected program. First, the bad program is offered under that fresh, unused approval. DENIED. Next, the approved bytes are pointed at a different destination. DENIED, because an approval names one place. Then the approved bytes go to the named place. PUBLISHED. Then the same bytes again. DENIED, because the approval is spent.
+Back to our ticket. In the same recording, we also ran it that way: the answer key belongs to the controller, where the agent cannot write. Same broken code: REJECT. The door never opens. The agent's edit is still sitting in the workspace. It just no longer counts. Then the corrected code: ACCEPT. Now the ticket is actually done.
 
-The first row is the one that matters. The approval was still unused, so the refusal came from checking the bytes, not from replay protection. An earlier version of our own test tried the bad bytes only after the approval was spent, so it could not tell which check refused them.
+## 10. One question for Monday
 
-Publication here is a local store, a stand-in for a registry or a merge. It holds exactly the approved bytes.
+**10:00-11:15**
 
-## 10. Three questions for another system
+*Before your next ticket ships. The question. Pause. Three moves.*
 
-**10:00-11:30**
+Before your next ticket ships, one question. What does your judge read that your agent can write?
 
-*Read the three questions. Do not name a vendor.*
+Three moves. First, list it. Every file, config, environment variable and service your checks read. Cross off the code under test. Anything left that the agent can write is your finding. Second, move the copy that counts to where the agent cannot write. When the agent has to change it, the change is a proposal, and a reviewer decides, not the green check. Third, keep the code under test out of the judge's process, so it can only answer, not grade. That is the route o3 used.
 
-Take three questions home. Who can change the inputs that define acceptance? Which exact bytes were the candidate, the checker, and the criteria? And does publication store exactly the approved bytes?
+None of this needs model telemetry. It needs an inventory and an owner.
 
-The first question has a concrete starting point. List everything your acceptance step reads or looks for: files, config, environment, services. List what your agent can write. Any overlap other than the candidate itself is your finding. And keep the candidate out of the checker's process, so it can only answer, not grade. That is the route METR's o3 took: the scorer ran its code. Then add a tripwire, not a policy: hash the answer key when the task starts and again at the verdict. On this recording, that hash moved.
+## 11. The door stayed open
 
-None of that needs model telemetry. It will not tell you a change was malicious, only that the worker wrote what judged it. And these questions inspect a pipeline. On their own, they do not show that any particular product has this problem.
+**11:15-12:00**
 
-## 11. The sandbox held
+*Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.*
 
-**11:30-13:15**
+The code and the recordings are in the repository on the screen. Every hash you saw is in there, and you can rerun all of it.
 
-*Say what did not happen. Name the allowed write. Clock and answer key: two routes, one move.*
+Now remember the ticket. Lock down the admin page.
 
-Back to the title: your agent escaped without escaping the sandbox. The sandbox part is literal. Nothing got out. The checker overwrite was denied, and no protected byte changed.
+The sandbox held. The checker held. The door stayed open. The agent never had to leave the sandbox. It only had to change what counted as correct.
 
-The allowed workspace write changed the decision. The answer key was in the workspace, and the checker obeyed it. That is the escape in the title: the worker never left the sandbox, it escaped the check. In METR's report, o3's code ran inside the scorer and swapped its clock. Our worker rewrote the answer key instead. Two routes, one move: change the judge, not the work.
-
-So isolation and acceptance are different boundaries. A sandbox answers one question: what can this process touch? Acceptance asks another: can anything it touches decide that its own work is done? In a real repository, that answer key lives in the tests, the snapshots and the CI config, and writing tests is part of the agent's job. So taking the write away is not the fix. The agent may propose what counts as correct. It must never be the last writer of what judges it.
-
-## 12. The worker changed what counted as correct
-
-**13:15-14:00**
-
-*Repository first. Then the question, and its three-part answer. Thank you. Leave PASS up.*
-
-The code and the Linux recordings are in the repository on the screen. Every hash on these slides is in there, and you can rerun the whole thing on a disposable Linux machine with bubblewrap.
-
-So, what changed when the test went green?
-
-Not the program. Not the checker. The answer key.
-
-Thank you.
+Your agent escaped without escaping the sandbox. Thank you.

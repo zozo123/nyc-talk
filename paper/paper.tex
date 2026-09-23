@@ -26,12 +26,12 @@
 {\large Yossi Eliaz, PhD}\\[2pt]
 {\small Principal Engineer and Head of DevRel, Incredibuild}\\[8pt]
 {\color{acid}\rule{0.42\textwidth}{1.4pt}}\\[8pt]
-{\small\textit{What changed when the test went green?}}
+{\small\textit{The sandbox held. The checker held. The door stayed open.}}
 \end{center}
 
 \begin{abstract}
 \noindent
-What changed when the test went green? A worker in a bubblewrap sandbox, a deterministic script rather than a model, made a failing check pass without escaping. Its attempt to overwrite the read-only checker was denied, and the checker's hash never changed. But the checker loaded its answer key, \texttt{expected.json}, from the worker's workspace. The worker rewrote the answer key: same candidate, same checker, new answer key, and \texttt{FAIL} became \texttt{PASS}. Controller-owned cases reject the same bytes, and a corrected handler passes them. One approval binds exact bytes and one destination and is consumed once: it refuses a substituted artifact and a second destination, publishes the approved bytes, and refuses a replay. Isolation and acceptance are different boundaries. The agent may propose what counts as correct; it must never be the last writer of what judges it. This paper is the written companion to a fifteen-minute lightning talk. Supporting Linux experiments, recorded separately, cover an inherited CI-style token, a writable mount and an allowed upload host. Each needs an owner outside the worker, and the legitimate job still has to complete.
+A ticket says: lock down \texttt{/admin}; no login must return \texttt{401}. A worker in a bubblewrap sandbox with no network, a deterministic script rather than a model, made the failing check pass without escaping, and the door stayed open: the program still returned \texttt{200} for \texttt{/admin} with no login. Its attempt to overwrite the read-only checker was denied, and the checker's hash never changed. But the checker loaded its answer key, \texttt{expected.json}, from the worker's workspace. The worker rewrote the answer key: same candidate, same checker, new answer key, and \texttt{FAIL} became \texttt{PASS}. It did not make the code pass the test; it made the test pass the code. Controller-owned cases reject the same bytes, and a corrected handler passes them. One approval binds exact bytes and one destination and is consumed once: it refuses a substituted artifact and a second destination, publishes the approved bytes, and refuses a replay. The judge is the checker plus everything it reads, and isolation and acceptance are different boundaries. The agent may propose what counts as correct; it must never be the last writer of what judges it. This paper is the written companion to a fifteen-minute lightning talk. Supporting Linux experiments, recorded separately, cover an inherited CI-style token, a writable mount and an allowed upload host. Each needs an owner outside the worker, and the legitimate job still has to complete.
 \end{abstract}
 
 \section{The line}
@@ -188,21 +188,21 @@ sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
 Source, recorded outputs, and the limits live at \url{https://github.com/zozo123/nyc-talk}. The deck and this paper read those recordings. Stage delivery needs no cloud account and no live terminal.
 
-External context, kept in its own lane: METR's June 2025 report of frontier models gaming scored tasks, including o3 overwriting, from inside the scorer, the timing function that measured it, is the opening motivation, and its tasks and rates stay with that report; bubblewrap's security model is caller-defined sandbox policy; SLSA v1.2 is the vocabulary of digest and expectations, and this gate is not a SLSA certification; Anthropic's November 2025 study of reward hacking is prior motivation, and its measurements stay with that study. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
+External context, kept in its own lane: METR's June 2025 report of frontier models gaming scored tasks, including o3 overwriting, from inside the scorer, the timing function that measured it, answers the talk's objection that a real model would not do this, and its tasks and rates stay with that report; bubblewrap's security model is caller-defined sandbox policy; SLSA v1.2 is the vocabulary of digest and expectations, and this gate is not a SLSA certification; Anthropic's November 2025 study of reward hacking is prior motivation, and its measurements stay with that study. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
 
-\section{Leave with three questions}
+\section{Leave with one question}
 
-The checker was protected. The candidate never improved. The worker changed the answer key, and \texttt{PASS} changed meaning. Isolation and acceptance are different boundaries. A sandbox decides what a process can touch. Acceptance decides whether anything it touches can declare its own work done.
+The sandbox held. The checker held. The door stayed open. The candidate never improved: the worker changed the answer key, and \texttt{PASS} changed meaning. Isolation and acceptance are different boundaries. A sandbox decides what a process can touch. Acceptance decides whether anything it touches can declare its own work done. The judge is the checker plus everything it reads.
 
-When you leave Pier Sixty, take three questions back to the host that runs your agents.
+When you leave Pier Sixty, take one question back to the host that runs your agents: what does your judge read that your agent can write?
 
 \begin{enumerate}
-\item Who can change the inputs that define acceptance?
-\item Which exact bytes were the candidate, the checker, and the criteria?
-\item Does publication store exactly the approved bytes?
+\item List it: every file, config, environment variable and service your checks read, minus the code under test. Anything left that the agent can write is the finding.
+\item Keep the code under test out of the judge's process, so it can only answer, not grade. That is the route o3 used in METR's report.
+\item Hash the answer key when the task starts and again at the verdict, as a tripwire rather than a policy.
 \end{enumerate}
 
-Start with what your checks read that your agent can write, other than the candidate itself. Keep the candidate out of the checker's process, and hash the answer key when the task starts and again at the verdict, as a tripwire rather than a policy. The four boundaries above remain the checklist for the rest of the pipeline: which credential the worker receives, which paths it can write, which URLs it can reach, and which object is compared before release.
+Then bind what ships to what was judged: one approval, the exact bytes, one destination, once. The four boundaries above remain the checklist for the rest of the pipeline: which credential the worker receives, which paths it can write, which URLs it can reach, and which object is compared before release.
 
 The component that returns \texttt{403}, a read-only denial, \texttt{DENIED}, or reject has to sit outside the worker. After you put it there, run the legitimate ticket again. A system that can no longer do the job has gone quiet. It has not become safe.
 

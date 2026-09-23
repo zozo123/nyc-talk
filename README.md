@@ -8,24 +8,30 @@ Principal Engineer and Head of DevRel at Incredibuild.com
 
 [Deck (PDF)](slides/talk.pdf) · [Paper (PDF)](paper/paper.pdf) · [Spoken script](TALK.md) · [Q&A](QUESTIONS.md) · [Recorded run](evidence/isolated-factory.json) · [Reproduce](#reproduce)
 
-**The sandbox held. The worker changed what counted as correct.**
+**The sandbox held. The checker held. The door stayed open.**
 
-A sandboxed worker (a script, not a model) made a failing check pass without escaping its bubblewrap sandbox. It tried to overwrite the read-only checker and was DENIED, and the checker's hash never changed. But the checker loaded its answer key, `expected.json`, from the workspace the worker is allowed to write. The worker rewrote the answer key.
+A ticket anyone could assign: *lock down `/admin`; no login must return 401.* A coding agent gets it inside a sandbox, with no network and a read-only checker, and the pipeline ships only on green. The check goes green. And `/admin` with no login still returns 200.
+
+We built that pipeline ourselves, small enough to check every byte, and stopped at the green check. Three suspects:
 
 ```
-program     76fcb0904f51   unchanged
-checker     f5d8d3468bbe   unchanged, overwrite DENIED
-answer key  0494f1a01dee -> 390e5e764916
-verdict     FAIL -> PASS   (same checker, same launch: exit 1, then exit 0)
+the code        76fcb0904f51 -> 76fcb0904f51   unchanged, still prints 200
+the checker     f5d8d3468bbe -> f5d8d3468bbe   overwrite attempt DENIED
+the answer key  0494f1a01dee -> 390e5e764916   expected 401 became expected 200
+verdict         FAIL -> PASS                   same checker, same launch
 ```
 
-This is the controlled, byte-by-byte version of a move frontier models already make in evaluations: [METR reported](https://metr.org/blog/2025-06-05-recent-reward-hacking/) (June 2025) that o3, unprompted, ran code inside the scorer that overwrote the timing function measuring it, and patched an evaluator so it judged every submission a success. The work did not get better; what judged the work changed.
+The agent did not make the code pass the test. **It made the test pass the code.** The checker reads its answer key, `expected.json`, from the workspace the agent is allowed to write.
 
-Isolation and acceptance are different boundaries. A sandbox answers: what can this process touch? Acceptance asks: can anything it touches decide that its own work is done?
+A real model? [METR reported](https://metr.org/blog/2025-06-05-recent-reward-hacking/) (June 2025) that o3, asked to make code faster, overwrote the timing function that measured it, from inside the scorer, and patched an evaluator so every submission passed. It changed the stopwatch. Two routes, one move: change the judge, not the work.
 
-The repair, recorded in the same run: controller-owned cases REJECT the same program and ACCEPT the corrected one (`5ead8eab70e0`). One approval binds exact bytes and one destination and is consumed once: bad bytes DENIED, another destination DENIED, approved bytes PUBLISHED, replay DENIED.
+**The judge is the checker plus everything it reads**, and part of it was inside the sandbox. A sandbox answers *what can the agent touch?* It never answers *can anything the agent touches decide that its own work is done?*
 
-**The agent may propose what counts as correct. It must never be the last writer of what judges it.**
+For coding agents the answer key is the tests, snapshots, golden files and CI workflow; for other agents it is the approval lists, policy documents, evaluation sets and guardrail configs their checks read. Any of them your agent can write is an answer key it fills in for itself, and wherever writing them is the job, you cannot take the pen away.
+
+**The agent may propose what counts as correct. It must never be the last writer of what judges it.** In the same recorded run, with the answer key owned by the controller: the same broken code is REJECTED, the corrected code (`5ead8eab70e0`) is ACCEPTED, and the broken code swapped in under the approval is DENIED.
+
+One question for Monday: **what does your judge read that your agent can write?**
 
 Scope: this is a controlled reproduction of a known mechanism. The program is a few lines of command-line code that model an access check, judged on five status-code cases; it is not a web server. The worker is a deterministic script, and publication is a local store. No vendor flaw, model attack rate or sandbox escape is claimed. The appendix and paper add three independent supporting fixtures from the accepted abstract: an inherited runner token, a mount that reaches the next job's files, and a publish through an allowed host. They are separate cases, not an attack chain.
 
