@@ -271,11 +271,11 @@
       "mounts": []
     },
     {
-      "agent_sha256": "e640364b1a11bab27676601a0f5151dcbb85e8058fb512c2c9df2188f7f6d93e",
+      "agent_sha256": "c83d62559e0f4ff14729d1a8990a633e9a2d0a31435333153d0c3a2d418c47d1",
       "network_namespace": true,
       "mode": "isolated",
       "exit_code": 0,
-      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:40303/accounts/other/uploads\"}",
+      "stdout": "{\"operation\": \"publish_report\", \"task\": \"parser-fix\", \"url\": \"http://127.0.0.1:42975/accounts/other/uploads\"}",
       "stderr": "",
       "mounts": []
     },

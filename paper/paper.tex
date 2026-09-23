@@ -113,7 +113,7 @@ The recorded repair freezes the candidate bytes before the run. An isolated exec
 
 A harness that prints ``finished'' holds no approval key. A second machine can host the split. Copy the producer's answer key onto it, or fork the producer's disk, and the dependency moves into the room you trusted. Count the inputs to the decision, then count the machines.
 
-One fresh approval is issued for the good candidate. Three attempts follow, in this order, while the approval is still live. Substituted bad bytes are \texttt{DENIED}. The original good bytes are \texttt{PUBLISHED}. The same bytes offered again are \texttt{DENIED}. Publication is a row in controller-owned SQLite: the exact bytes and the spent nonce, in one transaction. Spending the nonce before the digest check would let a broken substitution hide behind an already-used approval. This repository used to get that order wrong. The current gate refuses the substitute first.
+One fresh approval is issued for the good candidate. Four attempts follow, in this order. While that approval is still unused, substituted bad bytes are \texttt{DENIED}, and the approved bytes offered to a second destination are \texttt{DENIED}: an approval names one destination --- account, environment, operation, subject. The approved bytes at the named destination are \texttt{PUBLISHED}. The same bytes offered once more, now on a spent nonce, are \texttt{DENIED}. Publication is a row in controller-owned SQLite: the exact bytes and the spent nonce, in one transaction. Spending the nonce before the digest check would let a broken substitution hide behind an already-used approval. This repository used to get that order wrong. The current gate refuses the substitute first.
 
 \section{Four boundaries, both sides}
 

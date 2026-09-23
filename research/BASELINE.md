@@ -6,7 +6,8 @@
 | Archived gate | `research/baseline/core.py`, unchanged from that commit |
 | Audit reproduction | `python3 tools/audit_baseline.py`; SHA-256 in `evidence/baseline-audit.json` |
 | Current experiments | Exact per-file SHA-256 sets in each record under `evidence/` |
-| Task | `lock-admin`; policy `admin-requires-auth-v1`; five CLI cases |
+| Acceptance / release task | `lock-admin`; policy `admin-requires-auth-v1`; five CLI status cases |
+| Linux boundary-lab fixture | `parser-fix`; policy `comma-separated-integers-v1`; five parser cases |
 | Isolation fixture | `lab/run.py` and `factory/isolated.py`; disposable Linux + bubblewrap |
 | Presentation content | Canonical `slides/talk.tex`; compiled Beamer PDF and exported manuscript |
 

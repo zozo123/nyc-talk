@@ -32,9 +32,9 @@ This sequence is intentionally simple: it isolates ownership of the answer key. 
 
 ## 5. Release protocol and negative controls
 
-The sequence is freeze, execute, compare, authorize, publish. The approval covers the task, run, artifact manifest, verifier source bundle, expected values, policy, environment description, nonce and expiration. A local HMAC authenticates that controller decision. The environment description is not hardware attestation.
+The sequence is freeze, execute, compare, authorize, publish. The gate takes no acceptance parameter: it runs a controller-owned observer over the frozen bytes the approval names and derives its own verdict. The approval covers the task, run, artifact manifest, verifier source bundle, expected values, policy, environment description, publication destination (account, environment, operation, subject), that derived decision, nonce and expiration. A local HMAC authenticates it. The environment description is not hardware attestation.
 
-The publication test first attempts a byte substitution with an unused approval. Rejection is followed by a successful publication of the intended bytes with the same approval, then a rejected replay. The local database stores those bytes in the same transaction that consumes the nonce. Concurrent reuse is covered by a regression test. Missing observations, malformed output and timeout produce no approval; they are not counted as demonstrated defenses.
+The publication test first attempts a byte substitution with an unused approval, then offers that same unused approval against a different destination. Both are refused. A successful publication of the intended bytes with that approval follows, then a rejected replay. The local database stores those bytes in the same transaction that consumes the nonce. Concurrent reuse is covered by a regression test. Missing observations, malformed output and timeout produce no approval; they are not counted as demonstrated defenses.
 
 The separate audit in [AUDIT.md](AUDIT.md) found and reproduced a stale-digest flaw in the original controller API. We include the counterexample and its reachability limits rather than suppressing it.
 

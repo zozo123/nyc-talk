@@ -4,10 +4,10 @@
 
 Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,205 words.
+Spoken manuscript: 1,215 words.
 ## 1. What changed when the test went green?
 
-**00:00-01:00**
+**00:00-01:15**
 
 *Show FAIL, then PASS. Ask what changed.*
 
@@ -19,7 +19,7 @@ The worker in the recording is a script. The program is a small command-line mod
 
 ## 2. No login prints 200
 
-**01:00-02:30**
+**01:15-02:15**
 
 *Name the case. Then the two numbers.*
 
@@ -29,7 +29,7 @@ A correct program prints 401 for no login, 200 for a real admin, 403 for an ordi
 
 ## 3. The checker is protected
 
-**02:30-04:00**
+**02:15-03:30**
 
 *Denied first. Then the line it reads.*
 
@@ -39,7 +39,7 @@ The checker then loads expected.json from its working directory. That file is in
 
 ## 4. Only the answer file moved
 
-**04:00-06:00**
+**03:30-04:45**
 
 *Read across the row. Stop on PASS.*
 
@@ -49,7 +49,7 @@ The diff is the required status for admin:none, 401 becoming 200, and the same c
 
 ## 5. What the three hashes say
 
-**06:00-07:00**
+**04:45-05:45**
 
 *One sentence per hash.*
 
@@ -59,7 +59,7 @@ Hashing the altered answers does not make them authoritative. Their identity and
 
 ## 6. The file defines success
 
-**07:00-08:00**
+**05:45-07:00**
 
 *Point at the load. Then at who can write it.*
 
@@ -71,7 +71,7 @@ The worker here is a script with that write in it. The recording shows the actio
 
 ## 7. Controller-owned criteria
 
-**08:00-09:15**
+**07:00-08:00**
 
 *REJECT the same program. The fix is the next slide.*
 
@@ -81,7 +81,7 @@ Program 76fcb0904f51, the one that prints 200, is REJECT. The demonstrated edit 
 
 ## 8. The corrected program
 
-**09:15-10:30**
+**08:00-09:00**
 
 *Different hash. Five numbers. ACCEPT.*
 
@@ -91,7 +91,7 @@ The repair stops the demonstrated edit and keeps the legitimate task. The accept
 
 ## 9. One unused approval
 
-**10:30-12:00**
+**09:00-10:30**
 
 *Say unused. Then denied, published, denied.*
 
@@ -101,7 +101,7 @@ Because the first denial happens while the approval is unused, the refusal is th
 
 ## 10. Three questions for another system
 
-**12:00-13:15**
+**10:30-11:30**
 
 *Read the three questions. Do not name a vendor.*
 
@@ -111,7 +111,7 @@ These questions inspect a pipeline. They do not by themselves show that another 
 
 ## 11. The sandbox held
 
-**13:15-13:40**
+**11:30-12:45**
 
 *Say what did not happen. Then name the allowed write.*
 
@@ -121,10 +121,12 @@ So sandbox isolation and release authorization are different boundaries. You can
 
 ## 12. The worker changed what counted as correct
 
-**13:40-14:00**
+**12:45-14:00**
 
 *Say the sandbox held. Leave PASS beside the unchanged program. Stop.*
 
 The sandbox held. The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
 
-The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording. Thank you.
+The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording.
+
+The sandbox held. The worker changed what counted as correct. Thank you.

@@ -4,7 +4,7 @@ Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-18 ar
 
 ## Slide 1: What changed when the test went green?
 
-00:00-01:00
+00:00-01:15
 
 Show FAIL, then PASS. Ask what changed.
 
@@ -20,7 +20,7 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 ## Slide 2: No login prints 200
 
-01:00-02:30
+01:15-02:15
 
 Name the case. Then the two numbers.
 
@@ -34,7 +34,7 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 ## Slide 3: The checker is protected
 
-02:30-04:00
+02:15-03:30
 
 Denied first. Then the line it reads.
 
@@ -49,7 +49,7 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 ## Slide 4: Only the answer file moved
 
-04:00-06:00
+03:30-04:45
 
 Read across the row. Stop on PASS.
 
@@ -63,7 +63,7 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 ## Slide 5: What the three hashes say
 
-06:00-07:00
+04:45-05:45
 
 One sentence per hash.
 
@@ -77,7 +77,7 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 ## Slide 6: The file defines success
 
-07:00-08:00
+05:45-07:00
 
 Point at the load. Then at who can write it.
 
@@ -93,7 +93,7 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 ## Slide 7: Controller-owned criteria
 
-08:00-09:15
+07:00-08:00
 
 REJECT the same program. The fix is the next slide.
 
@@ -107,7 +107,7 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 ## Slide 8: The corrected program
 
-09:15-10:30
+08:00-09:00
 
 Different hash. Five numbers. ACCEPT.
 
@@ -121,7 +121,7 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 ## Slide 9: One unused approval
 
-10:30-12:00
+09:00-10:30
 
 Say unused. Then denied, published, denied.
 
@@ -136,7 +136,7 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 ## Slide 10: Three questions for another system
 
-12:00-13:15
+10:30-11:30
 
 Read the three questions. Do not name a vendor.
 
@@ -150,7 +150,7 @@ https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 
 ## Slide 11: The sandbox held
 
-13:15-13:40
+11:30-12:45
 
 Say what did not happen. Then name the allowed write.
 
@@ -164,13 +164,15 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 ## Slide 12: The worker changed what counted as correct
 
-13:40-14:00
+12:45-14:00
 
 Say the sandbox held. Leave PASS beside the unchanged program. Stop.
 
 The sandbox held. The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
 
-The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording. Thank you.
+The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording.
+
+The sandbox held. The worker changed what counted as correct. Thank you.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json

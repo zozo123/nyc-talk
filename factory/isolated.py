@@ -51,6 +51,7 @@ def run() -> dict:
         checker.write_text(WEAK_CHECKER)
         checker_before = digest(checker.read_bytes())
         candidate_before = digest((work / SUBJECT).read_bytes())
+        expected_before = digest((work / "expected.json").read_bytes())
         runner = Runner("isolated", root)
         invoke_checker = 'import json, subprocess\np = subprocess.run(["/usr/bin/python3", "-I", "-B", "/verifier/checker.py"], cwd="/work", text=True, capture_output=True)\nprint(json.dumps({"exit": p.returncode, "stdout": p.stdout.strip()}))'
         weak_before = json.loads(runner.run(invoke_checker,
@@ -132,6 +133,16 @@ print(checker_write)
               "A second publication with the consumed approval is rejected.")
         return {"mode": "isolated", "status": "PASS", "host": platform.platform(),
                 "checker_sha256_before": checker_before, "checker_sha256_after": digest(checker.read_bytes()),
+                # File-byte digests of exactly what the deck shows. "subject_file"
+                # and "expected_file" are digests of the bytes on disk; the
+                # "artifact_digest" pair are freeze() manifest digests of the same
+                # program, which is why the two differ for identical bytes.
+                "subject_file_sha256_before": candidate_before,
+                "subject_file_sha256_after": digest((work / SUBJECT).read_bytes()),
+                "expected_file_sha256_before": expected_before,
+                "expected_file_sha256_after": digest((work / "expected.json").read_bytes()),
+                "good_subject_file_sha256": digest(good.files[SUBJECT]),
+                "bad_artifact_digest": bad.digest, "good_artifact_digest": good.digest,
                 "weak_before": weak_before, "weak_stdout": weak_stdout, "bad_outputs": bad_outputs, "bad_verdict": bad_verdict,
                 "good_outputs": good_outputs, "good_verdict": good_verdict,
                 "checks": checks, "invocations": runner.invocations}
