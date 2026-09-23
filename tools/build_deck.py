@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_WPM = 150
-MAIN, APPENDIX, TARGET = 12, 8, '13:00'
+MAIN, APPENDIX, TARGET = 14, 8, '14:00'
 WORDS = (1000, 1450)
 
 

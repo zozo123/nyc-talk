@@ -25,15 +25,19 @@ The agent did not make the code pass the test. **It made the test pass the code.
 
 A real model? [METR reported](https://metr.org/blog/2025-06-05-recent-reward-hacking/) (June 2025) that o3, asked to make code faster, overwrote the timing function that measured it, from inside the scorer, and patched an evaluator so every submission passed. It changed the stopwatch. Two routes, one move: change the judge, not the work.
 
-**The judge is the checker plus everything it reads**, and part of it was inside the sandbox. A sandbox answers *what can the agent touch?* It never answers *can anything the agent touches decide that its own work is done?*
+**The judge is the checker plus everything it reads and runs**, and part of it was inside the sandbox. o3 got in through what its scorer runs; our agent through what its checker reads.
 
-For coding agents the answer key is the tests, snapshots, golden files and CI workflow; for other agents it is the approval lists, policy documents, evaluation sets and guardrail configs their checks read. Any of them your agent can write is an answer key it fills in for itself, and wherever writing them is the job, you cannot take the pen away.
+**A perfect receipt for a bad decision.** Every byte of this run is hashed and recorded, and a signed attestation over it would verify. Provenance says *which* bytes decided, not *who had the right to write them*.
 
-**The agent may propose what counts as correct. It must never be the last writer of what judges it.** In the same recorded run, with the answer key owned by the controller: the same broken code is REJECTED, the corrected code (`5ead8eab70e0`) is ACCEPTED, and the broken code swapped in under the approval is DENIED.
+**One shape, four times.** The answer key is one of the four non-escape escapes in the accepted abstract, all recorded in the same Linux lab. An inherited runner token: a service outside said yes to it. A writable mount: the host said yes to a write to the next job's file. An allowed upload host: a service said yes to data for another account. The answer key: the judge said yes to it. The token and upload cases use loopback HTTP fixtures.
 
-One question for Monday: **what does your judge read that your agent can write?**
+**Sandboxes limit reach. Breaches happen at acceptance.** Stop thickening the wall; secure the acceptors. Least privilege alone does not fix it, because the agent needs that token, that workspace, that upload, those tests: the permission is the work. What changes is where the authority to say yes comes from. In the same recordings, each acceptor got an owner outside the wall: a short-lived task-scoped token (403 elsewhere), a read-only scoped mount (write blocked), a broker's one fixed report (nothing else sent), and criteria the controller owns (the same broken code REJECTED, the corrected code `5ead8eab70e0` ACCEPTED). **The agent may propose what counts as correct. It must never be the last writer of what judges it.**
 
-Scope: this is a controlled reproduction of a known mechanism. The program is a few lines of command-line code that model an access check, judged on five status-code cases; it is not a web server. The worker is a deterministic script, and publication is a local store. No vendor flaw, model attack rate or sandbox escape is claimed. The answer key is one of the four non-escape escapes in the accepted abstract. Slide 10 shows the other three, each recorded in the same Linux lab and closed at the layer that can enforce it: an inherited runner token (a scoped, short-lived token gets 403), a writable mount that reaches the next job's files (a read-only scoped mount blocks the write), and an upload through an allowed host (no direct network and a fixed-report broker: nothing sent). They are separate cases, not an attack chain, and the token and upload cases use loopback HTTP fixtures.
+**Which control said no?** The release gate refused the broken code under a fresh, unused approval, refused the approved bytes at a second destination, published them at the named one, then refused a replay. Our own first version of that test tried the broken code only after the approval was spent, so it could not tell which control said no. A denial proves nothing until you know which control denied.
+
+One question for Monday: **what outside your sandbox says yes to your agent, and who gave it that authority?**
+
+Scope: this is a controlled reproduction of a known mechanism. The program is a few lines of command-line code that model an access check, judged on five status-code cases; it is not a web server. The worker is a deterministic script, and publication is a local store. No vendor flaw, model attack rate or sandbox escape is claimed. 
 
 Speaker package: [LaTeX source](slides/talk.tex) (canonical; `make snapshot` regenerates the script, notes and PDFs) · [Speaker notes](SPEAKER_NOTES.md) · [Stage runbook](RUNBOOK.md) · [Offline replay](demo/replay.html)
 
