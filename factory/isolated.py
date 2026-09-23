@@ -76,9 +76,12 @@ print(checker_write)
               "The always-200 candidate bytes are also unchanged.")
         check("answer_key.expected_changed", json.loads((work / "expected.json").read_text()) == WORKER_EXPECTED,
               "Worker changed only the answer key to expect 200 for every case.")
-        weak_stdout = runner.run('import os, runpy\nos.chdir("/work")\nrunpy.run_path("/verifier/checker.py", run_name="__main__")',
-                                 mounts=[(work, "/work", False), (verifier, "/verifier", False)], network=False)
-        check("answer_key.weak_pass", weak_stdout == "PASS", "Unchanged, read-only checker accepts the open-admin fixture.")
+        # The same launch as weak_before: one instrument, so only the answer key differs.
+        weak_after = json.loads(runner.run(invoke_checker,
+                                mounts=[(work, "/work", False), (verifier, "/verifier", False)], network=False))
+        weak_stdout = weak_after["stdout"]
+        check("answer_key.weak_pass", weak_after == {"exit": 0, "stdout": "PASS"},
+              "The same checker, launched the same way, exits 0 and prints PASS on the unchanged candidate.")
 
         def observe(data: bytes) -> list:
             """Controller-owned observer: bytes in, raw observations out.
@@ -143,7 +146,7 @@ print(checker_write)
                 "expected_file_sha256_after": digest((work / "expected.json").read_bytes()),
                 "good_subject_file_sha256": digest(good.files[SUBJECT]),
                 "bad_artifact_digest": bad.digest, "good_artifact_digest": good.digest,
-                "weak_before": weak_before, "weak_stdout": weak_stdout, "bad_outputs": bad_outputs, "bad_verdict": bad_verdict,
+                "weak_before": weak_before, "weak_after": weak_after, "weak_stdout": weak_stdout, "bad_outputs": bad_outputs, "bad_verdict": bad_verdict,
                 "good_outputs": good_outputs, "good_verdict": good_verdict,
                 "checks": checks, "invocations": runner.invocations}
 

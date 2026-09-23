@@ -25,7 +25,7 @@ This is a controlled reproduction of a known trust-boundary failure, with a repa
 ## Final stage package
 
 - **12 main slides + 6 Q&A appendices.** One central experiment occupies the main story.
-- **1,200 spoken words.** A 14-minute delivery budget leaves one minute of margin. Rehearse aloud to verify your own pace.
+- **1,366 spoken words.** A 14-minute delivery budget leaves one minute of margin; no slide is budgeted above 115 words per minute. Rehearse aloud to verify your own pace.
 - **LaTeX only.** `slides/talk.tex` is the editable source for the PDF, manuscript and speaker notes.
 - **Offline presentation.** Recorded observations are on the slides. No live terminal, cloud key or conference network is required.
 - The four abstract categories remain the deployment checklist: identity, files, outbound operations and acceptance. Supporting experiments are independent cases, not an attack chain.

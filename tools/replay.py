@@ -24,11 +24,11 @@ def scenes():
     ]:
         records.append({'id': name, 'title': title,
                         'body': '\n\n'.join(f'{key}\n{checks[key]}' for key in ids)})
-    body = (f'Honest answer key -> {isolated["weak_before"]["stdout"]}\n'
+    body = (f'Honest answer key -> {isolated["weak_before"]["stdout"]} (exit {isolated["weak_before"]["exit"]})\n'
             'Worker write to checker.py -> DENIED\n\n'
             f'checker.py before: {isolated["checker_sha256_before"]}\n'
             f'checker.py after:  {isolated["checker_sha256_after"]}\n\n'
-            f'Worker-edited expected.json -> {isolated["weak_stdout"]}\n'
+            f'Worker-edited expected.json -> {isolated["weak_after"]["stdout"]} (exit {isolated["weak_after"]["exit"]}), same launch\n'
             f'Independent criteria accepted -> {isolated["bad_verdict"]["accepted"]}\n'
             f'Corrected candidate accepted -> {isolated["good_verdict"]["accepted"]}\n\n'
             'Actual read-only bind mount. Five-case CLI status-code model; not an HTTP server.')

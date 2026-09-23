@@ -83,7 +83,9 @@ def verify_all(root=ROOT):
     validate_checks(isolated, ISOLATED, 'isolated')
     if isolated['checker_sha256_before'] != isolated['checker_sha256_after']:
         raise ValueError('The checker changed')
-    if isolated['weak_before'] != {'exit': 1, 'stdout': 'FAIL'} or isolated['weak_stdout'] != 'PASS':
+    if (isolated['weak_before'] != {'exit': 1, 'stdout': 'FAIL'}
+            or isolated['weak_after'] != {'exit': 0, 'stdout': 'PASS'}
+            or isolated['weak_stdout'] != 'PASS'):
         raise ValueError('Missing paired checker observation')
     if isolated['bad_verdict'].get('accepted') is not False or isolated['good_verdict'].get('accepted') is not True:
         raise ValueError('Independent negative and positive controls are required')

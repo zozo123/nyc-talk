@@ -6,15 +6,19 @@ No. Everything shown is a synthetic research fixture written for this talk, and 
 
 ## Is this a new vulnerability or just least privilege?
 
-These are controlled reproductions of known mechanisms. The useful result is a paired experiment: the candidate and checker stay fixed while ownership of the answer key changes the decision. We also publish a counterexample in our own original controller API. We do not claim a vendor zero-day or novelty for least privilege.
+These are controlled reproductions of known mechanisms, and the pipeline-scale version has a public name: poisoned pipeline execution, a CI job running an attacker-influenced file. We do not claim a vendor zero-day or novelty for least privilege. What the paired run adds is a measurement: the candidate and checker stay fixed while ownership of the answer key changes the decision. And the usual least-privilege fix does not fit, because a coding agent needs this write to do its job. You cannot remove the permission to edit tests; you can move who decides whether the edited tests are the ones that count. We also publish a counterexample in our own original controller API.
 
 ## Where is the LLM?
 
 It is deliberately absent. Deterministic worker actions isolate the capability boundary. This measures whether the interface permits the action, not whether a particular model discovers or attempts it. There is no model attack-success rate.
 
+## Are real agents doing this today?
+
+That is not what this recording measures, and we do not report a rate. There is separate public research: Anthropic's November 2025 study of reward hacking describes models taking shortcuts on coding tasks, including writing a `conftest.py` that makes pytest report failures as passes, which is a worker-written file the harness obeys, the same shape as `expected.json` here. Its training setup and results belong to that study and are not transferred to ours. What we can say is narrower and does not depend on any model: the permission such a shortcut needs is already granted in the configuration we recorded, and finding it takes an inventory, not telemetry.
+
 ## Did you really lock the checker?
 
-In `factory/isolated.py`, the checker is bind-mounted read-only. A direct worker write is attempted and denied. Its actual file hash and the candidate hash are compared before and after. The answer key remains worker-writable in the intentionally weak configuration.
+In `factory/isolated.py`, the checker is bind-mounted read-only. A direct worker write is attempted and denied. Its actual file hash and the candidate hash are compared before and after. Both checker runs use the identical launch, the same interpreter flags, working directory and mounts, and the record keeps both exit codes: 1 with FAIL on the honest answer key, 0 with PASS on the edited one. The answer key remains worker-writable in the intentionally weak configuration.
 
 ## Is `/admin` a real service?
 
@@ -27,6 +31,14 @@ Yes. The finite policy only establishes those five observations. It is not compr
 ## Our agents write tests. Are you saying they can't?
 
 No. The worker may propose criteria; it must not be what applies them. A proposed test travels with the candidate and is reviewed and approved the way code is. The approval in `factory/core.py` binds `expected_results_digest` alongside the artifact, so the criteria used for a decision are named in the record and a change to them is visible rather than silent. What we recorded is the narrow version: the expected values are controller-owned constants and the comparison runs outside the workspace. A review workflow that promotes a proposed test into controller-owned criteria is the natural extension and is not something this package measures. Slide 4 is not a story about an agent editing a file. It is a story about the agent being the last writer of the thing that judged it.
+
+## What if the candidate cheats from inside the test process?
+
+Then no shared file is involved, and that is a different class: exiting early with status 0, or returning an object whose equality check always says yes. The repaired path is built against it rather than tested against it. Each case runs the candidate in its own sandboxed process with a read-only `/candidate` mount and no network; the controller reads back only its printed output, and `judge` in `factory/core.py` accepts a complete list of plain integers or produces no approval at all. An early exit or a non-integer is no approval, and an always-equal object cannot survive being printed as JSON. That is why slide 10 says to keep the candidate out of the checker's process.
+
+## Our agent can edit the CI workflow itself. Is that the same thing?
+
+Yes, at pipeline scale. A workflow file under `.github/workflows` defines which checks run and what counts as passing, so a worker that can write it holds the same kind of pen as a worker that can write `expected.json`. The question from slide 10 transfers directly. We did not test a CI system here, so the question carries over and the measurement does not.
 
 ## Why is another VM insufficient?
 
