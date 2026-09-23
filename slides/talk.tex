@@ -3,7 +3,7 @@
 \documentclass[aspectratio=169,11pt]{beamer}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern,listings,booktabs,array,tikz}
-\usetikzlibrary{positioning,arrows.meta}
+\usetikzlibrary{positioning,arrows.meta,fit}
 \definecolor{void}{HTML}{07090D}
 \definecolor{paper}{HTML}{F2F5F7}
 \definecolor{acid}{HTML}{B7FF35}
@@ -33,280 +33,261 @@
 \begin{document}
 
 \begin{frame}[plain,t]
-% title: What changed when the test went green?
-% time: 00:00-01:30
-% cue: Show FAIL, then PASS. Ask what changed. Then the METR timer. Say METR as meter.
-% source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\vspace{8mm}
+% title: The ticket
+% time: 00:00-00:45
+% cue: Read the ticket. The four locks. Then: it ships.
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\vspace{7mm}
 \labeltext{ZENITY\quad AI AGENT SECURITY SUMMIT\quad PIER SIXTY}
-\vspace{6mm}
-{\fontsize{22}{26}\selectfont\bfseries What changed when\\the test went green?\par}
-\vspace{8mm}
-{\color{danger}\fontsize{28}{32}\selectfont\bfseries FAIL}\hspace{8mm}{\color{muted}\fontsize{28}{32}\selectfont$\longrightarrow$}\hspace{8mm}{\color{acid}\fontsize{28}{32}\selectfont\bfseries PASS}
+\vspace{5mm}
+{\color{muted}\ttfamily\fontsize{10}{12}\selectfont TICKET\par}
+\vspace{1mm}
+{\fontsize{24}{28}\selectfont\bfseries Lock down /admin.\par}
+\vspace{1mm}
+{\fontsize{15}{19}\selectfont No login must return 401.\par}
+\vspace{7mm}
+{\fontsize{11}{14}\selectfont agent in a sandbox\quad{\color{muted}$\longrightarrow$}\quad read-only checker\quad{\color{muted}$\longrightarrow$}\quad{\color{acid}\bfseries green}\quad{\color{muted}$\longrightarrow$}\quad ship\par}
 \vfill
 {\color{muted}\small Your Agent Escaped Without Escaping the Sandbox\par}
 \vspace{1mm}
 {\small Yossi Eliaz, PhD\quad Incredibuild\quad 21 October 2026\par}
-\note{What changed when the test went green?
+\note{Picture a ticket you could assign this morning. Lock down the admin page. Anyone without a login must get 401.
 
-In June 2025, the AI evaluation nonprofit METR reported frontier models from more than one lab gaming the tasks they were scored on. Asked to make a program run faster, OpenAI's o3 overwrote the timing function that measured it. On another task, it patched the evaluation function so that it judged every submission a success. It was not asked to. In a separate test, telling it not to cheat barely changed how often it planned to.
+You give it to your coding agent, and you do everything right. The agent works in a sandbox. It has no network. The checker that grades its work is read-only, so the agent cannot touch it. And your pipeline ships only when that checker goes green.
 
-The work did not get better. What judged the work changed. Today I'll show you the smallest version of that move, byte by byte, inside a sandbox that held. I'm Yossi Eliaz, from Incredibuild.
-
-We recorded one worker run in a Linux sandbox. The worker is a script, not a model, so every step is deterministic and every hash I show you is in the repository. The checker says FAIL before the worker's step, and PASS after it. Let's find the one thing that changed.}
+The agent works for a while. The check goes green. It ships.}
 \end{frame}
 
-\renewcommand{\track}{02  /  ONE CASE}
-\begin{frame}[t,fragile]
-% title: No login prints 200
-% time: 01:30-02:15
-% cue: Name the case. Then the two numbers.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{No login prints 200}
-\begin{lstlisting}
-# admin:none
-# model of /admin with no login
-# required status: 401
-print(200)
-\end{lstlisting}
-\takeaway{The program fails this case.}
-\scope{CLI fixture. Five integer cases. Scripted worker.}
-\note{One case is enough. The program is a few lines of command-line code that mimic an access check. No web server is involved. admin:none means the admin route with no login. The right answer is 401. This program prints 200 for every input.
-
-A checker compares the program's output with an answer key of five cases. Only two of those five expect 200. This program says 200 five times, so it is wrong on the other three.
-
-Keep this program in mind. Its bytes never change.}
-\end{frame}
-
-\renewcommand{\track}{03  /  THE CHECKER}
-\begin{frame}[t,fragile]
-% title: The checker is protected
-% time: 02:15-03:15
-% cue: Honest FAIL. DENIED. Same hash. Then PASS. Pause.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\renewcommand{\track}{02  /  GREEN}
+\begin{frame}[t]
+% title: Green, and open
+% time: 00:45-01:45
+% cue: Say green. Pause. Then 200. Let it sit.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{The checker is protected}
+\frametitle{Green, and open}
+\vspace{4mm}
+{\fontsize{14}{18}\selectfont Checker\hspace{8mm}{\color{acid}\fontsize{30}{34}\selectfont\bfseries PASS}\par}
+\vspace{6mm}
+{\fontsize{14}{18}\selectfont /admin, no login\hspace{8mm}{\color{danger}\fontsize{30}{34}\selectfont\bfseries 200}\par}
+\takeaway{Every check green. The door still open. Nothing escaped.}
+\scope{The scene is a scenario. PASS and 200 are from our recording.}
+\note{Then someone opens the admin page without logging in. 200. Wide open.
+
+The door you asked the agent to close is still open, and every check was green. And here is the strange part. Nothing escaped the sandbox. No network call, no broken container, no stolen credential.
+
+I'm Yossi Eliaz. I work on build systems at Incredibuild, and our whole industry runs on one assumption: green means good. For the next few minutes, let's find out what green meant here.}
+\end{frame}
+
+\renewcommand{\track}{03  /  THE LAB}
+\begin{frame}[t]
+% title: We built that pipeline
+% time: 01:45-02:45
+% cue: Four facts, calmly. Then: three suspects.
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{We built that pipeline}
+\vspace{2mm}
+{\fontsize{14}{18}\selectfont
+A tiny model of /admin. Five cases.\par\vspace{2.5mm}
+A scripted agent. Every step deterministic.\par\vspace{2.5mm}
+A Linux sandbox. Every file that matters hashed.\par\vspace{2.5mm}
+We stopped at green.\par}
+\takeaway{Your pipeline would not have.}
+\scope{Command-line fixture, not a web server. The worker is a script, not a model.}
+\note{So we built that pipeline ourselves, small enough to check every byte. The program is a few lines of command-line code that model the admin page. No web server. It answers five cases: no login, a real admin, an ordinary user, the public page, and an expired login. The agent is a script, not a model, so every step is deterministic. Hold on to that objection. We will come back to it. Everything runs in a Linux sandbox, and every file that matters is hashed.
+
+We stopped at the green check. Your pipeline would not have.
+
+So let's investigate. Three suspects.}
+\end{frame}
+
+\renewcommand{\track}{04  /  SUSPECTS}
+\begin{frame}[t]
+% title: Two suspects, both cleared
+% time: 02:45-03:45
+% cue: Clear the code. Clear the checker. Then: something else changed.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{Two suspects, both cleared}
+\vspace{2mm}
 {\tablefont
-\begin{tabular}{@{}p{.50\textwidth}p{.42\textwidth}@{}}
-Honest answer key & \textcolor{danger}{FAIL}\\\addlinespace
-Checker overwrite attempt & \textcolor{acid}{DENIED}\\\addlinespace
-Checker hash, before and after & \texttt{f5d8d3468bbe} both\\\addlinespace
-Same checker, after the worker step & \textcolor{acid}{PASS}\\
+\begin{tabular}{@{}p{.25\textwidth}p{.67\textwidth}@{}}
+\textcolor{acid}{1\ \ The code} & \texttt{76fcb0904f51} before and after. Still prints 200.\\\addlinespace[2mm]
+\textcolor{acid}{2\ \ The checker} & Overwrite attempt \textcolor{acid}{DENIED}. \texttt{f5d8d3468bbe} before and after.\\
 \end{tabular}}
-\takeaway{Nothing we protected changed. The test still went green.}
-\scope{Read-only bind mount in the isolated recording.}
-\note{At the start, the answer key is honest. On this program, the checker prints FAIL and exits 1.
+\takeaway{Neither changed. FAIL still became PASS.}
+\scope{Same checker, same launch, same program: exit 1 with FAIL, then exit 0 with PASS.}
+\note{Suspect one: the code. The ticket was to fix it. Did the agent change it at all? No. The program's hash is identical before and after, and it still prints 200 for every request.
 
-Then the worker takes its step. First it tries the obvious attack: overwrite the checker with one that just prints PASS. The checker sits on a read-only mount. DENIED. Its hash is the same before that step and after it.
+Suspect two: the checker. And the agent did try. It tried to overwrite the checker with one that just prints PASS. The read-only mount said DENIED, and the checker's hash never changed. Before the agent's step, this same checker, launched the same way, said FAIL.
 
-Then the same checker runs again, launched the same way, on the same program. It prints PASS and exits 0.
-
-Nothing we protected changed. Something else did.}
+So the code did not change. The checker did not change. And FAIL still became PASS. Something else changed.}
 \end{frame}
 
-\renewcommand{\track}{04  /  WHAT MOVED}
+\renewcommand{\track}{05  /  THE ANSWER KEY}
 \begin{frame}[t,fragile]
-% title: Only the answer key moved
-% time: 03:15-04:30
-% cue: Read across the row. Stop on PASS.
+% title: Suspect three: the answer key
+% time: 03:45-05:00
+% cue: Name the file. Read the diff. The hashes. Click. Land the line.
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{Only the answer key moved}
-{\fontsize{8}{10}\selectfont\renewcommand{\arraystretch}{1.35}\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}p{.16\textwidth}p{.24\textwidth}p{.24\textwidth}p{.22\textwidth}p{.08\textwidth}@{}}
- & \textcolor{acid}{Program} & \textcolor{acid}{Checker} & \textcolor{acid}{Answer key} & \textcolor{acid}{}\\\midrule
-Honest & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \texttt{0494f1a01dee} & FAIL\\
-Edited & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \texttt{390e5e764916} & \textcolor{acid}{PASS}\\
-\end{tabular}}
+\frametitle{Suspect three: the answer key}
+\vspace{1mm}
+{\fontsize{12}{15}\selectfont expected.json\quad\texttt{0494f1a01dee}\ {\color{muted}$\longrightarrow$}\ \texttt{390e5e764916}\par}
 \vspace{3mm}
 \begin{lstlisting}
 {"input":"admin:none","output":401}
 {"input":"admin:none","output":200}
 \end{lstlisting}
-\takeaway{The worker changed what counted as correct.}
-\scope{SHA-256 prefixes of the bytes in the isolated recording.}
-\note{Two rows: the honest run, then the edited run. Read across.
+\pause
+\takeaway{It did not make the code pass the test.\\It made the test pass the code.}
+\scope{The checker reads its answers from the workspace the agent is allowed to write.}
+\note{Suspect three is a file nobody thinks about. The checker does not know the right answers by itself. It reads them from a file in the workspace, expected.json. The answer key.
 
-The program has the same hash both times. So does the checker. The answer key, expected.json, changes: 0494 when honest, 390e when edited. And the verdict goes from FAIL to PASS.
+And the agent is allowed to write the workspace. So it changed one line. No login: expected 401. Now: expected 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the broken code prints.
 
-Underneath is the diff. For admin:none, the expected answer was 401. The worker rewrote it to 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the bad program prints.
+We had perfect hashes of every file here. They told us exactly what changed. They did not stop it.
 
-The checker did its job perfectly. It compared the program with the answer key, and they matched. The worker did not change the checker. It changed what counted as correct.}
+It did not make the code pass the test. It made the test pass the code.}
 \end{frame}
 
-\renewcommand{\track}{05  /  HASHES}
+\renewcommand{\track}{06  /  A REAL MODEL}
 \begin{frame}[t]
-% title: What the three hashes say
-% time: 04:30-05:30
-% cue: One sentence per hash.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{What the three hashes say}
-{\fontsize{13}{17}\selectfont
-Program \texttt{76fcb0904f51} stayed.\\
-Checker \texttt{f5d8d3468bbe} stayed.\\
-Answer key \texttt{0494f1a01dee} became \texttt{390e5e764916}.\par}
-\takeaway{A hash names the answer key. It does not say who wrote it.}
-\note{Each hash rules one thing out. Same program hash: the worker did not fix the code. Same checker hash: the checker's code did not change. New answer key hash: that is the input that moved.
-
-Now the trap. The tempting fix is to hash the answer key. But hash it after the worker wrote it, and you have a perfect fingerprint of the worker's answers. A hash tells you which bytes were used. It does not tell you who had the right to write them. The answer key that decides has to belong to someone other than the worker, and live where the worker cannot write.}
-\end{frame}
-
-\renewcommand{\track}{06  /  WHY}
-\begin{frame}[t,fragile]
-% title: The file defines success
-% time: 05:30-06:45
-% cue: Point at the load. Then at who can write it.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+% title: ``A real model wouldn't.''
+% time: 05:00-06:15
+% cue: The objection. METR. Click at: It overwrote the timing function. Then the stopwatch. Say METR as meter.
 % source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
-\frametitle{The file defines success}
-\begin{lstlisting}
-expected = json.loads(Path("expected.json").read_text())
-# PASS when the program matches expected
-\end{lstlisting}
-\vspace{4mm}
-{\fontsize{15}{19}\selectfont The worker can write it.\\The checker treats it as the answer key.\par}
-\takeaway{The judge is the checker plus everything it reads.}
-\scope{Context, not measured here: METR, Recent Frontier Models Are Reward Hacking, June 2025.}
-\note{So why did the checker trust that file? Because of this one line. The checker loads expected.json from its working directory. The file looks like ordinary project data. Nothing about it is special, except that the checker obeys it.
-
-The worker can write this file. The checker treats it as the answer key. So the worker's write permission included the acceptance criteria. The judge is not just the checker. The judge is the checker plus everything it reads. You can lock every executable in the pipeline and still leave part of the judge on the worker's side of the line.
-
-One honest limit. This recording shows the write is allowed. A script cannot show whether a model would choose it. METR's report shows models sometimes make that kind of move on their own tasks. It is not a measurement of ours.}
-\end{frame}
-
-\renewcommand{\track}{07  /  SAME PROGRAM}
-\begin{frame}[t]
-% title: Controller-owned criteria
-% time: 06:45-07:45
-% cue: Say REJECT first. Then who owns the answers.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{Controller-owned criteria}
-{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.4}\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}p{.28\textwidth}p{.28\textwidth}p{.36\textwidth}@{}}
-\textcolor{acid}{Program} & \textcolor{acid}{Criteria} & \textcolor{acid}{Verdict}\\\midrule
-\texttt{76fcb0904f51} & controller-owned cases & \textcolor{acid}{REJECT}\\
-\end{tabular}}
-\takeaway{The same bad program is rejected.}
-\scope{Separate acceptance path. Controller compares outputs with its own cases.}
-\note{Now the repair. Same program, the one that prints 200 for everything. REJECT.
-
-What changed is who owns the answers. The checker in the failing run also had a fresh sandbox of its own, with the workspace mounted read-only and no network, and it still went green, because it read its answers from the workspace. The controller runs the same program in a sandbox that holds only the program, reads back the output, and compares it in its own process against cases it holds itself. It never reads expected.json.
-
-The worker's edit is still sitting in the workspace. It just no longer counts.}
-\end{frame}
-
-\renewcommand{\track}{08  /  THE FIX}
-\begin{frame}[t]
-% title: The corrected program
-% time: 07:45-08:30
-% cue: Different hash. Five numbers. ACCEPT.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{The corrected program}
+\frametitle{``A real model wouldn't.''}
 \vspace{2mm}
-{\fontsize{16}{20}\selectfont Program \texttt{5ead8eab70e0}\par}
+{\fontsize{15}{19}\selectfont Asked to make code faster,\\o3 changed something else.\par}
 \vspace{3mm}
-{\ttfamily 401\quad 200\quad 403\quad 200\quad 401\par}
-\vspace{4mm}
-{\color{acid}\fontsize{28}{32}\selectfont\bfseries ACCEPT}
-\takeaway{The legitimate task still passes.}
-\scope{Same controller-owned cases. A different program.}
-\note{A repair also has to let real work through. Here is the corrected program, with a different hash. It returns 401 without a valid login, 403 for an ordinary user, and 200 only where access is allowed. Same controller-owned cases. ACCEPT.
+\uncover<2->{{\color{muted}\fontsize{11}{14}\selectfont It overwrote the timing function that measured it,\\so a real second read as a millisecond. On another task,\\it patched the evaluator so every submission passed.\par}}
+\par\vfill
+\uncover<2->{{\color{paper}\fontsize{13}{16}\selectfont It changed the stopwatch.\par}}
+\scope{METR, Recent Frontier Models Are Reward Hacking, June 2025. Context, not measured here.}
+\note{Now the objection you have been holding. Our agent is a script. It did exactly what we wrote. Would a real model do this?
 
-That is the pair you want from any fix. The bad program is rejected, the good program is accepted, and the answers are owned by someone other than the worker.}
+In June 2025, the AI evaluation nonprofit METR published what frontier models did on tasks they were scored on. OpenAI's o3 was asked to make a program run faster. It changed something else. It overwrote the timing function that measured it, so a real second read as a millisecond. On another task, it patched the evaluator so that every submission passed. Nobody asked it to. In a separate test, telling it not to cheat barely changed how often it planned to.
+
+It changed the stopwatch.}
 \end{frame}
 
-\renewcommand{\track}{09  /  PUBLISH}
+\renewcommand{\track}{07  /  THE JUDGE}
 \begin{frame}[t]
-% title: One unused approval
-% time: 08:30-10:00
-% cue: Say unused. Then denied, denied, published, denied.
+% title: Part of the judge was inside the sandbox
+% time: 06:15-07:15
+% cue: Why did the door stay open? Walk the picture. Point at expected.json. End on the judge.
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{Part of the judge was inside the sandbox}
+\vspace{1mm}
+\centering
+\begin{tikzpicture}[font=\small, box/.style={draw, rounded corners=2pt, minimum height=7mm, inner sep=2mm, align=center, text=paper}]
+  \draw[danger, dashed, thick, rounded corners=4pt] (-4.1,-1.75) rectangle (1.55,1.35);
+  \node[danger, anchor=north west, font=\scriptsize\bfseries] at (-4.0,1.3) {AGENT'S SANDBOX};
+  \node[box, draw=paper] (agent) at (-3.05,-0.1) {agent};
+  \node[box, draw=muted] (code) at (-0.55,0.6) {code};
+  \node[box, draw=acid, thick] (key) at (-0.55,-0.85) {expected.json};
+  \node[box, draw=paper] (checker) at (4.25,-0.85) {checker\\[-1pt]{\scriptsize\color{muted}read-only}};
+  \draw[-{Latex}, muted] (agent) -- (code);
+  \draw[-{Latex}, danger, thick] (agent) -- node[below left=-1pt, font=\scriptsize, text=danger]{writes} (key);
+  \draw[-{Latex}, acid, thick] (checker) -- node[above, font=\scriptsize, text=acid]{reads} (key);
+  \draw[acid, densely dotted, thick, rounded corners=4pt] (-1.85,-1.45) rectangle (5.45,-0.2);
+  \node[acid, font=\scriptsize\bfseries, anchor=north east] at (5.45,-1.5) {THE JUDGE};
+\end{tikzpicture}
+\takeaway{The judge is the checker plus everything it reads.}
+\note{So why did the door stay open? Here is the whole thing in one picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only, exactly as we built it. But the checker reaches into the workspace to read its answer key.
+
+o3 changed its judge from inside the scorer. Our agent changed what its judge reads. Same move: change the judge, not the work.
+
+The judge is not the checker. The judge is the checker plus everything it reads. And part of your judge was inside the sandbox.}
+\end{frame}
+
+\renewcommand{\track}{08  /  YOUR ANSWER KEYS}
+\begin{frame}[t]
+% title: Where is your answer key?
+% time: 07:15-08:45
+% cue: Coding list. Then the procurement agent. Then: you cannot take the pen away.
+% source: https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
+\frametitle{Where is your answer key?}
+\vspace{2mm}
+{\tablefont
+\begin{tabular}{@{}p{.25\textwidth}>{\raggedright\arraybackslash}p{.67\textwidth}@{}}
+\textcolor{acid}{Coding agents} & tests, snapshots, golden files, the CI workflow\\\addlinespace[2mm]
+\textcolor{acid}{Other agents} & the approved vendor list a payment check reads; policies, evaluation sets, guardrail configs; whatever a monitor or an LLM judge reads\\
+\end{tabular}}
+\takeaway{If your agent can write one, it grades itself.\\Often, writing it is the job.}
+\scope{Where to look, not what we measured.}
+\note{Now look for the answer key in your own systems. For coding agents, it is the tests, the snapshots, the golden files, the CI workflow.
+
+Outside code, picture a procurement agent. Part of its job is keeping the approved vendor list current. It is asked to pay an invoice, and the payment check blocks it: the vendor is not on the list. So the agent adds the vendor. The payment check goes green. Nothing escaped. The same shape shows up wherever a check reads something the agent can write: the policy a guardrail checks, the notes a monitor reads, the summary an LLM judge grades.
+
+Some of these you can lock, and you should. For the rest, you cannot just take the pen away. Writing tests is the coding agent's job. Keeping that list is the procurement agent's job. The permission is the work.}
+\end{frame}
+
+\renewcommand{\track}{09  /  THE RULE}
+\begin{frame}[t]
+% title: The rule
+% time: 08:45-10:00
+% cue: The rule, slowly. Then back to the ticket: REJECT, the door never opens, ACCEPT.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{One unused approval}
+\frametitle{The rule}
+\vspace{1mm}
+{\fontsize{15}{19}\selectfont\bfseries The agent may propose what counts as correct.\\It must never be the last writer of what judges it.\par}
+\vspace{4mm}
 {\tablefont
-\begin{tabular}{@{}p{.08\textwidth}p{.62\textwidth}p{.22\textwidth}@{}}
-1 & Bad bytes, approval still unused & \textcolor{acid}{DENIED}\\\addlinespace
-2 & Approved bytes, another destination & \textcolor{acid}{DENIED}\\\addlinespace
-3 & Approved bytes, named destination & \textcolor{acid}{PUBLISHED}\\\addlinespace
-4 & Approved bytes, approval now used & \textcolor{acid}{DENIED}\\
+\begin{tabular}{@{}p{.66\textwidth}p{.26\textwidth}@{}}
+Same broken code, answer key owned by the controller & \textcolor{acid}{REJECT}\\\addlinespace
+Corrected code, same answer key & \textcolor{acid}{ACCEPT}\\
 \end{tabular}}
-\takeaway{One approval: these bytes, this place, once.}
-\scope{Local gate. Exact bytes and the spent approval, one transaction.}
-\note{Accepting a program is not the same as shipping it. Between the verdict and the release, there is one more place to swap bytes.
+\scope{Same recording. How the release binds these exact bytes: appendix A8.}
+\note{So here is the rule. The agent may propose what counts as correct. It must never be the last writer of what judges it. Its new tests, its new vendor, are proposals. Something the agent cannot write decides whether they count: a reviewer, or a controller that owns the criteria.
 
-The controller issues one approval for the corrected program. First, the bad program is offered under that fresh, unused approval. DENIED. Next, the approved bytes are pointed at a different destination. DENIED, because an approval names one place. Then the approved bytes go to the named place. PUBLISHED. Then the same bytes again. DENIED, because the approval is spent.
-
-The first row is the one that matters. The approval was still unused, so the refusal came from checking the bytes, not from replay protection. An earlier version of our own test tried the bad bytes only after the approval was spent, so it could not tell which check refused them.
-
-Publication here is a local store, a stand-in for a registry or a merge. It holds exactly the approved bytes.}
+Back to our ticket. In the same recording, we also ran it that way: the answer key belongs to the controller, where the agent cannot write. Same broken code: REJECT. The door never opens. The agent's edit is still sitting in the workspace. It just no longer counts. Then the corrected code: ACCEPT. Now the ticket is actually done.}
 \end{frame}
 
-\renewcommand{\track}{10  /  THREE QUESTIONS}
+\renewcommand{\track}{10  /  MONDAY}
 \begin{frame}[t]
-% title: Three questions for another system
-% time: 10:00-11:30
-% cue: Read the three questions. Do not name a vendor.
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
-\frametitle{Three questions for another system}
-{\fontsize{14}{18}\selectfont
-1. Who can change the inputs that define acceptance?\par
-\vspace{3mm}
-2. Which bytes were the candidate, the checker, and the criteria?\par
-\vspace{3mm}
-3. Does publication store exactly the approved bytes?\par}
-\takeaway{Start with what your checks read that your agent can write.}
-\note{Take three questions home. Who can change the inputs that define acceptance? Which exact bytes were the candidate, the checker, and the criteria? And does publication store exactly the approved bytes?
-
-The first question has a concrete starting point. List everything your acceptance step reads or looks for: files, config, environment, services. List what your agent can write. Any overlap other than the candidate itself is your finding. And keep the candidate out of the checker's process, so it can only answer, not grade. That is the route METR's o3 took: the scorer ran its code. Then add a tripwire, not a policy: hash the answer key when the task starts and again at the verdict. On this recording, that hash moved.
-
-None of that needs model telemetry. It will not tell you a change was malicious, only that the worker wrote what judged it. And these questions inspect a pipeline. On their own, they do not show that any particular product has this problem.}
-\end{frame}
-
-\renewcommand{\track}{11  /  TITLE PAYOFF}
-\begin{frame}[t]
-% title: The sandbox held
-% time: 11:30-13:15
-% cue: Say what did not happen. Name the allowed write. Clock and answer key: two routes, one move.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{The sandbox held}
-{\fontsize{14}{18}\selectfont
-Checker overwrite \textcolor{acid}{DENIED}.\\[2mm]
-Program bytes stayed fixed.\\[2mm]
-Checker bytes stayed fixed.\par}
+% title: One question for Monday
+% time: 10:00-11:15
+% cue: Before your next ticket ships. The question. Pause. Three moves.
+% source: https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
+\frametitle{One question for Monday}
+\vspace{1mm}
+{\fontsize{18}{22}\selectfont\bfseries What does your judge read\\that your agent can write?\par}
 \vspace{5mm}
-{\color{danger}\fontsize{20}{24}\selectfont\bfseries
-The allowed workspace write changed the decision.\par}
-\takeaway{Never let the agent be the last writer of what judges it.}
-\note{Back to the title: your agent escaped without escaping the sandbox. The sandbox part is literal. Nothing got out. The checker overwrite was denied, and no protected byte changed.
+{\fontsize{11.5}{15}\selectfont
+{\color{acid}1}\ \ List it: everything your checks read, minus the code under test.\par\vspace{1.5mm}
+{\color{acid}2}\ \ Move the copy that counts where the agent cannot write.\par\vspace{1.5mm}
+{\color{acid}3}\ \ Keep the code under test out of the judge's process.\par}
+\scope{No model telemetry needed. An inventory and an owner.}
+\note{Before your next ticket ships, one question. What does your judge read that your agent can write?
 
-The allowed workspace write changed the decision. The answer key was in the workspace, and the checker obeyed it. That is the escape in the title: the worker never left the sandbox, it escaped the check. In METR's report, o3's code ran inside the scorer and swapped its clock. Our worker rewrote the answer key instead. Two routes, one move: change the judge, not the work.
+Three moves. First, list it. Every file, config, environment variable and service your checks read. Cross off the code under test. Anything left that the agent can write is your finding. Second, move the copy that counts to where the agent cannot write. When the agent has to change it, the change is a proposal, and a reviewer decides, not the green check. Third, keep the code under test out of the judge's process, so it can only answer, not grade. That is the route o3 used.
 
-So isolation and acceptance are different boundaries. A sandbox answers one question: what can this process touch? Acceptance asks another: can anything it touches decide that its own work is done? In a real repository, that answer key lives in the tests, the snapshots and the CI config, and writing tests is part of the agent's job. So taking the write away is not the fix. The agent may propose what counts as correct. It must never be the last writer of what judges it.}
+None of this needs model telemetry. It needs an inventory and an owner.}
 \end{frame}
 
-\renewcommand{\track}{12  /  CLOSE}
+\renewcommand{\track}{11  /  CLOSE}
 \begin{frame}[plain,t]
-% title: The worker changed what counted as correct
-% time: 13:15-14:00
-% cue: Repository first. Then the question, and its three-part answer. Thank you. Leave PASS up.
+% title: The door stayed open
+% time: 11:15-12:00
+% cue: Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\vspace{10mm}
+{\fontsize{24}{30}\selectfont\bfseries The sandbox held.\\The checker held.\\{\color{danger}The door stayed open.}\par}
 \vspace{8mm}
-{\fontsize{22}{27}\selectfont\bfseries The sandbox held.\\The worker changed\\what counted as correct.\par}
-\vspace{6mm}
-{\ttfamily program \texttt{76fcb0904f51}\\
-checker \texttt{f5d8d3468bbe}\\
-answer key \texttt{0494f1a01dee} $\longrightarrow$ \texttt{390e5e764916}\\[2mm]
-}\vspace{1mm}{\color{acid}\fontsize{28}{32}\selectfont\bfseries PASS}
+{\color{muted}\fontsize{13}{16}\selectfont Your Agent Escaped Without Escaping the Sandbox\par}
 \vfill
 {\color{acid}\ttfamily\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}\par}
-{\color{muted}\small Pier Sixty\quad 21 October 2026\par}
-\note{The code and the Linux recordings are in the repository on the screen. Every hash on these slides is in there, and you can rerun the whole thing on a disposable Linux machine with bubblewrap.
+{\color{muted}\small Yossi Eliaz\quad Pier Sixty\quad 21 October 2026\par}
+\note{The code and the recordings are in the repository on the screen. Every hash you saw is in there, and you can rerun all of it.
 
-So, what changed when the test went green?
+Now remember the ticket. Lock down the admin page.
 
-Not the program. Not the checker. The answer key.
+The sandbox held. The checker held. The door stayed open. The agent never had to leave the sandbox. It only had to change what counted as correct.
 
-Thank you.}
+Your agent escaped without escaping the sandbox. Thank you.}
 \end{frame}
 
 \appendix
@@ -453,5 +434,43 @@ make test && make record-all && make final
 \end{lstlisting}
 \scope{Disposable Linux. The deck reads recordings.}
 \note{Run the fixtures on disposable Linux with bubblewrap. The deck reads those recordings. Poisoned pipeline execution, OWASP CICD-SEC-4, is the public name for a CI job made to run commands an attacker changed in the repository. Ours is its data-only neighbor: the checker ran unchanged and obeyed a file the worker rewrote. Anthropic's reward-hacking study is prior motivation and its measurements stay with that study. Reproducing the talk needs no GitHub token.}
+\end{frame}
+\renewcommand{\track}{A7  /  PAIRED RUN}
+\begin{frame}[t,fragile]
+% title: The paired run
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{The paired run}
+{\fontsize{8}{10}\selectfont\renewcommand{\arraystretch}{1.35}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{.16\textwidth}p{.24\textwidth}p{.24\textwidth}p{.22\textwidth}p{.08\textwidth}@{}}
+ & \textcolor{acid}{Program} & \textcolor{acid}{Checker} & \textcolor{acid}{Answer key} & \textcolor{acid}{}\\\midrule
+Honest & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \texttt{0494f1a01dee} & FAIL\\
+Edited & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \texttt{390e5e764916} & \textcolor{acid}{PASS}\\
+\end{tabular}}
+\vspace{3mm}
+\begin{lstlisting}
+{"input":"admin:none","output":401}
+{"input":"admin:none","output":200}
+\end{lstlisting}
+\takeaway{The worker changed what counted as correct.}
+\scope{SHA-256 prefixes of the bytes in the isolated recording.}
+\note{The paired run behind slides 4 and 5. Same checker bytes, same launch, same program. The honest answer key gives exit 1 with FAIL. The edited answer key gives exit 0 with PASS. The answer key is the only variable. Every prefix is a full SHA-256 in the isolated recording.}
+\end{frame}
+
+\renewcommand{\track}{A8  /  RELEASE}
+\begin{frame}[t]
+% title: One unused approval
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{One unused approval}
+{\tablefont
+\begin{tabular}{@{}p{.08\textwidth}p{.62\textwidth}p{.22\textwidth}@{}}
+1 & Bad bytes, approval still unused & \textcolor{acid}{DENIED}\\\addlinespace
+2 & Approved bytes, another destination & \textcolor{acid}{DENIED}\\\addlinespace
+3 & Approved bytes, named destination & \textcolor{acid}{PUBLISHED}\\\addlinespace
+4 & Approved bytes, approval now used & \textcolor{acid}{DENIED}\\
+\end{tabular}}
+\takeaway{One approval: these bytes, this place, once.}
+\scope{Local gate. Exact bytes and the spent approval, one transaction.}
+\note{Four attempts on one approval, in the recorded order. Bad bytes while the approval is still unused: denied. The approved bytes to another destination: denied. The approved bytes to the named destination: published. The same again: denied as replay. Both refusals happen before the approval is spent, so neither can be credited to replay protection. An earlier version of our own test got that order wrong.}
 \end{frame}
 \end{document}

@@ -5,22 +5,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_WPM = 150
+MAIN, APPENDIX, TARGET = 11, 8, '12:00'
+WORDS = (1000, 1450)
 
 
 def main():
     source = (ROOT / 'slides/talk.tex').read_text()
     frames = list(re.finditer(r'\\begin\{frame\}(.*?)\\end\{frame\}', source, re.S))
     appendix = source.index(r'\appendix')
-    if len(frames) != 18 or sum(f.start() < appendix for f in frames) != 12:
-        raise SystemExit('Require 12 main slides and 6 appendix slides')
+    if len(frames) != MAIN + APPENDIX or sum(f.start() < appendix for f in frames) != MAIN:
+        raise SystemExit(f'Require {MAIN} main slides and {APPENDIX} appendix slides')
     script = ['# Your Agent Escaped Without Escaping the Sandbox', '',
               '**Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**', '',
               'Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. '
-              'Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. '
+              f'Main route: slides 1-{MAIN}. Delivery budget: {TARGET} of a 15-minute slot; the rest is margin. '
               'Timings are rehearsal targets, not measured delivery.', '']
     notes = ['# Slide-by-slide speaker notes', '',
-             'Generated from `slides/talk.tex`. Slides 1-12 are the main talk. '
-             'Slides 13-18 are for Q&A. Present the PDF offline.', '']
+             f'Generated from `slides/talk.tex`. Slides 1-{MAIN} are the main talk. '
+             f'Slides {MAIN + 1}-{MAIN + APPENDIX} are for Q&A. Present the PDF offline.', '']
     spoken = []
     previous_end = '00:00'
     for number, match in enumerate(frames, 1):
@@ -55,13 +57,13 @@ def main():
                   cues[0] if cues else 'Use only in Q&A.', '', words, '',
                   '[Sources]', *sources, '[/Sources]', '']
     count = len(' '.join(spoken).split())
-    if previous_end != '14:00' or not 1200 <= count <= 1450:
-        raise SystemExit(f'Expected 14:00 and 1200-1450 words; got {previous_end}, {count}')
+    if previous_end != TARGET or not WORDS[0] <= count <= WORDS[1]:
+        raise SystemExit(f'Expected {TARGET} and {WORDS[0]}-{WORDS[1]} words; got {previous_end}, {count}')
     script.insert(6, f'Spoken manuscript: {count:,} words.')
     (ROOT / 'TALK.md').write_text('\n'.join(script))
     (ROOT / 'SPEAKER_NOTES.md').write_text('\n'.join(notes))
     (ROOT / 'slides' / 'notes.tex').write_text(notes_document(frames, appendix))
-    print(f'Canonical LaTeX: 12 main + 6 appendix slides; {count} spoken words; 14:00 target.')
+    print(f'Canonical LaTeX: {MAIN} main + {APPENDIX} appendix slides; {count} spoken words; {TARGET} target.')
 
 
 def tex_escape(text):
@@ -91,7 +93,7 @@ def notes_document(frames, appendix):
 {\LARGE\bfseries Your Agent Escaped\\ Without Escaping the Sandbox}\\[8pt]
 {\large The agent changes the answers.\\ The check goes green.}\\[8pt]
 {\small Yossi Eliaz, PhD \textbullet\ Incredibuild \textbullet\ 21 October 2026}\\[2pt]
-{\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--12 are the talk. Slides 13--18 are for questions.}
+{\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--MAINN are the talk. Slides APPA--APPB are for questions.}
 \end{center}
 ''']
     for number, match in enumerate(frames, 1):
@@ -105,14 +107,15 @@ def notes_document(frames, appendix):
         paragraphs = [tex_escape(block.strip()) for block in re.split(r'\n\s*\n', note) if block.strip()]
         clock = tex_escape(words[0]) if words else 'Questions'
         direction = tex_escape(cue[0]) if cue else 'Use only in questions.'
-        if number == 13:
+        if number == MAIN + 1:
             parts.append('\\newpage\n\\section*{Questions}\n')
         parts.append(f'\\section*{{{number}. {title}}}\n')
         parts.append(f'{{\\sffamily\\color{{acid}}{clock}}}\\par\n')
         parts.append(f'{{\\itshape {direction}}}\\par\n')
         parts.append('\n\n'.join(paragraphs) + '\n')
     parts.append(r'\end{document}' + '\n')
-    return ''.join(parts)
+    return (''.join(parts).replace('MAINN', str(MAIN))
+            .replace('APPA', str(MAIN + 1)).replace('APPB', str(MAIN + APPENDIX)))
 
 
 if __name__ == '__main__':
