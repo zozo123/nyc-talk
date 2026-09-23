@@ -64,7 +64,10 @@ def validate_rendered_digests(records, root=ROOT):
              digest(canonical(WORKER_EXPECTED))}
     known |= set(re.findall(r'[0-9a-f]{64}', json.dumps(records)))
     for name in ('slides/talk.tex', 'paper/paper.tex'):
-        for token in sorted(set(re.findall(r'[0-9a-f]{12,64}', (root / name).read_text()))):
+        # A URL can carry a long hex-looking run (an archive timestamp, a commit
+        # id in a link) that is not a rendered digest; drop links before scanning.
+        text = re.sub(r'https?://[^\s}]+', '', (root / name).read_text())
+        for token in sorted(set(re.findall(r'[0-9a-f]{12,64}', text))):
             if not any(value.startswith(token) for value in known):
                 raise ValueError('Unknown digest in ' + name + ': ' + token)
 

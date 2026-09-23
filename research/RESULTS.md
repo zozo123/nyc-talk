@@ -7,7 +7,7 @@ Run `make record-all` on disposable Linux, then `make evidence`. Each record bin
 | Linux lab | `evidence/results.json` | 30 | Actual namespace/mount observations, fixture-token HTTP access, stored loopback uploads, broker denials, positive controls, original parser/gate/history cases, destination-bound approvals |
 | Read-only checker experiment | `evidence/isolated-factory.json` | 13 | Direct checker write denied; unchanged checker and candidate; mutable answer key changes FAIL to PASS; independent rejection and positive control; gate-derived reject; fresh substitution, wrong-destination refusal, exact-byte local publication, replay |
 | Local factory protocol | `evidence/factory-results.json` | 8 | Local acceptance/rejection, gate-derived decision, fresh substitution, wrong-destination refusal and replay, two deliberately weakened detectors; no OS-isolation claim |
-| Regression suite | `tests/test_factory.py`, `tests/test_evidence.py`, `tests/test_redteam.py`; CI test log | 48 | Controller protocol, fail-closed evidence and red-team decision-integrity regressions, including concurrent nonce use |
+| Regression suite | `tests/test_factory.py`, `tests/test_evidence.py`, `tests/test_redteam.py`; CI test log | 49 | Controller protocol, fail-closed evidence and red-team decision-integrity regressions, including concurrent nonce use |
 | Archived gate audit | `evidence/baseline-audit.json` | one reproduction | Internal API can retain stale digest after bytes mutate; requires controller-object access |
 
 These are assertion counts, not vulnerability or attack-success counts. A passing deliberately weakened check means the unwanted acceptance was successfully reproduced.
@@ -21,11 +21,11 @@ These are assertion counts, not vulnerability or attack-success counts. A passin
 | Same bytes | Controller-owned policy | REJECT |
 | Corrected handler | Controller-owned policy | ACCEPT |
 
-The checker SHA-256 before and after is recorded, not merely asserted by a constant. The worker's direct write attempt is denied by a read-only mount. The candidate digest is also unchanged. The independent expected values are `[401, 200, 403, 200, 401]`; the bad candidate emits five 200s.
+Both checker rows use one identical launch (same interpreter flags, working directory and mounts), and the record keeps both exit codes: `weak_before` is exit 1 with FAIL, `weak_after` is exit 0 with PASS, so the answer key is the only variable between them. The checker SHA-256 before and after is recorded, not merely asserted by a constant. The worker's direct write attempt is denied by a read-only mount. The candidate digest is also unchanged. The independent expected values are `[401, 200, 403, 200, 401]`; the bad candidate emits five 200s.
 
 ## Publication controls
 
-A fresh unused approval is first offered with bad bytes: denied. The same approval then publishes the correct bytes: accepted and read back from SQLite. Reuse is denied. This ordering distinguishes digest enforcement from a test that passes only because an earlier operation already consumed the nonce.
+A fresh unused approval is first offered with bad bytes: denied. The same still-unused approval is then offered the approved bytes for a different destination: denied. It then publishes the approved bytes at the named destination: accepted and read back from SQLite. Reuse is denied. This ordering distinguishes digest enforcement from a test that passes only because an earlier operation already consumed the nonce.
 
 ## Explicit non-results
 

@@ -2,11 +2,11 @@
 
 ## Is this a flaw in an Incredibuild product?
 
-No. Everything shown is a synthetic research fixture written for this talk, and the repository contains its full source. It is not a finding in any Incredibuild product and it is not a customer report. Product-specific questions are welcome afterward rather than on stage. Give this answer the same way every time it is asked, including in the hallway.
+No. Everything shown is a synthetic research fixture written for this talk, and the repository contains its full source. It is not a finding in any Incredibuild product and it is not a customer report. Product-specific questions are welcome afterward rather than on stage.
 
 ## Is this a new vulnerability or just least privilege?
 
-These are controlled reproductions of known mechanisms, and the pipeline-scale version has a public name: poisoned pipeline execution, a CI job running an attacker-influenced file. We do not claim a vendor zero-day or novelty for least privilege. What the paired run adds is a measurement: the candidate and checker stay fixed while ownership of the answer key changes the decision. And the usual least-privilege fix does not fit, because a coding agent needs this write to do its job. You cannot remove the permission to edit tests; you can move who decides whether the edited tests are the ones that count. We also publish a counterexample in our own original controller API.
+These are controlled reproductions of known mechanisms. The closest public name is poisoned pipeline execution, OWASP CICD-SEC-4: someone with repository write, and no access to the build environment, gets the pipeline to run their commands, through the CI config or files it references such as test code. Ours is its data-only neighbor. The program and checker bytes stayed identical, and the only file the worker changed was an answer key the checker obeys. Nothing new had to run. We do not claim a vendor zero-day or novelty for least privilege. What the paired run adds is a measurement: the candidate and checker stay fixed while ownership of the answer key changes the decision. And the usual least-privilege fix does not fit, because a coding agent needs this write to do its job. You cannot remove the permission to edit tests; you can move who decides whether the edited tests are the ones that count. We also publish a counterexample in our own original controller API.
 
 ## Where is the LLM?
 
@@ -14,7 +14,7 @@ It is deliberately absent. Deterministic worker actions isolate the capability b
 
 ## Are real agents doing this today?
 
-That is not what this recording measures, and we do not report a rate. There is separate public research: Anthropic's November 2025 study of reward hacking describes models taking shortcuts on coding tasks, including writing a `conftest.py` that makes pytest report failures as passes, which is a worker-written file the harness obeys, the same shape as `expected.json` here. Its training setup and results belong to that study and are not transferred to ours. What we can say is narrower and does not depend on any model: the permission such a shortcut needs is already granted in the configuration we recorded, and finding it takes an inventory, not telemetry.
+That is not what this recording measures, and we do not report a rate. The closest public research is Anthropic's November 2025 reward-hacking paper (MacDiarmid et al., arXiv 2511.18397), and its setup matters. The researchers first gave models information about specific hacks, through synthetic documents or a prompt, then trained them with reinforcement learning on real Claude coding environments chosen because they were vulnerable. One hack the models learned is a `conftest.py` that makes pytest report failures as passes: a worker-written file the harness obeys, the same family as `expected.json` here. The paper says its models do not discover these hacks unaided, so it is not a measurement of deployed agents, and its results stay with that study. It does report milder reward hacking, such as test hardcoding, in real Claude Sonnet 3.7 training. What we can say is narrower and does not depend on any model: the permission such a shortcut needs is already granted in the configuration we recorded, and finding it takes an inventory, not telemetry.
 
 ## Did you really lock the checker?
 
@@ -34,15 +34,15 @@ No. The worker may propose criteria; it must not be what applies them. A propose
 
 ## What if the candidate cheats from inside the test process?
 
-Then no shared file is involved, and that is a different class: exiting early with status 0, or returning an object whose equality check always says yes. The repaired path is built against it rather than tested against it. Each case runs the candidate in its own sandboxed process with a read-only `/candidate` mount and no network; the controller reads back only its printed output, and `judge` in `factory/core.py` accepts a complete list of plain integers or produces no approval at all. An early exit or a non-integer is no approval, and an always-equal object cannot survive being printed as JSON. That is why slide 10 says to keep the candidate out of the checker's process.
+Then no shared file is involved, and that is a different class: exiting early with status 0, or returning an object whose equality check always says yes. Neither checker in this recording is exposed to it, the weak one included: both run the candidate as its own process and act only on its exit status and what it prints, and an always-equal object cannot survive being printed as JSON. The repaired path adds a separate sandbox per case with a read-only `/candidate` mount and no network. In the isolated run, a non-zero exit, empty output or non-JSON text aborts the run before anything is signed; a parseable non-integer reaches `judge` in `factory/core.py`, which returns no approval. Locally, all of these become typed observations that `judge` refuses, and `tests/test_factory.py` covers non-JSON output and timeouts. None of this is exercised by the thirteen isolated checks. So keeping the candidate out of the checker's process, as slide 10 says, is necessary, but it is not what fixed this run: the weak checker already did it and still went green.
 
 ## Our agent can edit the CI workflow itself. Is that the same thing?
 
-Yes, at pipeline scale. A workflow file under `.github/workflows` defines which checks run and what counts as passing, so a worker that can write it holds the same kind of pen as a worker that can write `expected.json`. The question from slide 10 transfers directly. We did not test a CI system here, so the question carries over and the measurement does not.
+Yes, at pipeline scale, and that case is direct poisoned pipeline execution. A workflow file under `.github/workflows` defines which checks run and what counts as passing, so a worker that can write it holds the same kind of pen as a worker that can write `expected.json`. The question from slide 10 transfers directly. We did not test a CI system here, so the question carries over and the measurement does not.
 
 ## Why is another VM insufficient?
 
-A second machine can still consume the worker's expected-results file. The relevant independence is the ownership of authoritative inputs, comparison, credentials and publication capability. Our multi-agent slide is an architectural inference, not an empirical benchmark.
+A second machine can still consume the worker's expected-results file. The relevant independence is the ownership of authoritative inputs, comparison, credentials and publication capability. The multi-agent point is an architectural inference, not an empirical benchmark.
 
 ## What stops the worker editing the controller's criteria?
 
@@ -66,7 +66,7 @@ No. The history check detects a rewrite relative to a separately retained contro
 
 ## How would we see this in our own pipeline?
 
-Two signals, neither of which needs model telemetry. The static one is an inventory question: take the set of paths your acceptance decision reads, intersect it with the set of paths the worker can write, and treat a non-empty intersection as the finding. The in-run one is a criteria file whose bytes change between task start and verdict inside the same run; on this recording that is the answer key moving from `0494f1a01dee` to `390e5e764916` while the program and checker hashes hold. Both are computable from a file inventory and two digests. Neither tells you the change was malicious, only that the thing which defined success was written by the thing being judged.
+Two signals, neither of which needs model telemetry. The static one is an inventory question: list the paths your acceptance decision reads, list the paths the worker can write, remove the candidate itself, and treat anything left in both lists as the finding. Keep the candidate out of the checker's process too, because in-process shortcuts such as an early exit or an always-equal object touch no shared file. The in-run one is a tripwire, not a policy: hash the criteria file at task start and again at the verdict; on this recording that is the answer key moving from `0494f1a01dee` to `390e5e764916` while the program and checker hashes hold. Both come from a file inventory and two digests. Neither tells you a change was malicious. The first shows the worker could write what judges it, and the second shows it did.
 
 ## Does this apply to MCP and tool calls?
 
@@ -78,7 +78,7 @@ Mostly beside this result rather than inside it. Injection is about getting the 
 
 ## Doesn't SLSA already solve this?
 
-SLSA v1.2 names the right requirement, and this run is what skipping it looks like. Provenance binds a producer to bytes; whether those bytes are good is decided by expectations the verifier supplies, not by the attestation. On slide 4 a fully valid attestation over the green run would verify, because the same side that produced the program also authored `expected.json`. Our context-bound gate is an illustrative reference protocol, not SLSA certification, and we claim no novelty over trusted provenance. What the paired run adds is the measurement of where the expectations migrated: into the worker's workspace, while the checker bytes stayed locked.
+No. SLSA v1.2 checks an artifact against its provenance, and the provenance against expectations: builder identity, canonical source repository, build type, external parameters. That says where the bytes came from, not whether they are correct. That step also assumes an adversary who cannot write the source repository, and a coding agent is that writer. So on slide 4 a fully valid attestation over the green run would verify, because `expected.json` sits in the workspace the worker writes. The nearest SLSA idea is protection against unilateral change, two-party review on its source track; `expected.json` had none. Our gate is an illustrative reference protocol, not SLSA certification, and we claim no novelty over trusted provenance. The paired run measures where the acceptance criteria moved: into the worker's workspace, while the checker bytes stayed locked.
 
 ## What did you find in your own gate?
 
@@ -90,7 +90,7 @@ Three properties, each with a check. The gate has no parameter through which a c
 
 ## Could your substitution test have passed for the wrong reason?
 
-That was an important audit question. The corrected test presents different bytes with an unused approval first, then publishes the intended bytes with that same approval, then attempts replay. A consumed nonce cannot mask a missing artifact check in the first step.
+The old one could have, and the defect was in our test, not the gate: it published first and tried the substitute afterwards, so a spent nonce could have hidden a missing byte check. The corrected test, on slide 9, runs four steps on one approval. Different bytes while the approval is unused: DENIED. The approved bytes to another destination, approval still unused: DENIED. The approved bytes to the named destination: PUBLISHED. The same again: DENIED as replay. Both refusals happen before the nonce is spent, so neither can be credited to replay protection.
 
 ## What about concurrency and restarts?
 
