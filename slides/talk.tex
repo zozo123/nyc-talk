@@ -130,26 +130,22 @@ edited key & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \textcolor{acid}{PA
 \end{frame}
 
 \renewcommand{\track}{05 / SECOND ROUTE}
-\begin{frame}[t,fragile]
+\begin{frame}[t]
 % title: Real models already attack the judge by changing the stopwatch
 % time: 04:55-05:55
 % cue: Use METR as context, not as our measurement. Connect routes.
 % source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
 \frametitle{Real models already attack the judge by changing the stopwatch}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\textwidth}\kicker{ROUTE A: DATA THE SCORER READS}\begin{lstlisting}
-expected: 401
-observed: 200
-verdict: FAIL
-\end{lstlisting}\end{column}
-\begin{column}{.48\textwidth}\kicker{ROUTE B: CODE THE SCORER RUNS}\begin{lstlisting}
-time.time = fake_fast_time
-score() -> looks 1000x faster
-verdict: PASS
-\end{lstlisting}\end{column}
-\end{columns}
-\takeaway{Different routes. Same move: change the judge, not the work.}
-\scope{METR reported reward-hacking examples in 2025. This deck reports no rate.}
+\vspace{1mm}
+\begin{tikzpicture}[box/.style={draw,rounded corners=2pt,minimum width=54mm,minimum height=26mm,align=center,text=paper,inner sep=2mm}, arr/.style={-{Latex},thick,color=dim}]
+  \node[box,draw=gold] (data) at (2.9,0) {{\color{gold}\bfseries ROUTE A}\\[1mm]data the scorer reads\\[1mm]{\ttfamily\footnotesize expected.json}};
+  \node[box,draw=cyan] (code) at (9.0,0) {{\color{cyan}\bfseries ROUTE B}\\[1mm]code the scorer runs\\[1mm]{\ttfamily\footnotesize time.time = fake}};
+  \node[draw=warn,rounded corners=2pt,minimum width=72mm,minimum height=11mm,align=center,text=paper,thick] (judge) at (5.95,-2.0) {{\color{warn}\bfseries SAME MOVE:} change the judge, not the work};
+  \draw[arr,gold] (data.south) -- (judge.north west);
+  \draw[arr,cyan] (code.south) -- (judge.north east);
+\end{tikzpicture}
+\takeaway{Two routes into one judge: the data it reads and the code it runs.}
+\scope{METR reported reward-hacking examples in 2025. Context only; this deck reports no rate.}
 \note{Our recording uses route A. A worker changes data that the checker reads. METR published examples where real models used route B. They changed code that the scorer ran, including a timing function and an evaluator. The two routes look different operationally, but the move is the same. Do not improve the work. Change the judge. Process separation closes route B, but not route A.}
 \end{frame}
 
@@ -266,12 +262,16 @@ verdict = sign(candidate_digest, criteria_digest, observations)
 % cue: This is what they can do Monday morning.
 % source: https://github.com/zozo123/nyc-talk/blob/main/RUNBOOK.md
 \frametitle{The field test is to enumerate every acceptor, then remove agent ownership}
-\vspace{1mm}
-{\fontsize{14}{17}\selectfont
-1. List every component outside the sandbox that can say yes.\\[2mm]
-2. For each one, list every file, token, route, and import it trusts.\\[2mm]
-3. Mark any item writable by the agent before the verdict.\\[2mm]
-4. Move final ownership to the runner, controller, or human gate.\par}
+\vspace{2mm}
+\begin{tikzpicture}[auditbox/.style={draw,rounded corners=2pt,minimum width=28mm,minimum height=22mm,align=center,text=paper,inner sep=1.7mm}, arr/.style={-{Latex},thick,color=dim}]
+  \node[auditbox,draw=cyan] (a) at (1.35,0) {{\color{cyan}\bfseries 1}\\acceptors\\{\scriptsize who says yes?}};
+  \node[auditbox,draw=gold] (b) at (4.55,0) {{\color{gold}\bfseries 2}\\trust set\\{\scriptsize files, tokens, routes}};
+  \node[auditbox,draw=warn] (c) at (7.75,0) {{\color{warn}\bfseries 3}\\agent write?\\{\scriptsize before verdict}};
+  \node[auditbox,draw=acid] (d) at (10.95,0) {{\color{acid}\bfseries 4}\\outside owner\\{\scriptsize runner / controller}};
+  \draw[arr] (a)--(b);\draw[arr] (b)--(c);\draw[arr] (c)--(d);
+\end{tikzpicture}\par
+\vspace{4mm}
+{\fontsize{14}{17}\selectfont If an item in the trust set is agent-writable before verdict, it is an answer key.\par}
 \takeaway{Least privilege is necessary. Acceptance ownership is the missing audit line.}
 \note{The practical audit fits on one page. List the acceptors. For each acceptor, list what it trusts. Then mark what the agent can write before the verdict. Those are the answer keys. Some should become read-only. Some should become narrow capabilities. And some, like tests the agent proposes, must move to a controller or human gate before they judge the agent. This gives teams a Monday exercise.}
 \end{frame}
