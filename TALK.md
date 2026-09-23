@@ -2,9 +2,9 @@
 
 **Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**
 
-Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-11. Delivery budget: 12:00 of a 15-minute slot; the rest is margin. Timings are rehearsal targets, not measured delivery.
+Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 13:00 of a 15-minute slot; the rest is margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,180 words.
+Spoken manuscript: 1,288 words.
 ## 1. The ticket
 
 **00:00-00:45**
@@ -113,9 +113,19 @@ So here is the rule. The agent may propose what counts as correct. It must never
 
 Back to our ticket. In the same recording, we also ran it that way: the answer key belongs to the controller, where the agent cannot write. Same broken code: REJECT. The door never opens. The agent's edit is still sitting in the workspace. It just no longer counts. Then the corrected code: ACCEPT. Now the ticket is actually done.
 
-## 10. One question for Monday
+## 10. It was one of four
 
-**10:00-11:15**
+**10:00-11:00**
+
+*The answer key was one of four. One breath per row: the escape, then the boundary. End on the job still finishing.*
+
+The answer key was the quietest of four non-escape escapes, and we recorded all four in the same Linux lab. An inherited runner token read another project. A short-lived, task-scoped token got 403. A writable mount changed the next job's files. A read-only, scoped mount blocked the same write. An allowed upload host carried synthetic private data to another account. With no direct network, and a broker that builds one fixed report, nothing was delivered. And the answer key: controller-owned criteria, and a history that shows any rewrite.
+
+Four boundaries, each at the layer that can actually enforce it. And in every case, the real job still finished.
+
+## 11. One question for Monday
+
+**11:00-12:15**
 
 *Before your next ticket ships. The question. Pause. Three moves.*
 
@@ -125,9 +135,9 @@ Three moves. First, list it. Every file, config, environment variable and servic
 
 None of this needs model telemetry. It needs an inventory and an owner.
 
-## 11. The door stayed open
+## 12. The door stayed open
 
-**11:15-12:00**
+**12:15-13:00**
 
 *Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.*
 
