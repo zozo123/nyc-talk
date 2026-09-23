@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+MAX_WPM = 150
 
 
 def main():
@@ -39,6 +40,13 @@ def main():
             if start != previous_end or end <= start:
                 raise SystemExit(f'Slide {number}: invalid or discontinuous timing')
             previous_end = end
+            seconds = sum(int(p) * m for p, m in zip(end.split(':'), (60, 1))) \
+                - sum(int(p) * m for p, m in zip(start.split(':'), (60, 1)))
+            # The total word band cannot see a crammed slide: 211 words once sat
+            # in the closing 45 seconds while the manuscript total looked fine.
+            if len(words.split()) / (seconds / 60) > MAX_WPM:
+                raise SystemExit(f'Slide {number}: {len(words.split())} words in {seconds}s '
+                                 f'exceeds {MAX_WPM} words per minute')
             spoken.append(words)
             script += [f'## {number}. {title}', '', f'**{times[0]}**', '',
                        f'*{cues[0]}*', '', words, '']
@@ -81,7 +89,7 @@ def notes_document(frames, appendix):
 \begin{center}
 {\color{alarm}\sffamily\bfseries AI AGENT SECURITY SUMMIT \textbullet\ PIER SIXTY}\\[4pt]
 {\LARGE\bfseries Your Agent Escaped\\ Without Escaping the Sandbox}\\[8pt]
-{\large The harness stays in the dev sandbox,\\ poisons what the CI runner trusts,\\ and the runner promotes that bug into the prod sandbox.}\\[8pt]
+{\large The agent changes the answers.\\ The check goes green.}\\[8pt]
 {\small Yossi Eliaz, PhD \textbullet\ Incredibuild \textbullet\ 21 October 2026}\\[2pt]
 {\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--12 are the talk. Slides 13--18 are for questions.}
 \end{center}

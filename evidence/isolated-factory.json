@@ -15,6 +15,10 @@
     "exit": 1,
     "stdout": "FAIL"
   },
+  "weak_after": {
+    "exit": 0,
+    "stdout": "PASS"
+  },
   "weak_stdout": "PASS",
   "bad_outputs": [
     {
@@ -111,7 +115,7 @@
     {
       "check": "answer_key.weak_pass",
       "status": "PASS",
-      "detail": "Unchanged, read-only checker accepts the open-admin fixture."
+      "detail": "The same checker, launched the same way, exits 0 and prints PASS on the unchanged candidate."
     },
     {
       "check": "answer_key.independent_reject",
@@ -187,11 +191,11 @@
       ]
     },
     {
-      "agent_sha256": "1c1501e2e7a6c74c9c66074f5b0c88be0434e5f3079994d7b75720c48fd482ac",
+      "agent_sha256": "da4593189b25790a57e43fc7d7e25c3f7b88578c57614fbd2b290544c227f63f",
       "network_namespace": true,
       "mode": "isolated",
       "exit_code": 0,
-      "stdout": "PASS",
+      "stdout": "{\"exit\": 0, \"stdout\": \"PASS\"}",
       "stderr": "",
       "mounts": [
         {
@@ -489,7 +493,7 @@
     "factory/__init__.py": "53d6e7cd2afe33f35d75f6cafc231fd4f7c0d54c070118975d167db8938570dd",
     "factory/boat.py": "471dbe78b8a72985142fa0c346686a010f86d10a94bdb27cd905099c3709cae7",
     "factory/core.py": "83f42b1cd70134cfa4dbd7b420a6fc9893b604d53d8225b738ab0d31b2e34c00",
-    "factory/isolated.py": "cf0cd32745cef1e43f4e3b86a4ecc502c8db19ced4a5ddaf17e2f971152ce862",
+    "factory/isolated.py": "8fcd4d1717c99922b9779964be7dcbf5b1706d2393600361ed487bcaa0e28f51",
     "factory/run.py": "c0ea9f241d70c93bf2994832d1b27e1ecf0a198e5b18a29ecde29239d5a962c2",
     "lab/run.py": "46455370143da9fe4e0c1013060add61b0969f036e9780d4653665e3c90b23b2"
   }

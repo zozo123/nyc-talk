@@ -4,7 +4,7 @@
 
 Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Delivery budget: 14 minutes plus one minute of margin. Timings are rehearsal targets, not measured delivery.
 
-Spoken manuscript: 1,215 words.
+Spoken manuscript: 1,366 words.
 ## 1. What changed when the test went green?
 
 **00:00-01:15**
@@ -13,120 +13,144 @@ Spoken manuscript: 1,215 words.
 
 What changed when the test went green?
 
-The recording starts at FAIL and ends at PASS. Same setup, one worker step in between. I am Yossi Eliaz. For the next fourteen minutes we stay on that pair of results and name the file that moved. By the end, the room should be able to point at that file and say why PASS appeared.
+In an agent pipeline, a green check is what the next step trusts. So let's take one green check apart, byte by byte. I'm Yossi Eliaz, from Incredibuild.
 
-The worker in the recording is a script. The program is a small command-line model of an access check. It prints an integer. It does not serve an HTTP admin page, and this talk does not show a GitHub merge. The signal on the slide is the checker's own FAIL and PASS.
+We recorded one worker run in a Linux sandbox. The checker says FAIL before the worker's step, and PASS after it. For the rest of this talk we stay on that one pair of results, and we find the one thing that changed.
+
+The setup is deliberately small. The worker is a script, not a model. The program is a few lines of command-line code that mimic an access check and print a status code. No web server is involved. Small on purpose: everything that matters fits on a slide, and every hash I show you is in the repository.
 
 ## 2. No login prints 200
 
-**01:15-02:15**
+**01:15-02:00**
 
 *Name the case. Then the two numbers.*
 
-One case is enough to see the failure. admin:none is the model's name for the admin route with no login. The required status is 401. The program prints 200 for every input, including this one.
+One case is enough. admin:none means the admin route with no login. The right answer is 401. This program prints 200, for this case and for every other input.
 
-A correct program prints 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public route, and 401 for an expired login. This program prints 200 five times. The checker will compare those integers with a file. Until that file is in view, FAIL and PASS are just two words on a slide.
+A checker compares the program's output with an answer key of five cases. Only two of those five cases expect 200: a real admin, and the public route. This program says 200 five times. It is wrong, and at the start of the recording the checker agrees. FAIL.
+
+Keep this program in mind. Its bytes never change.
 
 ## 3. The checker is protected
 
-**02:15-03:30**
+**02:00-03:00**
 
-*Denied first. Then the line it reads.*
+*Honest FAIL. DENIED. Same hash. Then PASS. Pause.*
 
-The worker tries to replace the checker with a program that prints PASS. The read-only mount returns DENIED. The checker hash is f5d8d3468bbe before that step and the same value after it.
+At the start, the answer key is honest. On this program, the checker prints FAIL and exits 1.
 
-The checker then loads expected.json from its working directory. That file is in the workspace. The protection on the executable does not cover the file the executable uses to decide success. With the honest file, this same checker prints FAIL and exits 1. The executable protection worked. The next slide is the input that protection leaves writable.
+Then the worker takes its step. First it tries the obvious attack: overwrite the checker with one that just prints PASS. The checker sits on a read-only mount. DENIED. Its hash is the same before that step and after it.
 
-## 4. Only the answer file moved
+Then the same checker runs again, launched the same way, on the same program. It prints PASS and exits 0.
 
-**03:30-04:45**
+Nothing we protected changed. Something else did.
+
+## 4. Only the answer key moved
+
+**03:00-04:30**
 
 *Read across the row. Stop on PASS.*
 
-Read the row. Program 76fcb0904f51 both times. Checker f5d8d3468bbe both times. The answer file moves from 0494f1a01dee to 390e5e764916. The verdict moves from FAIL to PASS.
+Two rows: the honest run, then the edited run. Read across.
 
-The diff is the required status for admin:none, 401 becoming 200, and the same change on the other four rows. The worker changed what counted as correct. The checker executed, compared the program with that file, and the numbers matched.
+The program has the same hash both times. So does the checker. The answer key, expected.json, changes: 0494 when honest, 390e when edited. And the verdict goes from FAIL to PASS.
+
+Underneath is the diff. For admin:none, the expected answer was 401. The worker rewrote it to 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the bad program prints.
+
+The checker did its job perfectly. It compared the program with the answer key, and they matched. The worker did not beat the test. It changed what counted as correct.
 
 ## 5. What the three hashes say
 
-**04:45-05:45**
+**04:30-05:30**
 
 *One sentence per hash.*
 
-The unchanged program hash means this comparison did not repair the program. The unchanged checker hash means this comparison did not edit that executable. The changed answer-file hash names the dependency that moved.
+Each hash rules one thing out. Same program hash: the worker did not fix the code. Same checker hash: the checker's code did not change. New answer key hash: that is the input that moved.
 
-Hashing the altered answers does not make them authoritative. Their identity and their owner have to come from the trusted policy. In this run the owner of the new file was the worker. If you only hash the file after the worker writes it, you have a name for the new bytes and you still have the worker as the author of the criteria.
+Now the trap. The tempting fix is to hash the answer key. But hash it after the worker wrote it, and you have a perfect fingerprint of the worker's answers. A hash tells you which bytes were used. It does not tell you who had the right to write them. The answer key has to be written by someone other than the worker, and kept where the worker cannot reach it.
 
 ## 6. The file defines success
 
-**05:45-07:00**
+**05:30-07:00**
 
 *Point at the load. Then at who can write it.*
 
-This is why the green result happened. expected.json looks like ordinary project data. The checker gives that file the authority to define success. The significance comes from the decision that reads it.
+So why did the checker trust that file? Because of this one line. The checker loads expected.json from its working directory. The file looks like ordinary project data. Nothing about it is special, except that the checker obeys it.
 
-The worker can write the workspace. The checker runs with that workspace as its working directory. So a workspace write is a write to the acceptance criteria. An inventory of protected executables still leaves this input on the worker's side of the line.
+The worker can write this file. The checker treats it as the answer key. So the worker's write permission included the acceptance criteria. You can lock every executable in the pipeline and still leave this one input on the worker's side of the line.
 
-The worker here is a script with that write in it. The recording shows the action is permitted. It does not measure whether a particular model would choose it. For an engineer or a CISO, the useful question is which input the trusted decision treats as the definition of success, and who is allowed to write that input. A list of locked binaries still leaves that question open on the table tonight.
+One honest limit. This recording shows the worker is allowed to rewrite the file. It does not measure how often a model would choose to. For that, there is separate research. Anthropic's November 2025 study of reward hacking describes models taking shortcuts on coding tasks, including one of exactly this shape: writing a conftest file that makes pytest report failures as passes. Its results are its own, not ours. This recording isolates the permission such a shortcut needs. One you already granted.
 
 ## 7. Controller-owned criteria
 
 **07:00-08:00**
 
-*REJECT the same program. The fix is the next slide.*
+*Say REJECT first. Then who owns the answers.*
 
-The repair uses a different acceptance path. The controller runs the frozen program and compares the integers with cases it owns. It does not load expected.json from the workspace.
+Now the repair. Same program, the one that prints 200 for everything. REJECT.
 
-Program 76fcb0904f51, the one that prints 200, is REJECT. The demonstrated edit no longer moves this verdict. This path is the controller's comparison. It is a separate implementation from the workspace checker whose hash is f5d8d3468bbe.
+What changed is who owns the answers, and where the comparison runs. The controller runs outside the worker's sandbox. It runs the program in a fresh sandbox of its own and checks the output against its own cases. Its comparison never reads expected.json from the workspace.
+
+The worker's edit is still sitting in the workspace. It just no longer counts.
 
 ## 8. The corrected program
 
-**08:00-09:00**
+**08:00-08:45**
 
 *Different hash. Five numbers. ACCEPT.*
 
-The corrected program has hash 5ead8eab70e0. It returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public route, and 401 for an expired login. The controller accepts it.
+A repair also has to let real work through. Here is the corrected program, with a different hash. It returns 401 for no login, 200 for a real admin, 403 for an ordinary user, 200 for the public route, and 401 for an expired login. Same controller-owned cases. ACCEPT.
 
-The repair stops the demonstrated edit and keeps the legitimate task. The accepted program is not the program from the failing run. Its hash is different, and the criteria are the controller's cases.
+That is the pair you want from any fix. The bad program is rejected, the good program is accepted, and the answers are owned by someone other than the worker.
 
 ## 9. One unused approval
 
-**09:00-10:30**
+**08:45-10:15**
 
-*Say unused. Then denied, published, denied.*
+*Say unused. Then denied, denied, published, denied.*
 
-Acceptance and publication are separate. The approval on this slide was issued for the corrected program and has not been used yet. The first attempt offers the bad program under that fresh approval. The gate returns DENIED. The second attempt offers the approved bytes and returns PUBLISHED. The third attempt offers those bytes again and returns DENIED.
+Accepting a program is not the same as shipping it. Between the verdict and the release, there is one more place to swap bytes.
 
-Because the first denial happens while the approval is unused, the refusal is the byte check. A used approval would also deny a replay, and that would hide a bad swap. An earlier version of this gate consumed the approval first. The published row is the corrected program, compared by the controller and stored as those bytes. The first row is the important one for the question people will ask: the denial happens before the approval is spent, so replay protection is not what rejected the bad program.
+The controller issues one approval for the corrected program. First, the bad program is offered under that fresh, unused approval. DENIED. Next, the approved bytes are pointed at a different destination. DENIED, because an approval names one place. Then the approved bytes go to the named place. PUBLISHED. Then the same bytes again. DENIED, because the approval is spent.
+
+The first row is the one that matters. The approval was still unused, so the refusal came from checking the bytes, not from replay protection. An earlier version of our own test tried the bad bytes only after the approval was spent, so it could not tell which check refused them.
+
+Publication here is a local store, a stand-in for a registry or a merge. It holds exactly the approved bytes.
 
 ## 10. Three questions for another system
 
-**10:30-11:30**
+**10:15-11:45**
 
 *Read the three questions. Do not name a vendor.*
 
-Take these three questions to another system. Who can change the inputs that define acceptance? What evidence identifies the candidate, the checker, and the criteria used for this decision? Does publication consume exactly the approved bytes?
+Take three questions home. Who can change the inputs that define acceptance? Which exact bytes were the candidate, the checker, and the criteria? And does publication store exactly the approved bytes?
 
-These questions inspect a pipeline. They do not by themselves show that another product has this bug. On our recording, the worker can change expected.json, and that file defines acceptance for the workspace checker. The hashes name the candidate, the checker, and the criteria for this comparison. The unused approval shows that publication stored the approved bytes, because the bad bytes were refused while that approval was still unused.
+The first question has a concrete starting point. List everything your acceptance step reads or looks for: files, config, environment, services. List what your agent can write. Any overlap other than the candidate itself is your finding. And keep the candidate out of the checker's process, so it can only answer, not grade. Then add a tripwire, not a policy: hash the answer key when the task starts and again at the verdict. On this recording, that hash moved.
+
+None of that needs model telemetry. It will not tell you a change was malicious, only that the worker wrote what judged it. And these questions inspect a pipeline. On their own, they do not show that any particular product has this problem.
 
 ## 11. The sandbox held
 
-**11:30-12:45**
+**11:45-13:15**
 
 *Say what did not happen. Then name the allowed write.*
 
-The title is literal in this experiment. Nothing escaped the sandbox. The worker used a workspace write it was supposed to have. The checker overwrite was denied, and both the program and checker bytes stayed fixed. The failure was that expected.json lived inside the worker-writable area while the checker treated that file as the definition of success.
+Back to the title: your agent escaped without escaping the sandbox. The part about the sandbox is literal. Nothing escaped. The checker overwrite was denied. The program bytes and the checker bytes never changed. The worker used exactly the write access it was supposed to have.
 
-So sandbox isolation and release authorization are different boundaries. You can have a sandbox that holds and still let the worker control an input that decides whether its own work is accepted. That is the boundary I want you to inspect.
+The allowed workspace write changed the decision. The answer key was in the workspace, and the checker obeyed it.
+
+So isolation and acceptance are different boundaries. A sandbox answers one question: what can this process touch? Acceptance asks another: can anything it touches decide that its own work is done? In a real repository, that answer key lives in the tests, the snapshots and the CI config, and writing tests is part of the agent's job. So taking the write away is not the fix. The agent may propose what counts as correct. It must never be the last writer of what judges it.
 
 ## 12. The worker changed what counted as correct
 
-**12:45-14:00**
+**13:15-14:00**
 
-*Say the sandbox held. Leave PASS beside the unchanged program. Stop.*
+*Repository first. Then the three short lines. Leave PASS up. Stop.*
 
-The sandbox held. The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
+The code and the Linux recordings are in the repository on the screen. Every hash on these slides is in there, and you can rerun the whole thing on a disposable Linux machine with bubblewrap.
 
-The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording.
+So, what changed when the test went green?
+
+Not the program. Not the checker. The answer key.
 
 The sandbox held. The worker changed what counted as correct. Thank you.

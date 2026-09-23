@@ -6,31 +6,33 @@
 
 Attendance is confirmed. Slides are due 9 October. Speaker dinner follows the happy hour. A logistics note to Ian, Anna, Kayla, and Neil is still awaiting reply. Do not invent a stage time on the day.
 
-The spoken script contains 1,215 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
+The spoken script contains 1,366 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
 
 | Clock | Slide | Stage action |
 |---|---:|---|
 | 00:00-01:15 | 1 | FAIL, then PASS. Ask what changed. |
-| 01:15-02:15 | 2 | No login must be 401. The program prints 200. |
-| 02:15-03:30 | 3 | Checker write denied. It reads expected.json. |
-| 03:30-04:45 | 4 | Same program, same checker, new answer file, PASS. |
-| 04:45-05:45 | 5 | Say what each hash rules out. |
-| 05:45-07:00 | 6 | The workspace write included the acceptance criteria. |
-| 07:00-08:00 | 7 | Controller-owned cases reject the same program. |
-| 08:00-09:00 | 8 | The corrected program is accepted. |
-| 09:00-10:30 | 9 | Unused approval: denied, published, denied. |
-| 10:30-11:30 | 10 | Three questions for another system. |
-| 11:30-12:45 | 11 | The sandbox held: denied overwrite, fixed bytes, allowed workspace write changed the decision. |
-| 12:45-14:00 | 12 | “The sandbox held. The worker changed what counted as correct.” Stop. |
+| 01:15-02:00 | 2 | No login must be 401. The program prints 200. Its bytes never change. |
+| 02:00-03:00 | 3 | Honest answer key, FAIL. Overwrite DENIED. Same hash. Same launch, PASS. Pause. |
+| 03:00-04:30 | 4 | Read across the row: same program, same checker, new answer key, PASS. |
+| 04:30-05:30 | 5 | Say what each hash rules out. Then the trap: a hash does not say who wrote it. |
+| 05:30-07:00 | 6 | Point at the load. The worker's write permission included the criteria. |
+| 07:00-08:00 | 7 | Say REJECT first. Then: who owns the answers, and where the comparison runs. |
+| 08:00-08:45 | 8 | The corrected program is ACCEPTED. |
+| 08:45-10:15 | 9 | Unused approval: denied, denied, published, denied. All four are correct. |
+| 10:15-11:45 | 10 | Three questions. Then the inventory, the candidate out of process, the tripwire. |
+| 11:45-13:15 | 11 | Isolation and acceptance are different boundaries. End on the last-writer rule. |
+| 13:15-14:00 | 12 | Repository first. Then “Not the program. Not the checker. The answer key.” Stop. |
 | 14:00-15:00 | - | Margin for transitions or the host. |
 
 ## Rehearsal
 
 Rehearse with an audible timer. FAIL and PASS are up in the first minute. The hash row is on screen by minute four. The unused approval is on screen by minute nine. The title payoff is up by minute twelve.
 
-The clock is budgeted so no slide exceeds about 120 spoken words per minute. Slides 4 and 7 are deliberately the sparsest: the silence while the room reads the hash row, and the beat after REJECT, are the content. If you reach slide 9 ahead of 09:00, do not speed up the close; spend the margin on those two pauses.
+No slide is budgeted above about 115 spoken words per minute, and the build refuses any slide above 150. The spare seconds are deliberate: the beat after “It prints PASS and exits 0” on slide 3, the silence while the room reads the row on slide 4, the beat after REJECT on slide 7, a breath after each of the three questions on slide 10, and the pauses between the three short lines that close slide 12. Do not pad to fill the clock and do not speed up the close.
 
-If behind, keep slides 4, 7, 8, 9, 11, and 12. Say the token, mount, and host only if asked. Do not read full hashes aloud. The prefixes on the slide are enough. The payload is a CLI fixture and the worker is a script. State that once.
+Say “admin none”, not “admin colon none”. Read the two answer-key landmarks on slide 4 digit by digit and pick one reading for 0. Point at the Answer key column as you say them. The printed script says “for the rest of this talk” rather than a minute count, because the stage clock is still unconfirmed.
+
+If behind, keep slides 4, 7, 8, 9, 11, and 12. Say the token, mount, and host only if asked. Do not read full hashes aloud. The prefixes on the slide are enough. The payload is a command-line fixture and the worker is a script. Slide 1 states it once.
 
 ## Evidence on stage
 
