@@ -31,7 +31,7 @@
 
 \begin{abstract}
 \noindent
-What changed when the test went green? The program and the checker stayed put. The worker changed the answer key, and FAIL became PASS. A developer asks an AI harness to fix authorization. The harness works in a dev sandbox. A verifier loads \texttt{expected.json} from that workspace. A GitHub CI runner promotes on PASS. A prod sandbox runs those bytes. The dev sandbox can do its job and the runner can still promote a bug. This paper is the written companion to a fifteen-minute lightning talk. On real Linux, with bubblewrap, a worker inherits a broad CI-style token, writes another job's file through a mount, publishes on an allowed host, and turns a read-only checker from \texttt{FAIL} to \texttt{PASS} by editing \texttt{expected.json}. The candidate bytes never change. Controller-owned cases reject those bytes. A corrected handler passes the same five cases. A fresh approval refuses a substituted artifact and a second destination, publishes the original bytes, and refuses a replay. The breach rides the promotion. The credential, the mounts, the publish, and the answer key each need an owner outside the worker, and the legitimate job still has to complete.
+What changed when the test went green? A worker in a bubblewrap sandbox, a deterministic script rather than a model, made a failing check pass without escaping. Its attempt to overwrite the read-only checker was denied, and the checker's hash never changed. But the checker loaded its answer key, \texttt{expected.json}, from the worker's workspace. The worker rewrote the answer key: same candidate, same checker, new answer key, and \texttt{FAIL} became \texttt{PASS}. Controller-owned cases reject the same bytes, and a corrected handler passes them. One approval binds exact bytes and one destination and is consumed once: it refuses a substituted artifact and a second destination, publishes the approved bytes, and refuses a replay. Isolation and acceptance are different boundaries. The agent may propose what counts as correct; it must never be the last writer of what judges it. This paper is the written companion to a fifteen-minute lightning talk. Supporting Linux experiments, recorded separately, cover an inherited CI-style token, a writable mount and an allowed upload host. Each needs an owner outside the worker, and the legitimate job still has to complete.
 \end{abstract}
 
 \section{The line}
@@ -163,7 +163,7 @@ Evidence & Checks & Scope \\
 Linux lab & 30 & Namespaces, mounts, loopback HTTP \\
 Isolated checker & 13 & Read-only checker, mutable key, release \\
 Local factory & 8 & Protocol model, separate from OS isolation \\
-Regressions & 48 & Controller and evidence \\
+Regressions & 49 & Controller and evidence \\
 Archived gate audit & 1 & Controller API misuse \\
 \bottomrule
 \end{tabular}
@@ -188,25 +188,26 @@ sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
 Source, recorded outputs, and the limits live at \url{https://github.com/zozo123/nyc-talk}. The deck and this paper read those recordings. Stage delivery needs no cloud account and no live terminal.
 
-External context, kept in its own lane: bubblewrap's security model is caller-defined sandbox policy; SLSA v1.2 is the vocabulary of digest and expectations, and this gate is not a SLSA certification; Anthropic's November 2025 study of reward hacking is prior motivation, and its measurements stay with that study. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief. The exact stage clock was still awaiting organizer confirmation when this paper was prepared, as was a logistics reply to the summit team.
+External context, kept in its own lane: bubblewrap's security model is caller-defined sandbox policy; SLSA v1.2 is the vocabulary of digest and expectations, and this gate is not a SLSA certification; Anthropic's November 2025 study of reward hacking is prior motivation, and its measurements stay with that study. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
 
-\section{Leave with four questions}
+\section{Leave with three questions}
 
-The checker was protected. The candidate never improved. The worker changed the answer key, and \texttt{PASS} changed meaning.
+The checker was protected. The candidate never improved. The worker changed the answer key, and \texttt{PASS} changed meaning. Isolation and acceptance are different boundaries. A sandbox decides what a process can touch. Acceptance decides whether anything it touches can declare its own work done.
 
-Who controls what makes the work releasable?
-
-When you leave Pier Sixty, take four questions back to the host that runs your agents.
+When you leave Pier Sixty, take three questions back to the host that runs your agents.
 
 \begin{enumerate}
-\item Which credential does the worker receive, and what else can that credential read?
-\item Which paths are mounted, which of them are writable, and which of those paths will a snapshot fork tomorrow?
-\item Which URLs can it reach, and who chooses the path and the body?
-\item Which object is compared before merge, and can the worker change the cases or the \texttt{PASS} file?
+\item Who can change the inputs that define acceptance?
+\item Which exact bytes were the candidate, the checker, and the criteria?
+\item Does publication store exactly the approved bytes?
 \end{enumerate}
+
+Start with what your checks read that your agent can write, other than the candidate itself. Keep the candidate out of the checker's process, and hash the answer key when the task starts and again at the verdict, as a tripwire rather than a policy. The four boundaries above remain the checklist for the rest of the pipeline: which credential the worker receives, which paths it can write, which URLs it can reach, and which object is compared before release.
 
 The component that returns \texttt{403}, a read-only denial, \texttt{DENIED}, or reject has to sit outside the worker. After you put it there, run the legitimate ticket again. A system that can no longer do the job has gone quiet. It has not become safe.
 
 The sandbox is worth keeping. You built it so the agent could work and still be stopped. Keep it. Then open the file the checker trusts. If the worker can write that file, you already know the next green build.
+
+The agent may propose what counts as correct. It must never be the last writer of what judges it.
 
 \end{document}

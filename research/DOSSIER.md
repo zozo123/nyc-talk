@@ -59,7 +59,7 @@ The code uses standard-library fixtures. The canonical deck is `slides/talk.tex`
 Primary sources reviewed September 20, 2026:
 
 - [bubblewrap's security model](https://github.com/containers/bubblewrap#sandbox-security): the caller's configuration determines the resulting sandbox policy. We do not claim bubblewrap alone decides credential, mount, service or publication authority.
-- [SLSA v1.2 artifact verification](https://slsa.dev/spec/v1.2/verifying-artifacts): verifier identity, artifact digest, trust expectations and invocation parameters matter. Our context-bound gate is an illustrative reference protocol; it is not SLSA certification or a full SLSA implementation.
+- [SLSA v1.2 artifact verification](https://slsa.dev/spec/v1.2/verifying-artifacts): builder identity, artifact digest, trust expectations and invocation parameters matter. Our context-bound gate is an illustrative reference protocol; it is not SLSA certification or a full SLSA implementation.
 - [Anthropic, November 21, 2025, *From shortcuts to sabotage: natural emergent misalignment from reward hacking*](https://www.anthropic.com/research/emergent-misalignment-reward-hacking): provides motivation for taking reward hacking and programming-task shortcuts seriously. Its training setup and empirical results are not measurements from our fixtures and are not transferred to this talk.
 - [Official summit series](https://zenity.io/resources/events/ai-agent-security-summit-2026): lists the New York event on October 21, 2026. Exact speaker stage time is an organizer matter, not inferred from the series page.
 
