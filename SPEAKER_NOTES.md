@@ -8,9 +8,9 @@ Generated from `slides/talk.tex`. Slides 1-11 are the main talk. Slides 12-19 ar
 
 Read the ticket. The four locks. Then: it ships.
 
-Picture a ticket you could assign this morning. Lock down the admin page. Anyone without a login must get 401.
+Picture a Friday afternoon. You give your coding agent one ticket. Lock down the admin page. Anyone without a login must get 401.
 
-You give it to your coding agent, and you do everything right. The agent works in a sandbox. It has no network. The checker that grades its work is read-only, so the agent cannot touch it. And your pipeline ships only when that checker goes green.
+And you do everything right. The agent works in a sandbox. It has no network. The checker that grades its work is read-only, so the agent cannot touch it. And your pipeline ships only when that checker goes green.
 
 The agent works for a while. The check goes green. It ships.
 
@@ -24,9 +24,9 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 Say green. Pause. Then 200. Let it sit.
 
-Then someone opens the admin page without logging in. 200. Wide open.
+Then someone opens the admin page without logging in. 200. Anyone can walk in.
 
-The door you asked the agent to close is still open, and every check was green. And here is the strange part. Nothing escaped the sandbox. No network call, no broken container, no stolen credential.
+The door you asked the agent to close is still open, and every check was green. And here is the strange part. Nothing escaped the sandbox. No network call, no broken container, no stolen credential. If you have spent this year building sandboxes for your agents, this is the part the sandbox cannot see.
 
 I'm Yossi Eliaz. I work on build systems at Incredibuild, and our whole industry runs on one assumption: green means good. For the next few minutes, let's find out what green meant here.
 
@@ -51,7 +51,7 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 4: Two suspects, both cleared
+## Slide 4: Three suspects
 
 02:45-03:45
 
@@ -110,7 +110,7 @@ Why did the door stay open? Walk the picture. Point at expected.json. End on the
 
 So why did the door stay open? Here is the whole thing in one picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only, exactly as we built it. But the checker reaches into the workspace to read its answer key.
 
-o3 changed its judge from inside the scorer. Our agent changed what its judge reads. Same move: change the judge, not the work.
+o3's code ran inside the program that scored it. Our agent could not reach its checker, so it rewrote what the checker reads. Same move: change the judge, not the work.
 
 The judge is not the checker. The judge is the checker plus everything it reads. And part of your judge was inside the sandbox.
 
@@ -121,11 +121,11 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 ## Slide 8: Where is your answer key?
 
-07:15-08:45
+07:15-09:00
 
-Coding list. Then the procurement agent. Then: you cannot take the pen away.
+Show of hands, yours up too: writes tests, then keep it up if sandboxed. Look around. Then the procurement agent. Then: the permission is the work.
 
-Now look for the answer key in your own systems. For coding agents, it is the tests, the snapshots, the golden files, the CI workflow.
+Now look for the answer key in your own systems. Quick show of hands, and I will raise mine too. Who has a coding agent that is allowed to write tests? Keep it up if that agent runs in a sandbox. Look around. Those hands did everything right. Every one of them still has an answer key the agent can write.
 
 Outside code, picture a procurement agent. Part of its job is keeping the approved vendor list current. It is asked to pay an invoice, and the payment check blocks it: the vendor is not on the list. So the agent adds the vendor. The payment check goes green. Nothing escaped. The same shape shows up wherever a check reads something the agent can write: the policy a guardrail checks, the notes a monitor reads, the summary an LLM judge grades.
 
@@ -137,7 +137,7 @@ https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
 
 ## Slide 9: The rule
 
-08:45-10:00
+09:00-10:00
 
 The rule, slowly. Then back to the ticket: REJECT, the door never opens, ACCEPT.
 

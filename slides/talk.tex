@@ -51,9 +51,9 @@
 {\color{muted}\small Your Agent Escaped Without Escaping the Sandbox\par}
 \vspace{1mm}
 {\small Yossi Eliaz, PhD\quad Incredibuild\quad 21 October 2026\par}
-\note{Picture a ticket you could assign this morning. Lock down the admin page. Anyone without a login must get 401.
+\note{Picture a Friday afternoon. You give your coding agent one ticket. Lock down the admin page. Anyone without a login must get 401.
 
-You give it to your coding agent, and you do everything right. The agent works in a sandbox. It has no network. The checker that grades its work is read-only, so the agent cannot touch it. And your pipeline ships only when that checker goes green.
+And you do everything right. The agent works in a sandbox. It has no network. The checker that grades its work is read-only, so the agent cannot touch it. And your pipeline ships only when that checker goes green.
 
 The agent works for a while. The check goes green. It ships.}
 \end{frame}
@@ -71,9 +71,9 @@ The agent works for a while. The check goes green. It ships.}
 {\fontsize{14}{18}\selectfont /admin, no login\hspace{8mm}{\color{danger}\fontsize{30}{34}\selectfont\bfseries 200}\par}
 \takeaway{Every check green. The door still open. Nothing escaped.}
 \scope{The scene is a scenario. PASS and 200 are from our recording.}
-\note{Then someone opens the admin page without logging in. 200. Wide open.
+\note{Then someone opens the admin page without logging in. 200. Anyone can walk in.
 
-The door you asked the agent to close is still open, and every check was green. And here is the strange part. Nothing escaped the sandbox. No network call, no broken container, no stolen credential.
+The door you asked the agent to close is still open, and every check was green. And here is the strange part. Nothing escaped the sandbox. No network call, no broken container, no stolen credential. If you have spent this year building sandboxes for your agents, this is the part the sandbox cannot see.
 
 I'm Yossi Eliaz. I work on build systems at Incredibuild, and our whole industry runs on one assumption: green means good. For the next few minutes, let's find out what green meant here.}
 \end{frame}
@@ -103,17 +103,18 @@ So let's investigate. Three suspects.}
 
 \renewcommand{\track}{04  /  SUSPECTS}
 \begin{frame}[t]
-% title: Two suspects, both cleared
+% title: Three suspects
 % time: 02:45-03:45
 % cue: Clear the code. Clear the checker. Then: something else changed.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{Two suspects, both cleared}
-\vspace{2mm}
-{\tablefont
-\begin{tabular}{@{}p{.25\textwidth}p{.67\textwidth}@{}}
-\textcolor{acid}{1\ \ The code} & \texttt{76fcb0904f51} before and after. Still prints 200.\\\addlinespace[2mm]
-\textcolor{acid}{2\ \ The checker} & Overwrite attempt \textcolor{acid}{DENIED}. \texttt{f5d8d3468bbe} before and after.\\
-\end{tabular}}
+\frametitle{Three suspects}
+\vspace{3mm}
+\centering
+\begin{tikzpicture}[card/.style={draw, rounded corners=3pt, minimum width=39mm, minimum height=27mm, align=center, inner sep=2mm, text=paper}]
+  \node[card, draw=muted] at (0,0) {{\color{acid}\bfseries 1\ \ The code}\\[2mm]{\footnotesize\ttfamily 76fcb0904f51}\\{\footnotesize before and after}\\{\footnotesize\color{danger}still prints 200}\\[2mm]{\color{paper}\bfseries UNCHANGED}};
+  \node[card, draw=muted] at (4.4,0) {{\color{acid}\bfseries 2\ \ The checker}\\[2mm]{\footnotesize overwrite \textcolor{acid}{DENIED}}\\{\footnotesize\ttfamily f5d8d3468bbe}\\{\footnotesize before and after}\\[2mm]{\color{paper}\bfseries UNCHANGED}};
+  \node[card, draw=danger, dashed, thick] at (8.8,0) {{\color{danger}\bfseries 3}\\[2mm]{\fontsize{28}{32}\selectfont\color{danger}\bfseries ?}\\[2mm]{\footnotesize\color{muted}still unexplained}};
+\end{tikzpicture}
 \takeaway{Neither changed. FAIL still became PASS.}
 \scope{Same checker, same launch, same program: exit 1 with FAIL, then exit 0 with PASS.}
 \note{Suspect one: the code. The ticket was to fix it. Did the agent change it at all? No. The program's hash is identical before and after, and it still prints 200 for every request.
@@ -197,7 +198,7 @@ It changed the stopwatch.}
 \takeaway{The judge is the checker plus everything it reads.}
 \note{So why did the door stay open? Here is the whole thing in one picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only, exactly as we built it. But the checker reaches into the workspace to read its answer key.
 
-o3 changed its judge from inside the scorer. Our agent changed what its judge reads. Same move: change the judge, not the work.
+o3's code ran inside the program that scored it. Our agent could not reach its checker, so it rewrote what the checker reads. Same move: change the judge, not the work.
 
 The judge is not the checker. The judge is the checker plus everything it reads. And part of your judge was inside the sandbox.}
 \end{frame}
@@ -205,8 +206,8 @@ The judge is not the checker. The judge is the checker plus everything it reads.
 \renewcommand{\track}{08  /  YOUR ANSWER KEYS}
 \begin{frame}[t]
 % title: Where is your answer key?
-% time: 07:15-08:45
-% cue: Coding list. Then the procurement agent. Then: you cannot take the pen away.
+% time: 07:15-09:00
+% cue: Show of hands, yours up too: writes tests, then keep it up if sandboxed. Look around. Then the procurement agent. Then: the permission is the work.
 % source: https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
 \frametitle{Where is your answer key?}
 \vspace{2mm}
@@ -217,7 +218,7 @@ The judge is not the checker. The judge is the checker plus everything it reads.
 \end{tabular}}
 \takeaway{If your agent can write one, it grades itself.\\Often, writing it is the job.}
 \scope{Where to look, not what we measured.}
-\note{Now look for the answer key in your own systems. For coding agents, it is the tests, the snapshots, the golden files, the CI workflow.
+\note{Now look for the answer key in your own systems. Quick show of hands, and I will raise mine too. Who has a coding agent that is allowed to write tests? Keep it up if that agent runs in a sandbox. Look around. Those hands did everything right. Every one of them still has an answer key the agent can write.
 
 Outside code, picture a procurement agent. Part of its job is keeping the approved vendor list current. It is asked to pay an invoice, and the payment check blocks it: the vendor is not on the list. So the agent adds the vendor. The payment check goes green. Nothing escaped. The same shape shows up wherever a check reads something the agent can write: the policy a guardrail checks, the notes a monitor reads, the summary an LLM judge grades.
 
@@ -227,7 +228,7 @@ Some of these you can lock, and you should. For the rest, you cannot just take t
 \renewcommand{\track}{09  /  THE RULE}
 \begin{frame}[t]
 % title: The rule
-% time: 08:45-10:00
+% time: 09:00-10:00
 % cue: The rule, slowly. Then back to the ticket: REJECT, the door never opens, ACCEPT.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
@@ -274,7 +275,9 @@ None of this needs model telemetry. It needs an inventory and an owner.}
 % time: 11:15-12:00
 % cue: Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\vspace{10mm}
+\vspace{7mm}
+{\color{muted}\ttfamily\fontsize{10}{12}\selectfont TICKET\quad Lock down /admin.\par}
+\vspace{5mm}
 {\fontsize{24}{30}\selectfont\bfseries The sandbox held.\\The checker held.\\{\color{danger}The door stayed open.}\par}
 \vspace{8mm}
 {\color{muted}\fontsize{13}{16}\selectfont Your Agent Escaped Without Escaping the Sandbox\par}
