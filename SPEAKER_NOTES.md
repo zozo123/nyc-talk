@@ -1,6 +1,6 @@
 # Slide-by-slide speaker notes
 
-Generated from `slides/talk.tex`. Slides 1-11 are the main talk. Slides 12-19 are for Q&A. Present the PDF offline.
+Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-20 are for Q&A. Present the PDF offline.
 
 ## Slide 1: The ticket
 
@@ -150,9 +150,24 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 10: One question for Monday
+## Slide 10: It was one of four
 
-10:00-11:15
+10:00-11:00
+
+The answer key was one of four. One breath per row: the escape, then the boundary. End on the job still finishing.
+
+The answer key was the quietest of four non-escape escapes, and we recorded all four in the same Linux lab. An inherited runner token read another project. A short-lived, task-scoped token got 403. A writable mount changed the next job's files. A read-only, scoped mount blocked the same write. An allowed upload host carried synthetic private data to another account. With no direct network, and a broker that builds one fixed report, nothing was delivered. And the answer key: controller-owned criteria, and a history that shows any rewrite.
+
+Four boundaries, each at the layer that can actually enforce it. And in every case, the real job still finished.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+[/Sources]
+
+## Slide 11: One question for Monday
+
+11:00-12:15
 
 Before your next ticket ships. The question. Pause. Three moves.
 
@@ -166,9 +181,9 @@ None of this needs model telemetry. It needs an inventory and an owner.
 https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
 [/Sources]
 
-## Slide 11: The door stayed open
+## Slide 12: The door stayed open
 
-11:15-12:00
+12:15-13:00
 
 Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.
 
@@ -184,7 +199,7 @@ Your agent escaped without escaping the sandbox. Thank you.
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 12: The five policy cases
+## Slide 13: The five policy cases
 
 Appendix only
 
@@ -196,7 +211,7 @@ The handler takes a route and an authentication label and prints an integer. The
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 13: Runner token and the dev disk
+## Slide 14: Runner token and the dev disk
 
 Appendix only
 
@@ -208,7 +223,7 @@ The token case is loopback HTTP. The broad fixture stands in for the runner secr
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 14: Allowed host, wrong account
+## Slide 15: Allowed host, wrong account
 
 Appendix only
 
@@ -221,7 +236,7 @@ https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 15: An earlier promote stored a marker
+## Slide 16: An earlier promote stored a marker
 
 Appendix only
 
@@ -234,7 +249,7 @@ https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 https://github.com/zozo123/nyc-talk/blob/main/evidence/baseline-audit.json
 [/Sources]
 
-## Slide 16: What was recorded
+## Slide 17: What was recorded
 
 Appendix only
 
@@ -246,7 +261,7 @@ The records bind their source. The Linux recordings use bubblewrap on an Ubuntu 
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 [/Sources]
 
-## Slide 17: Reproduce the factory
+## Slide 18: Reproduce the factory
 
 Appendix only
 
@@ -264,7 +279,7 @@ https://metr.org/blog/2025-06-05-recent-reward-hacking/
 https://web.archive.org/web/20230127205249/https://www.cidersecurity.io/blog/research/ppe-poisoned-pipeline-execution/
 [/Sources]
 
-## Slide 18: The paired run
+## Slide 19: The paired run
 
 Appendix only
 
@@ -276,7 +291,7 @@ The paired run behind slides 4 and 5. Same checker bytes, same launch, same prog
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 19: One unused approval
+## Slide 20: One unused approval
 
 Appendix only
 

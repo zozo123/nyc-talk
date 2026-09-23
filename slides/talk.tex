@@ -247,10 +247,33 @@ Corrected code, same answer key & \textcolor{acid}{ACCEPT}\\
 Back to our ticket. In the same recording, we also ran it that way: the answer key belongs to the controller, where the agent cannot write. Same broken code: REJECT. The door never opens. The agent's edit is still sitting in the workspace. It just no longer counts. Then the corrected code: ACCEPT. Now the ticket is actually done.}
 \end{frame}
 
-\renewcommand{\track}{10  /  MONDAY}
+\renewcommand{\track}{10  /  FOUR BOUNDARIES}
+\begin{frame}[t]
+% title: It was one of four
+% time: 10:00-11:00
+% cue: The answer key was one of four. One breath per row: the escape, then the boundary. End on the job still finishing.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+\frametitle{It was one of four}
+{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.38\textwidth}>{\raggedright\arraybackslash}p{.32\textwidth}@{}}
+\textcolor{acid}{Non-escape escape} & \textcolor{acid}{What we recorded} & \textcolor{acid}{The boundary that held}\\\midrule
+Inherited credentials & A broad runner token read another project. & Scoped, short-lived token: \textcolor{acid}{403}\\
+Dangerous mount & A writable bind changed the next job's file. & Read-only, scoped mount: \textcolor{acid}{blocked}\\
+Allowed endpoint & An allowed host took data to another account. & No direct network, fixed broker: \textcolor{acid}{nothing sent}\\
+Verifier tampering & The answer key moved. FAIL became PASS. & Owned criteria, tamper-evident history: \textcolor{acid}{REJECT}\\
+\end{tabular}}
+\takeaway{Four boundaries, each at the layer that can enforce it.}
+\scope{Same Linux lab. Token and upload cases use loopback HTTP. Appendix A2, A3.}
+\note{The answer key was the quietest of four non-escape escapes, and we recorded all four in the same Linux lab. An inherited runner token read another project. A short-lived, task-scoped token got 403. A writable mount changed the next job's files. A read-only, scoped mount blocked the same write. An allowed upload host carried synthetic private data to another account. With no direct network, and a broker that builds one fixed report, nothing was delivered. And the answer key: controller-owned criteria, and a history that shows any rewrite.
+
+Four boundaries, each at the layer that can actually enforce it. And in every case, the real job still finished.}
+\end{frame}
+
+\renewcommand{\track}{11  /  MONDAY}
 \begin{frame}[t]
 % title: One question for Monday
-% time: 10:00-11:15
+% time: 11:00-12:15
 % cue: Before your next ticket ships. The question. Pause. Three moves.
 % source: https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
 \frametitle{One question for Monday}
@@ -269,10 +292,10 @@ Three moves. First, list it. Every file, config, environment variable and servic
 None of this needs model telemetry. It needs an inventory and an owner.}
 \end{frame}
 
-\renewcommand{\track}{11  /  CLOSE}
+\renewcommand{\track}{12  /  CLOSE}
 \begin{frame}[plain,t]
 % title: The door stayed open
-% time: 11:15-12:00
+% time: 12:15-13:00
 % cue: Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \vspace{7mm}
