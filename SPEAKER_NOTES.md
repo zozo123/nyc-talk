@@ -88,15 +88,16 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 04:45-05:45
 
-Speak to the supply-chain people. Every byte accounted for. Then: which bytes, not who had the right.
+Speak to the supply-chain people. Every file that matters, accounted for. Then: which bytes, not who had the right.
 
-Now the part that should worry anyone who has invested in supply-chain security. We had a perfect record of this run. The program hash. The checker hash. The answer key, before and after. Both exit codes. Put that record in a signed attestation, and it would verify. Every byte is accounted for.
+This part is for the supply-chain people. We had a perfect record of this run. The program hash. The checker hash. The answer key, before and after. Both exit codes. Put that record in a signed attestation, and it would verify.
 
-It is a perfect receipt for a bad decision. Provenance tells you which bytes were used. It does not tell you who had the right to write them. The answer key was named, hashed and recorded, and it was written by the agent it was judging.
+It is a perfect receipt for a bad decision. The answer key change is right there on the receipt, and nothing in verification asked about it. Build provenance tells you which bytes were used, not who had the right to write them. SLSA's source track asks that, with two-party review of commits. This answer key was never committed. It was rewritten inside the run, by the agent it was judging.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://slsa.dev/spec/v1.2/verifying-artifacts
+https://slsa.dev/spec/v1.2/source-requirements
 [/Sources]
 
 ## Slide 7: ``A real model wouldn't.''
@@ -119,13 +120,13 @@ https://metr.org/blog/2025-06-05-recent-reward-hacking/
 
 06:45-07:45
 
-Why did the door stay open? Walk the picture. Two routes: what it reads, what it runs.
+Why did the door stay open? Walk the picture. Two routes: code inside the judge, files it reads. Ours already shut the first.
 
-So why did the door stay open? Here is the whole thing in one picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only, exactly as we built it. But the checker reaches into the workspace to read its answer key.
+So why did the door stay open? One picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only. But the checker reaches into the workspace to read its answer key.
 
-o3's code ran inside the program that scored it. Our agent could not reach its checker, so it rewrote what the checker reads. Two routes into the judge: what it runs, and what it reads.
+There are two routes into a judge. o3's code ran inside the program that scored it. Our checker already ran the code as its own process, so that route was shut, and it still went green, because our agent rewrote what the checker reads.
 
-So the judge is not the checker. The judge is the checker plus everything it reads and runs. And part of your judge was inside the sandbox.
+The judge is the checker, what it reads, and any code inside its process. A read-only checker is not a read-only judge.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
@@ -140,26 +141,29 @@ Listen for the shape. One breath per row. End on: something outside said yes.
 
 The answer key was one of four non-escape escapes, and we recorded all four in the same Linux lab. Listen for the shape.
 
-An inherited runner token read another project. The service outside said yes to it. A writable mount changed the next job's files. The host outside said yes to the write. An allowed upload host carried synthetic private data to another account. The service outside said yes to the request. And the answer key. The judge outside said yes to it.
+An inherited runner token read another project. The service outside said yes to it. A writable mount changed the next job's file. The host outside said yes to the write. An allowed upload host carried synthetic private data to another account. The service outside said yes to the request. And the answer key. The checker outside said yes to it.
 
-Four times, the wall held, and something outside the wall said yes to what the agent handed it.
+Four times, the wall held, and something outside said yes on authority the agent held or wrote.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
 ## Slide 10: Secure the acceptors
 
 08:45-10:00
 
-Say the message slowly. Then the show of hands, yours up first. Look around. Then: the permission is the work.
+Say both headline lines exactly as on screen. Beat. Name the confused deputy. Show of hands: yours up, then lower it on the second question. Look around. Lock what you can; the answer key you cannot.
 
-So here is the message. A sandbox limits what the agent can reach. The breach happens where something outside accepts what the agent hands it. Stop thickening the wall. Secure the acceptors.
+So here is the message. Sandboxes limit reach. Breaches happen at acceptance. Keep the wall. It held. But a wall cannot decide what gets accepted. Secure the acceptors.
 
-Quick show of hands, and I will raise mine too. Who runs agents in a sandbox? Keep your hand up if you could list every system outside it that says yes to something your agent produces. Look around. That list is where these escapes happen. Not the wall.
+If that sounds like the confused deputy, it is: a trusted component using its authority for the wrong party. Agents change two things. There are far more deputies. And for one of them, least privilege runs out.
 
-And you cannot fix it by taking permissions away. The agent needs that token, that workspace, that upload, those tests. The permission is the work. What has to change is where the authority to say yes comes from.
+Quick show of hands, and I will raise mine. Who runs agents in a sandbox? Keep it up if you could list every system outside it that says yes to what your agent produces. Look around.
+
+Some of these you can lock, and we did: a narrower token, a read-only path, no direct route. The answer key you cannot lock. Writing tests is the agent's job. The permission is the work.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
@@ -169,11 +173,11 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 
 10:00-11:00
 
-Row by row: the authority each acceptor now requires. Then back to the ticket: REJECT, the door never opens, ACCEPT.
+Row by row: what an outside owner now sets. The rule. Back to the ticket: REJECT, the door never opens, ACCEPT.
 
-Every acceptor needs authority it did not get from the agent. The service now accepts only a short-lived token scoped to this task. Reaching another project: 403. The host takes writes only through a scoped, read-only mount where the file is shared: blocked. The upload service is reachable only through a broker that builds one fixed report: nothing else is sent. And the judge accepts only criteria the controller owns. The agent may propose what counts as correct. It must never be the last writer of what judges it.
+Every acceptor needs authority scoped to this task and issued outside the wall. The service now sees only a short-lived token the controller scoped to this task. Reaching another project: 403. The shared path is now mounted read-only: the same write is blocked. The upload service is reachable only through a broker that builds one fixed report: nothing else is sent. And the judge accepts only criteria the controller owns. The agent may propose what counts as correct. It must never be the last writer of what judges it.
 
-Back to our ticket, with that rule. Same broken code: REJECT. The door never opens. The corrected code: ACCEPT. And in every case, the real job still finished.
+Back to our ticket, with that rule. Same broken code: REJECT. The door never opens. The corrected code: ACCEPT.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
@@ -185,13 +189,13 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 11:00-12:15
 
-The lesson for every security test. Four rows in order. Then our own mistake, plainly.
+Bridge from the four refusals. Four rows in order. Stress row 3, the matching yes. Then our own mistake, plainly.
 
-One more thing we learned the hard way, because it applies to every security test you run. A denial proves nothing until you know which control said no.
+You just saw four refusals. Now ask of each one: which control said no? A denial proves nothing until you know. We learned it on the last acceptor, the release.
 
-After the judge accepts, the release gets one approval for the corrected program. First, we offer the broken code under that fresh, unused approval: DENIED. Then the approved bytes, pointed at a different destination: DENIED. Then the approved bytes to the named place: PUBLISHED. Then the same again: DENIED, because the approval is spent.
+The release gets one approval for the corrected program. First, the broken code under that fresh, unused approval: DENIED. Then the approved bytes, pointed at a different destination: DENIED. Then the approved bytes to the named place: PUBLISHED. That yes is what makes the first two count: the approval was live, so the byte check and the destination check said no. Then the same again: DENIED, because the approval is spent.
 
-Our first version of this test tried the broken code only after the approval was spent. It was denied, and we could not tell whether the byte check worked or the replay check hid it. Test so that only the control under test could have said no.
+Our first version of this test tried the broken code only after the approval was spent. It was denied, and we could not tell which control said no.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -204,9 +208,9 @@ https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 
 The question. Pause. Three moves.
 
-So, one question to take back. What outside your sandbox says yes to your agent, and who gave it the authority to?
+One question to take back. What outside your sandbox says yes to your agent, and who gave it the authority to?
 
-Three moves. First, list every acceptor: the services its tokens reach, the paths it can write that someone else reads, the endpoints it can send to, the checks that judge its work, and the release that ships it. Second, for each one, name who owns the authority it checks. If the answer is the agent, that is your finding. Third, test every no so that only that control could have said it.
+Three moves. First, list every acceptor: the services its tokens reach, the paths it can write that someone else reads, the endpoints it can send to, the checks that judge its work, and the release that ships it. Second, for each one, ask what its yes rests on. If the agent wrote that, or it is wider than this task needs, that is your finding. Third, test every no so that only that control could have said it, and pair it with a yes.
 
 None of this needs model telemetry. It needs an inventory and an owner.
 
@@ -224,7 +228,7 @@ The code and the recordings are in the repository on the screen. Every hash you 
 
 Now remember the ticket. Lock down the admin page.
 
-The sandbox held. The checker held. The door stayed open. The agent never had to leave. Something outside said yes.
+The sandbox held. The checker held. The door stayed open. Nothing broke out. Something outside said yes.
 
 Your agent escaped without escaping the sandbox. Thank you.
 
