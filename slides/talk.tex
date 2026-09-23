@@ -34,7 +34,7 @@
 
 \begin{frame}[plain,t]
 % title: What changed when the test went green?
-% time: 00:00-01:00
+% time: 00:00-01:15
 % cue: Show FAIL, then PASS. Ask what changed.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \vspace{8mm}
@@ -57,7 +57,7 @@ The worker in the recording is a script. The program is a small command-line mod
 \renewcommand{\track}{02  /  ONE CASE}
 \begin{frame}[t,fragile]
 % title: No login prints 200
-% time: 01:00-02:30
+% time: 01:15-02:15
 % cue: Name the case. Then the two numbers.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 \frametitle{No login prints 200}
@@ -77,7 +77,7 @@ A correct program prints 401 for no login, 200 for a real admin, 403 for an ordi
 \renewcommand{\track}{03  /  THE CHECKER}
 \begin{frame}[t,fragile]
 % title: The checker is protected
-% time: 02:30-04:00
+% time: 02:15-03:30
 % cue: Denied first. Then the line it reads.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -96,7 +96,7 @@ The checker then loads expected.json from its working directory. That file is in
 \renewcommand{\track}{04  /  WHAT MOVED}
 \begin{frame}[t,fragile]
 % title: Only the answer file moved
-% time: 04:00-06:00
+% time: 03:30-04:45
 % cue: Read across the row. Stop on PASS.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{Only the answer file moved}
@@ -121,7 +121,7 @@ The diff is the required status for admin:none, 401 becoming 200, and the same c
 \renewcommand{\track}{05  /  HASHES}
 \begin{frame}[t]
 % title: What the three hashes say
-% time: 06:00-07:00
+% time: 04:45-05:45
 % cue: One sentence per hash.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{What the three hashes say}
@@ -138,7 +138,7 @@ Hashing the altered answers does not make them authoritative. Their identity and
 \renewcommand{\track}{06  /  WHY}
 \begin{frame}[t,fragile]
 % title: The file defines success
-% time: 07:00-08:00
+% time: 05:45-07:00
 % cue: Point at the load. Then at who can write it.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 \frametitle{The file defines success}
@@ -159,7 +159,7 @@ The worker here is a script with that write in it. The recording shows the actio
 \renewcommand{\track}{07  /  SAME PROGRAM}
 \begin{frame}[t]
 % title: Controller-owned criteria
-% time: 08:00-09:15
+% time: 07:00-08:00
 % cue: REJECT the same program. The fix is the next slide.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{Controller-owned criteria}
@@ -178,7 +178,7 @@ Program 76fcb0904f51, the one that prints 200, is REJECT. The demonstrated edit 
 \renewcommand{\track}{08  /  THE FIX}
 \begin{frame}[t]
 % title: The corrected program
-% time: 09:15-10:30
+% time: 08:00-09:00
 % cue: Different hash. Five numbers. ACCEPT.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{The corrected program}
@@ -198,7 +198,7 @@ The repair stops the demonstrated edit and keeps the legitimate task. The accept
 \renewcommand{\track}{09  /  PUBLISH}
 \begin{frame}[t]
 % title: One unused approval
-% time: 10:30-12:00
+% time: 09:00-10:30
 % cue: Say unused. Then denied, published, denied.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
@@ -219,7 +219,7 @@ Because the first denial happens while the approval is unused, the refusal is th
 \renewcommand{\track}{10  /  THREE QUESTIONS}
 \begin{frame}[t]
 % title: Three questions for another system
-% time: 12:00-13:15
+% time: 10:30-11:30
 % cue: Read the three questions. Do not name a vendor.
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 \frametitle{Three questions for another system}
@@ -238,7 +238,7 @@ These questions inspect a pipeline. They do not by themselves show that another 
 \renewcommand{\track}{11  /  TITLE PAYOFF}
 \begin{frame}[t]
 % title: The sandbox held
-% time: 13:15-13:40
+% time: 11:30-12:45
 % cue: Say what did not happen. Then name the allowed write.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{The sandbox held}
@@ -258,7 +258,7 @@ So sandbox isolation and release authorization are different boundaries. You can
 \renewcommand{\track}{12  /  CLOSE}
 \begin{frame}[plain,t]
 % title: The worker changed what counted as correct
-% time: 13:40-14:00
+% time: 12:45-14:00
 % cue: Say the sandbox held. Leave PASS beside the unchanged program. Stop.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \vspace{8mm}
@@ -267,13 +267,15 @@ So sandbox isolation and release authorization are different boundaries. You can
 {\ttfamily program \texttt{76fcb0904f51}\\
 checker \texttt{f5d8d3468bbe}\\
 answers \texttt{0494f1a01dee} $\longrightarrow$ \texttt{390e5e764916}\\[2mm]
-\textcolor{acid}{\bfseries PASS}}
+}\vspace{1mm}{\color{acid}\fontsize{28}{32}\selectfont\bfseries PASS}
 \vfill
 {\color{acid}\ttfamily\href{https://github.com/zozo123/nyc-talk}{github.com/zozo123/nyc-talk}\par}
 {\color{muted}\small Pier Sixty\quad 21 October 2026\par}
 \note{The sandbox held. The worker changed what counted as correct. The program and the checker on the slide are the same prefixes as the failing run. The answer file is the one that moved, and the checker printed PASS. That is the moment to leave up: PASS beside the unchanged bad program, with the reason visible in the answer-file hash.
 
-The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording. Thank you.}
+The repository has the source and the Linux recordings. The token, the mount, the allowed host, and the older gate are in the following slides. Each has its own prerequisite. The older gate flaw needs access to a controller-side object. The worker path to that flaw is not in this recording.
+
+The sandbox held. The worker changed what counted as correct. Thank you.}
 \end{frame}
 
 \appendix

@@ -6,27 +6,29 @@
 
 Attendance is confirmed. Slides are due 9 October. Speaker dinner follows the happy hour. A logistics note to Ian, Anna, Kayla, and Neil is still awaiting reply. Do not invent a stage time on the day.
 
-The spoken script contains 1,200 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
+The spoken script contains 1,215 words. The timings are budgets for speech, pauses and pointing at evidence. They are not a measured human rehearsal.
 
 | Clock | Slide | Stage action |
 |---|---:|---|
-| 00:00-01:00 | 1 | FAIL, then PASS. Ask what changed. |
-| 01:00-02:30 | 2 | No login must be 401. The program prints 200. |
-| 02:30-04:00 | 3 | Checker write denied. It reads expected.json. |
-| 04:00-06:00 | 4 | Same program, same checker, new answer file, PASS. |
-| 06:00-07:00 | 5 | Say what each hash rules out. |
-| 07:00-08:00 | 6 | The workspace write included the acceptance criteria. |
-| 08:00-09:15 | 7 | Controller-owned cases reject the same program. |
-| 09:15-10:30 | 8 | The corrected program is accepted. |
-| 10:30-12:00 | 9 | Unused approval: denied, published, denied. |
-| 12:00-13:15 | 10 | Three questions for another system. |
-| 13:15-13:40 | 11 | The sandbox held: denied overwrite, fixed bytes, allowed workspace write changed the decision. |
-| 13:40-14:00 | 12 | “The sandbox held. The worker changed what counted as correct.” Stop. |
+| 00:00-01:15 | 1 | FAIL, then PASS. Ask what changed. |
+| 01:15-02:15 | 2 | No login must be 401. The program prints 200. |
+| 02:15-03:30 | 3 | Checker write denied. It reads expected.json. |
+| 03:30-04:45 | 4 | Same program, same checker, new answer file, PASS. |
+| 04:45-05:45 | 5 | Say what each hash rules out. |
+| 05:45-07:00 | 6 | The workspace write included the acceptance criteria. |
+| 07:00-08:00 | 7 | Controller-owned cases reject the same program. |
+| 08:00-09:00 | 8 | The corrected program is accepted. |
+| 09:00-10:30 | 9 | Unused approval: denied, published, denied. |
+| 10:30-11:30 | 10 | Three questions for another system. |
+| 11:30-12:45 | 11 | The sandbox held: denied overwrite, fixed bytes, allowed workspace write changed the decision. |
+| 12:45-14:00 | 12 | “The sandbox held. The worker changed what counted as correct.” Stop. |
 | 14:00-15:00 | - | Margin for transitions or the host. |
 
 ## Rehearsal
 
-Rehearse with an audible timer. FAIL and PASS are up in the first minute. The hash row is on screen by minute five. The unused approval is on screen by minute eleven. The title payoff is up by minute thirteen.
+Rehearse with an audible timer. FAIL and PASS are up in the first minute. The hash row is on screen by minute four. The unused approval is on screen by minute nine. The title payoff is up by minute twelve.
+
+The clock is budgeted so no slide exceeds about 120 spoken words per minute. Slides 4 and 7 are deliberately the sparsest: the silence while the room reads the hash row, and the beat after REJECT, are the content. If you reach slide 9 ahead of 09:00, do not speed up the close; spend the margin on those two pauses.
 
 If behind, keep slides 4, 7, 8, 9, 11, and 12. Say the token, mount, and host only if asked. Do not read full hashes aloud. The prefixes on the slide are enough. The payload is a CLI fixture and the worker is a script. State that once.
 

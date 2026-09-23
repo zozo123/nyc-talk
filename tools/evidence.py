@@ -6,6 +6,8 @@ against a malicious repository owner who can rewrite both source and evidence.
 """
 import hashlib
 import json
+import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +47,28 @@ def validate_checks(record, required, mode):
         raise ValueError('Missing, duplicate, or unexpected check')
 
 
+def validate_rendered_digests(records, root=ROOT):
+    """Every hash printed on a slide or in the paper must be a real digest.
+
+    The deck is the artifact the audience checks. Nothing else in this build
+    reads it, so a single transposed hex digit would compile, pass the tests and
+    reach the stage. The truth set is derived from the fixture constants, since
+    several rendered prefixes are digests of source constants rather than values
+    that appear verbatim in a record.
+    """
+    sys.path.insert(0, str(root))
+    from factory.core import (BAD, CASES, GOOD, WEAK_CHECKER, WORKER_EXPECTED,
+                              canonical, digest)
+    known = {digest(BAD.encode()), digest(GOOD.encode()), digest(WEAK_CHECKER.encode()),
+             digest(canonical([{'input': v, 'output': e} for v, e in CASES])),
+             digest(canonical(WORKER_EXPECTED))}
+    known |= set(re.findall(r'[0-9a-f]{64}', json.dumps(records)))
+    for name in ('slides/talk.tex', 'paper/paper.tex'):
+        for token in sorted(set(re.findall(r'[0-9a-f]{12,64}', (root / name).read_text()))):
+            if not any(value.startswith(token) for value in known):
+                raise ValueError('Unknown digest in ' + name + ': ' + token)
+
+
 def verify_all(root=ROOT):
     read = lambda name: json.loads((root / 'evidence' / name).read_text())
     lab, factory, isolated = read('results.json'), read('factory-results.json'), read('isolated-factory.json')
@@ -67,6 +91,11 @@ def verify_all(root=ROOT):
         raise ValueError('Unexpected bad fixture observations')
     if [o.get('value') for o in isolated['good_outputs']] != [401, 200, 403, 200, 401]:
         raise ValueError('Unexpected good fixture observations')
+    if isolated['subject_file_sha256_before'] != isolated['subject_file_sha256_after']:
+        raise ValueError('The candidate changed')
+    if isolated['expected_file_sha256_before'] == isolated['expected_file_sha256_after']:
+        raise ValueError('The answer key did not move')
+    validate_rendered_digests((lab, factory, isolated), root)
     return lab, factory, isolated
 
 

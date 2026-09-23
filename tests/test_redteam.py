@@ -3,7 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from factory.core import BAD, SUBJECT, Gate, freeze, verifier_bundle_digest
+from factory.core import (BAD, SUBJECT, VERIFIER_TCB, Gate, freeze,
+                          verifier_bundle_digest)
 
 LAUNCH = {"executor": "bubblewrap", "compare": "controller", "cases": 5}
 ENV = {"worker_network": False, "candidate_mount": "read-only", "expected_results_in_child": False}
@@ -40,14 +41,21 @@ class RedTeamDecisionIntegrity(unittest.TestCase):
             self.assertEqual(auth.verdict["kind"], "no_approval")
 
     def test_verifier_identity_covers_the_isolation_runner(self):
-        runner = Path(__file__).resolve().parents[1] / "lab" / "run.py"
-        original = runner.read_bytes()
-        before = verifier_bundle_digest(LAUNCH)
-        try:
-            runner.write_bytes(original + b"\n# red-team verifier dependency mutation\n")
-            after = verifier_bundle_digest(LAUNCH)
-        finally:
-            runner.write_bytes(original)
+        """Mutate a mirrored copy: the suite must never write to a TCB member."""
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as tmp:
+            mirror = Path(tmp)
+            for name in VERIFIER_TCB:
+                member = mirror / name
+                member.parent.mkdir(parents=True, exist_ok=True)
+                member.write_bytes((root / name).read_bytes())
+            runner = mirror / "lab" / "run.py"
+            self.assertTrue(runner.exists(),
+                            "lab/run.py must be a declared VERIFIER_TCB member")
+            before = verifier_bundle_digest(LAUNCH, root=mirror)
+            runner.write_bytes(runner.read_bytes()
+                               + b"\n# red-team verifier dependency mutation\n")
+            after = verifier_bundle_digest(LAUNCH, root=mirror)
         self.assertNotEqual(
             before,
             after,
