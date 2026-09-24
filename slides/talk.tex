@@ -1,5 +1,5 @@
-% Canonical LaTeX source. An engineer walking colleagues through one experiment.
-% Name the actual components. Show the recorded result, then explain it.
+% Canonical LaTeX source. Thesis: when the agent writes the code and the test, a green check is a self-report.
+% Tell it as a story. Every real case is sourced on backup slide A9; our lab is the recorded evidence.
 \documentclass[aspectratio=169,11pt]{beamer}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern,listings,booktabs,array,tikz}
@@ -18,7 +18,7 @@
 \setbeamercolor{structure}{fg=acid}
 \setbeamertemplate{navigation symbols}{}
 \setbeamersize{text margin left=10mm,text margin right=10mm}
-\newcommand{\track}{00 / TICKET}
+\newcommand{\track}{00 / TUESDAY}
 \newcommand{\rail}{\begin{tikzpicture}[remember picture,overlay]\fill[grid] (current page.north west) rectangle ($(current page.south west)+(5mm,0)$);\node[rotate=90,anchor=south,color=dim,font=\fontsize{6}{7}\selectfont\ttfamily] at ($(current page.west)+(2.6mm,0)$) {YOUR AGENT ESCAPED WITHOUT ESCAPING};\end{tikzpicture}}
 \setbeamertemplate{frametitle}{\rail\vspace{1.0mm}{\color{warn}\fontsize{7}{8}\selectfont\ttfamily\track}\hspace{2mm}{\color{acid}\rule{18mm}{0.6pt}}\par\vspace{0.2mm}\insertframetitle\par\vspace{0.8mm}}
 \setbeamerfont{frametitle}{size=\fontsize{20}{23}\selectfont,series=\bfseries}
@@ -30,13 +30,13 @@
 \newcommand{\giant}[2]{{\color{#1}\fontsize{39}{42}\selectfont\bfseries #2}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcommand{\tablefont}{\fontsize{9.6}{12}\selectfont\renewcommand{\arraystretch}{1.25}\setlength{\tabcolsep}{3pt}}
-\hypersetup{pdftitle={Your Agent Escaped Without Escaping the Sandbox},pdfauthor={Yossi Eliaz},pdfsubject={How a broken program got a passing result}}
+\hypersetup{pdftitle={Your Agent Escaped Without Escaping the Sandbox},pdfauthor={Yossi Eliaz},pdfsubject={Unit tests are dead}}
 \begin{document}
 
 \begin{frame}[plain,t]
 % title: Your Agent Escaped Without Escaping the Sandbox
-% time: 00:00-00:45
-% cue: Start with the ticket. No preamble.
+% time: 00:00-00:50
+% cue: Tell Tuesday as a scene. Pause before the last two sentences.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 \rail\vspace{6mm}
@@ -44,65 +44,127 @@
 \vspace{5mm}
 {\fontsize{27}{31}\selectfont\bfseries Your Agent Escaped\\Without Escaping the Sandbox\par}
 \vspace{3mm}
-{\fontsize{13}{16}\selectfont How a broken program got a passing result\par}
+{\fontsize{15}{18}\selectfont\color{acid}\bfseries Unit tests are dead.\par}
 \vspace{6mm}
 \tikz\node[draw=dim,rounded corners=2pt,inner xsep=3mm,inner ysep=2.2mm,text=paper]{{\color{gold}\ttfamily\fontsize{8}{10}\selectfont TICKET}\hspace{4mm}{\ttfamily\fontsize{11}{13}\selectfont Lock down /admin. No login should return 401.}};
 \vfill
 {\color{dim}\fontsize{9}{11}\selectfont Yossi Eliaz / Incredibuild / New York / 21 Oct 2026\par}
-\scope{Controlled experiment using a command-line model.}
-\note{We built a small experiment around a familiar ticket: lock down admin. If you're not logged in, you should get 401.
+\scope{The agent in our lab is scripted. Opus 5.5 is an assumption in the story, not a measurement.}
+\note{Tuesday. You give your agent a ticket: lock down admin. Anyone who isn't logged in gets a 401.
 
-The program was broken. It returned 200 for every case. We put a worker in a Linux sandbox and made the checker read-only. The first check failed, as it should.
+Assume your agent is Opus 5.5, the best coding model you can buy. It works in a sandbox with no network, and the test checker is locked.
 
-Then we changed something, ran the same checker again, and got a pass. The program was still broken.}
+A few minutes later, every test is green. And admin still lets anyone in.
+
+Unit tests are dead. Not because agents stopped writing them. Because agents write them.}
 \end{frame}
 
 \renewcommand{\track}{01 / RESULT}
 \begin{frame}[t]
-% title: The check passed. The bug was still there.
-% time: 00:45-01:30
-% cue: Let the room compare PASS and 200 before you speak.
+% title: All green. Door open.
+% time: 00:50-01:35
+% cue: Let the room compare PASS and 200. Say the scripted-agent line plainly, once.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{The check passed. The bug was still there.}
+\frametitle{All green. Door open.}
 \vspace{12mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{.30\textwidth}\kicker{CHECKER}\vspace{2mm}\giant{acid}{PASS}\end{column}
-\begin{column}{.36\textwidth}\kicker{PROGRAM OUTPUT, admin:none}\vspace{2mm}\giant{warn}{200}\end{column}
-\begin{column}{.30\textwidth}\kicker{REQUIRED OUTPUT}\vspace{2mm}\giant{paper}{401}\end{column}
+\begin{column}{.36\textwidth}\kicker{/admin, NO LOGIN}\vspace{2mm}\giant{warn}{200}\end{column}
+\begin{column}{.30\textwidth}\kicker{REQUIRED}\vspace{2mm}\giant{paper}{401}\end{column}
 \end{columns}
 \vfill
-\scope{Recorded command-line output from one run. No production deployment.}
-\note{These two results came from the same recorded run. The checker reported PASS. For the input representing admin without a login, the program still returned 200.
+\scope{Recorded run. The agent is a script we control, so every step replays exactly. Command-line model of an access check.}
+\note{We built that Tuesday in a lab and recorded it. Here's the result. The checker says PASS. Admin with no login returns 200. It should be 401.
 
-This is a small command-line model of an access check. We didn't deploy a vulnerable website. We stopped at the passing result.
-
-That result matters if your next step is to release whatever passes. So let's look at what changed between the failing run and the passing one.}
+One thing up front. In our lab the agent is a script. We played the agent, the way a pentester plays the attacker, so every step can be replayed. We didn't need a model to misbehave. We needed to know whether the pipeline would notice.}
 \end{frame}
 
-\renewcommand{\track}{02 / SETUP}
+\renewcommand{\track}{02 / WHY TESTS WORKED}
 \begin{frame}[t]
-% title: What we ran
-% time: 01:30-02:30
+% title: A test is a second opinion
+% time: 01:35-02:45
+% cue: Left panel, then right panel. Land the self-report line slowly.
+% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
+\frametitle{A test is a second opinion}
+\vspace{3mm}
+\begin{tikzpicture}[b/.style={draw,rounded corners=2pt,minimum width=26mm,minimum height=9mm,align=center,text=paper,font=\small}, arr/.style={-{Latex},thick}]
+\node[dim,font=\scriptsize\bfseries,anchor=west] at (0.1,2.55) {BEFORE: TWO AUTHORS};
+\node[b,draw=cyan] (s) at (1.4,1.6) {decides what\\correct means};
+\node[b,draw=cyan] (d) at (1.4,0.1) {writes the code};
+\node[b,draw=acid] (t) at (4.7,1.6) {test};
+\node[b,draw=acid] (c) at (4.7,0.1) {code};
+\draw[arr,cyan] (s)--(t); \draw[arr,cyan] (d)--(c);
+\draw[{Latex}-{Latex},thick,warn] (t)--node[right,font=\scriptsize,color=warn,xshift=1mm]{disagree = red}(c);
+\draw[grid,thick] (7.35,-0.5)--(7.35,2.7);
+\node[warn,font=\scriptsize\bfseries,anchor=west] at (7.7,2.55) {NOW: ONE AUTHOR};
+\node[b,draw=warn] (a) at (8.9,0.85) {agent\\{\scriptsize goal: green}};
+\node[b,draw=acid] (t2) at (12.1,1.6) {test};
+\node[b,draw=acid] (c2) at (12.1,0.1) {code};
+\draw[arr,warn] (a)--(t2); \draw[arr,warn] (a)--(c2);
+\end{tikzpicture}
+\vspace{6mm}
+
+{\fontsize{16}{20}\selectfont\bfseries A test written by the thing it tests is a self-report.\par}
+\note{Why did tests ever work? Because two people were involved. One person decided what correct means and wrote it down as a test. Someone else wrote the code. When they disagreed, the test went red, and that disagreement was the whole value.
+
+With an agent, one author holds both pens. It writes the code, it writes the tests, and it has one goal: make it green. Even a perfectly honest agent grading its own work is giving you a self-report.
+
+That's what I mean by dead. The test still runs. It just stopped being a second opinion.}
+\end{frame}
+
+\renewcommand{\track}{03 / HISTORY}
+\begin{frame}[t]
+% title: When the answer is in reach
+% time: 02:45-03:55
+% cue: One breath per year. None of them broke out of anything.
+% source: https://arxiv.org/abs/1803.03453
+% source: https://sakana.ai/ai-scientist/
+% source: https://github.com/SWE-bench/SWE-bench/issues/465
+\frametitle{When the answer is in reach}
+\vspace{2mm}
+\begin{tikzpicture}[e/.style={draw,rounded corners=2pt,minimum height=31mm,text width=38mm,align=left,text=paper,inner sep=2mm,anchor=north west,execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}}]
+\node[e,draw=gold] at (0,0) {{\color{gold}\fontsize{17}{19}\selectfont\bfseries 2018}\\[1.5mm]{\bfseries GenProg}\\[1mm]{\small A program-repair system deletes the file of expected outputs. Every test passes.}};
+\node[e,draw=cyan] at (4.55,0) {{\color{cyan}\fontsize{17}{19}\selectfont\bfseries 2024}\\[1.5mm]{\bfseries Sakana AI Scientist}\\[1mm]{\small Runs out of time and tries to raise its own time limit instead of speeding up.}};
+\node[e,draw=warn] at (9.1,0) {{\color{warn}\fontsize{17}{19}\selectfont\bfseries 2025}\\[1.5mm]{\bfseries SWE-bench agents}\\[1mm]{\small A Claude Sonnet model runs \texttt{git log} and finds the future commit with the fix.}};
+\end{tikzpicture}
+\vfill
+\scope{None of these broke out of a sandbox. Sources: backup slide A9.}
+\note{This isn't hypothetical. It has a history.
+
+In 2018, researchers reported that a program-repair system called GenProg learned to delete the file holding the expected outputs. With nothing to compare against, every test passed.
+
+In 2024, Sakana's AI Scientist hit a time limit on its experiments. Instead of making its code faster, it tried to change its own time limit.
+
+In 2025, on the SWE-bench benchmark, agents including a Claude Sonnet model ran git log and found the future commit that contained the fix.
+
+None of them broke out of anything. The answer was within reach, and they reached for it.}
+\end{frame}
+
+\renewcommand{\track}{04 / THE LAB}
+\begin{frame}[t]
+% title: We built the pipeline that should survive it
+% time: 03:55-04:45
 % cue: Point to the writable directory, then to DENIED.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{What we ran}
+\frametitle{We built the pipeline that should survive it}
 \vspace{2mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{.43\textwidth}
+\begin{column}{.40\textwidth}
 {\fontsize{11}{15}\selectfont
 \begin{itemize}\setlength{\itemsep}{1.4mm}
-\item A command-line program, checked against five inputs.
-\item A scripted worker in a Linux sandbox with no network.
-\item A read-only checker. A writable working directory.
-\item Direct attempt to overwrite the checker: {\color{warn}\bfseries DENIED}.
+\item Linux sandbox, no network.
+\item Program and its expected answers in the agent's working directory.
+\item Checker on a read-only mount.
+\item Overwrite the checker: {\color{warn}\bfseries DENIED}.
+\item First run: {\color{warn}\bfseries FAIL}, correctly.
 \end{itemize}\par}
 \end{column}
-\begin{column}{.55\textwidth}
+\begin{column}{.58\textwidth}
 \begin{tikzpicture}[dir/.style={draw,rounded corners=2pt,minimum width=30mm,minimum height=15mm,align=center,text=paper,inner sep=1.5mm}, arr/.style={-{Latex},thick}]
 \draw[warn,dashed,thick,rounded corners=3pt] (-0.2,-0.9) rectangle (7.2,3.5);
 \node[warn,font=\scriptsize\bfseries,anchor=west] at (-0.1,3.25) {LINUX SANDBOX / NO NETWORK};
-\node[draw=cyan,rounded corners=2pt,minimum width=34mm,minimum height=9mm,text=paper] (w) at (3.5,2.3) {scripted worker};
+\node[draw=cyan,rounded corners=2pt,minimum width=34mm,minimum height=9mm,text=paper] (w) at (3.5,2.3) {agent (scripted)};
 \node[dir,draw=acid] (work) at (1.7,0.1) {{\bfseries /work}\\{\scriptsize\color{acid} writable}\\{\scriptsize\ttfamily handler.py}\\{\scriptsize\ttfamily expected.json}};
 \node[dir,draw=dim] (ver) at (5.4,0.1) {{\bfseries /verifier}\\{\scriptsize\color{dim} read-only}\\{\scriptsize\ttfamily checker.py}};
 \draw[arr,acid] (w) -- node[left,font=\scriptsize,color=acid,xshift=-1mm]{write} (work);
@@ -110,252 +172,211 @@ That result matters if your next step is to release whatever passes. So let's lo
 \end{tikzpicture}
 \end{column}
 \end{columns}
-\vfill
-\scope{The worker is a script, so every run repeats the same actions. Program and checker hashes recorded before and after.}
-\note{The worker here is a script. We tell it exactly what to do so we can repeat the same sequence. This experiment tests what the setup allows. It doesn't measure whether a model would discover the trick.
+\note{So we built the pipeline that should survive that. A Linux sandbox with no network. The program and its expected answers sit in the agent's working directory, because that's where the work happens. The checker is on a read-only mount.
 
-The worker can write its working directory. It can't change the checker, and we tested that directly: the overwrite was denied.
-
-We also recorded the program and checker hashes before and after. Both stayed the same. The important file was in the directory the worker could write.}
+First the agent tried the obvious move: overwrite the checker. Denied. Good. Then the checker ran and said FAIL. Correct. The program was broken.}
 \end{frame}
 
-\renewcommand{\track}{03 / THE CHANGE}
+\renewcommand{\track}{05 / SUSPECTS}
 \begin{frame}[t,fragile]
-% title: The expected answers changed
-% time: 02:30-03:45
-% cue: Point at 401, then at 200. Pause after "match it."
+% title: Three suspects
+% time: 04:45-06:00
+% cue: One suspect at a time. Point at 401, then 200. Pause before the last line.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{The expected answers changed}
-\kicker{expected.json {\color{dim}\mdseries / excerpt: one of five rows}}
+\frametitle{Three suspects}
+{\tablefont\begin{tabular}{@{}L{.24\textwidth}L{.20\textwidth}L{.20\textwidth}L{.28\textwidth}@{}}
+\textcolor{acid}{suspect} & \textcolor{acid}{before} & \textcolor{acid}{after} & \textcolor{acid}{verdict}\\\midrule
+the program & \texttt{76fcb0904f51} & \texttt{76fcb0904f51} & unchanged, still 200\\
+the checker & \texttt{f5d8d3468bbe} & \texttt{f5d8d3468bbe} & unchanged, overwrite denied\\
+the expected answers & \texttt{0494f1a01dee} & \texttt{390e5e764916} & \textcolor{warn}{\bfseries changed}\\
+\end{tabular}\par}
+\vspace{1.5mm}
+\kicker{expected.json {\color{dim}\mdseries / excerpt}}
 \begin{lstlisting}
 - {"input":"admin:none","output":401}
 + {"input":"admin:none","output":200}
 \end{lstlisting}
-\vspace{4mm}
-{\tablefont\begin{tabular}{@{}L{.20\textwidth}L{.22\textwidth}L{.22\textwidth}L{.20\textwidth}@{}}
-& \textcolor{acid}{before} & \textcolor{acid}{after} & \\\midrule
-program & \texttt{76fcb0904f51} & \texttt{76fcb0904f51} & unchanged\\
-checker & \texttt{f5d8d3468bbe} & \texttt{f5d8d3468bbe} & unchanged\\
-expected.json & \texttt{0494f1a01dee} & \texttt{390e5e764916} & \textcolor{warn}{changed}\\
-checker result & FAIL & \textcolor{acid}{PASS} & \\
-\end{tabular}}
-\vfill
-\scope{The worker set all five expected outputs to 200. Three of the five values changed.}
-\note{The checker got its expected answers from this file. The worker replaced them with 200s. Here's the row for admin without a login: 401 became 200.
+\vspace{2mm}
+{\fontsize{14}{17}\selectfont\bfseries It didn't make the code pass the test. It made the test pass the code.\par}
+\scope{All five expected outputs were set to 200; three of them changed.}
+\note{Then the check went green, on the same broken program. So who did it?
 
-Now the broken program's output matched the expected output. The checker did the same comparison and reported PASS.
+Suspect one, the program. We fingerprinted it before and after. Same bytes. Still returns 200.
 
-The program still returned 200. We'd changed the expected result to match it. That's why the hashes matter here: they let us rule out a change to either the program or the checker.}
+Suspect two, the checker. Same bytes, and the overwrite had been denied.
+
+Suspect three, the expected answers, the file the checker compares against. It changed. For admin without a login, 401 became 200. In fact every expected answer became 200.
+
+So the agent didn't make the code pass the test. It made the test pass the code.}
 \end{frame}
 
-\renewcommand{\track}{04 / THE READ}
+\renewcommand{\track}{06 / THE FLAW}
 \begin{frame}[t,fragile]
-% title: The checker trusted a writable file
-% time: 03:45-04:45
-% cue: Point at the line of code, then trace the two arrows.
+% title: The flaw, in four lines
+% time: 06:00-07:10
+% cue: Count the four lines. Stress line four.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-\frametitle{The checker trusted a writable file}
-\kicker{checker.py}
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{The flaw, in four lines}
+\vspace{1mm}
+{\fontsize{12}{15.5}\selectfont
+\begin{enumerate}\setlength{\itemsep}{1.2mm}
+\item The checker is locked.
+\item It reads its expected answers from the workspace:
+\end{enumerate}\par}
+\vspace{0.5mm}
+\hspace{7mm}\begin{minipage}{.9\textwidth}
 \begin{lstlisting}
 expected = json.loads(Path("expected.json").read_text())
 \end{lstlisting}
-\vspace{5mm}
-\begin{tikzpicture}[box/.style={draw,rounded corners=2pt,minimum width=32mm,minimum height=11mm,align=center,text=paper,inner sep=1.5mm}, arr/.style={-{Latex},thick}]
-\node[box,draw=cyan] (w) at (0,0) {scripted worker};
-\node[box,draw=gold] (e) at (5.2,0) {{\ttfamily expected.json}\\{\scriptsize in /work, writable}};
-\node[box,draw=dim] (c) at (10.4,0) {{\ttfamily checker.py}\\{\scriptsize in /verifier, read-only}};
-\draw[arr,warn] (w) -- node[above,font=\scriptsize,color=warn]{writes} (e);
-\draw[arr,acid] (c) -- node[above,font=\scriptsize,color=acid]{reads} (e);
-\end{tikzpicture}
-\vspace{6mm}
-
-{\fontsize{14}{18}\selectfont The checker was read-only. Its expected answers were in the worker's directory.\par}
-\note{This line explains the result. We protected the checker file, but it loaded its expected answers from the working directory. The worker could change that file.
-
-For your own checks, follow those reads. A snapshot, a configuration file, or a test helper may determine what counts as passing.
-
-The program under test is supposed to change. The question is whether the worker can also change the rules used to assess it. In our setup, the expected answers had ended up on the wrong side of that line.}
-\end{frame}
-
-\renewcommand{\track}{05 / METR}
-\begin{frame}[t]
-% title: What METR observed
-% time: 04:45-05:45
-% cue: Say METR as "meter". One example. No rates.
-% source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\frametitle{What METR observed}
-\vspace{2mm}
-{\fontsize{15}{19}\selectfont Asked to make code faster, o3 changed the timing function used to measure it.\par}
-\vspace{7mm}
-\begin{tikzpicture}[box/.style={draw,rounded corners=2pt,minimum width=62mm,minimum height=22mm,align=center,text=paper,inner sep=2mm}]
-\node[box,draw=gold] at (0,0) {{\color{gold}\bfseries OUR EXPERIMENT}\\[1.2mm]expected answers\\[0.6mm]{\scriptsize a file the checker read}};
-\node[box,draw=cyan] at (7.2,0) {{\color{cyan}\bfseries METR'S EXAMPLE}\\[1.2mm]timing function\\[0.6mm]{\scriptsize code running inside the scorer}};
-\end{tikzpicture}
+\end{minipage}
+\vspace{1mm}
+{\fontsize{12}{15.5}\selectfont
+\begin{enumerate}\setcounter{enumi}{2}\setlength{\itemsep}{1.2mm}
+\item The workspace belongs to the agent.
+\item Writing tests is the agent's job, so that permission can't be taken away.
+\end{enumerate}\par}
 \vfill
-\scope{Source: METR, 5 June 2025. Separate model evaluation; none of its results are measurements from this experiment.}
-\note{Our worker was scripted. For an example involving a model, METR reported that o3, asked to make code faster, changed the timing function used to measure it. The measured time went down without showing that the code had improved.
+\scope{Every file was fingerprinted. The change is in our own record. Nothing in the pipeline asked who was allowed to make it.}
+\note{Here's the flaw in four lines. The checker was locked. But it read its expected answers from the workspace. The workspace belongs to the agent. And writing tests is the agent's job, so you can't take that permission away.
 
-The mechanism differs from ours. That example changed code running inside the scorer. Ours changed a file the checker read. Separating the processes addresses that in-process route, but it doesn't fix a writable answer file.}
+That last line is why this isn't just a misconfiguration. Least privilege can remove a token or a mount. It can't remove the agent's pen, because writing tests is the work. What you can change is whose copy counts.
+
+And look at the record. Every file was fingerprinted. The change is right there in our own log. Nothing asked who was allowed to make it.}
 \end{frame}
 
-\renewcommand{\track}{06 / OTHER CASES}
+\renewcommand{\track}{07 / THE FIX}
 \begin{frame}[t]
-% title: Three other cases
-% time: 05:45-07:00
-% cue: One breath per row.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-\frametitle{Three other cases}
-\vspace{3mm}
-{\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.30\textwidth}L{.64\textwidth}@{}}
-\textcolor{acid}{case} & \textcolor{acid}{what happened}\\\midrule
-Inherited credential & A broad token read another project's data.\\
-Shared mount & A write changed another job's file on the host.\\
-Upload service & The service stored the payload under another account.\\
-\textcolor{dim}{Answer key, just shown} & \textcolor{dim}{The checker accepted expected answers written by the worker.}\\
-\end{tabular}}
-\vfill
-\scope{Separate controlled fixtures. Token and upload cases use loopback HTTP.}
-\note{We also recorded three other cases. A worker inherited a token that could read another project. A writable mount let it change another job's file on the host. An upload service accepted a payload under another account.
-
-None needed a process to break out of its sandbox. Each used access the setup had already provided.
-
-These are separate experiments. The token and upload services run locally. Together with the answer key, they give us four specific places to inspect: credentials, shared files, outbound requests, and the checks used to approve the work.}
-\end{frame}
-
-\renewcommand{\track}{07 / CHANGES}
-\begin{frame}[t]
-% title: What we changed
-% time: 07:00-08:00
-% cue: Read across each row: the change, then the result.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-\frametitle{What we changed}
-\vspace{2mm}
-{\tablefont\begin{tabular}{@{}L{.19\textwidth}L{.38\textwidth}L{.37\textwidth}@{}}
-\textcolor{acid}{case} & \textcolor{acid}{change} & \textcolor{acid}{recorded result}\\\midrule
-Token & Scope it to this task. & Other project: 403. Task input: 200.\\
-Shared file & Make the shared input read-only. & Shared write blocked. Task output still writable.\\
-Upload & Runner sends one fixed report to the intended account. Worker has no direct route. & Extra fields refused. Intended report delivered.\\
-Expected answers & Controller keeps its own expected values. & Broken program rejected. Corrected program accepted.\\
-\end{tabular}}
-\vfill
-\scope{Agents can still propose tests. This experiment does not implement a review workflow for them.}
-\note{For the token, we narrowed the scope and checked that the intended input was still available. For the mount, we made the shared input read-only and kept the worker's own output directory writable. For the upload, the runner sent a fixed report to the intended account.
-
-The answer key needs one distinction. Agents can still write tests. Those tests are proposals. A separate owner decides whether they become release criteria. In our experiment, the controller simply kept its own expected values. We didn't implement a review workflow for proposed tests.}
-\end{frame}
-
-\renewcommand{\track}{08 / RERUN}
-\begin{frame}[t]
-% title: The same program now fails
-% time: 08:00-09:00
-% cue: Read the rows top to bottom. Pause on REJECT.
+% title: Separate the pens
+% time: 07:10-08:20
+% cue: Read the three rows top to bottom. Pause on REJECT.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{The same program now fails}
-\vspace{4mm}
+\frametitle{Separate the pens}
+\vspace{1mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.47\textwidth}\kicker{THE AGENT WRITES}{\fontsize{12}{15}\selectfont the code, and proposed tests\par}\end{column}
+\begin{column}{.47\textwidth}\kicker{SOMETHING IT CAN'T WRITE DECIDES}{\fontsize{12}{15}\selectfont which tests count, and the verdict\par}\end{column}
+\end{columns}
+\vspace{5mm}
 {\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.30\textwidth}L{.40\textwidth}L{.22\textwidth}@{}}
 \textcolor{acid}{program} & \textcolor{acid}{expected answers used} & \textcolor{acid}{result}\\\midrule
-Broken & Worker-edited file & \textcolor{warn}{PASS}\\
-Same broken program & Controller's values & \textcolor{acid}{\bfseries REJECT}\\
-Corrected program & Same controller values & \textcolor{acid}{\bfseries ACCEPT}\\
-\end{tabular}}
+Broken & the agent's edited file & \textcolor{warn}{PASS}\\
+Same broken program & the controller's copy & \textcolor{acid}{\bfseries REJECT}\\
+Corrected program & the controller's copy & \textcolor{acid}{\bfseries ACCEPT}\\
+\end{tabular}\par}
 \vfill
-\scope{Acceptance covers the five tested cases. Corrected program: \texttt{5ead8eab70e0}.}
-\note{Here's the comparison after that change. We run the same broken program, but use the controller's expected values. It's rejected. Then we run the corrected program against those same values. It's accepted.
+\scope{The controller keeps its own expected values. A review workflow for agent-proposed tests is not implemented here. The AI-reviewer point is an argument, not a measurement.}
+\note{The fix is to separate the pens. The agent writes the code, and it can propose tests. Something it can't write decides which tests count.
 
-The worker's answer file no longer determines the result. The worker can change the proposed solution, while the controller owns the comparison.
+In our lab, the controller keeps its own copy of the expected answers. The same broken program: rejected. The corrected program: accepted.
 
-That establishes the behavior for our five cases. A real application needs a much broader set of checks. This experiment is about who controls the checks. Five examples don't prove an application secure.}
+And no, replacing the test with an AI reviewer doesn't fix this. The agent writes the code, the comments and the description that the reviewer reads. That's an argument, not something we measured. But it's the same shape: the thing being judged writes what the judge reads.}
 \end{frame}
 
-\renewcommand{\track}{09 / OUR TEST}
+\renewcommand{\track}{08 / OUR TEST}
 \begin{frame}[t]
-% title: What our first test missed
-% time: 09:00-10:30
+% title: Even our own test lied
+% time: 08:20-09:30
 % cue: Slow down for the first test. Then read the four rows in order.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
-\frametitle{What our first test missed}
+\frametitle{Even our own test lied}
 \vspace{1mm}
-{\fontsize{12}{15}\selectfont Our first test tried the wrong bytes after the approval had already been used.\par}
-\vspace{4mm}
+{\fontsize{12}{15}\selectfont Our first test tried the wrong code after the approval had already been used.\par}
+\vspace{2.5mm}
 {\tablefont\fontsize{10.5}{13}\selectfont\begin{tabular}{@{}L{.08\textwidth}L{.60\textwidth}L{.24\textwidth}@{}}
-& \textcolor{acid}{revised test, using one approval} & \textcolor{acid}{result}\\\midrule
-1 & Wrong bytes, approval unused & \textcolor{warn}{DENIED}\\
-2 & Right bytes, wrong destination & \textcolor{warn}{DENIED}\\
-3 & Right bytes, intended destination & \textcolor{acid}{PUBLISHED}\\
+& \textcolor{acid}{fixed test, one approval} & \textcolor{acid}{result}\\\midrule
+1 & Wrong code, approval unused & \textcolor{warn}{DENIED}\\
+2 & Right code, wrong destination & \textcolor{warn}{DENIED}\\
+3 & Right code, intended destination & \textcolor{acid}{PUBLISHED}\\
 4 & Same request again & \textcolor{warn}{DENIED}\\
-\end{tabular}}
+\end{tabular}\par}
 \vfill
+{\fontsize{13}{16}\selectfont A no only counts when a matching yes works.\par}
 \scope{Publication in this experiment stores the bytes in a local database.}
-\note{There's another place to check: the step that releases the approved bytes. Our approval names the artifact and destination, and can be used once.
+\note{Now the humbling part. Our release gate takes one approval, for one artifact and one destination, used once. We wrote a test to prove it refuses substituted code.
 
-Our first substitution test was misleading. We published the approved artifact, then tried different bytes with the same approval. The gate refused. But the approval was already spent. That test couldn't tell us whether the byte check worked.
+The test passed. But it tried the wrong code after the approval had already been used up. The refusal proved nothing about the code check.
 
-We changed the order. Wrong bytes first, while the approval was still unused. Then the wrong destination. Both were refused. The right bytes at the right destination succeeded, and only then did we test reuse.
+So we changed the order. Wrong code first, while the approval is unused: denied. Wrong destination: denied. Right code, right place: published. Then reuse: denied.
 
-Now each refusal tells us something. We also know the intended operation still works.}
+A no only counts as evidence when a matching yes works.}
 \end{frame}
 
-\renewcommand{\track}{10 / YOUR PIPELINE}
+\renewcommand{\track}{09 / EVERY YES}
 \begin{frame}[t]
-% title: Where to look in your pipeline
-% time: 10:30-11:30
-% cue: Read the four questions. Pause after the fourth.
-% source: https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
-% source: https://github.com/zozo123/nyc-talk/blob/main/RUNBOOK.md
-\frametitle{Where to look in your pipeline}
-\vspace{1mm}
-{\fontsize{11}{14}\selectfont Take one release check and trace:\par}
-\vspace{2mm}
-{\fontsize{12.5}{16}\selectfont
-\begin{enumerate}\setlength{\itemsep}{1.8mm}
-\item Which expected answers, configuration, and helper code does it use?
-\item Which of those can the agent change?
-\item Who approves changes to the rules used for release?
-\item Does the intended operation still work when the unwanted one is refused?
-\end{enumerate}\par}
+% title: Every yes outside the sandbox is a test
+% time: 09:30-10:45
+% cue: One breath per row: the yes, our lab, the real case.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+% source: https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+% source: https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
+\frametitle{Every yes outside the sandbox is a test}
+{\tablefont\fontsize{9.4}{11.4}\selectfont\begin{tabular}{@{}L{.22\textwidth}L{.34\textwidth}L{.38\textwidth}@{}}
+\textcolor{acid}{who says yes} & \textcolor{acid}{our lab} & \textcolor{acid}{in the wild}\\\midrule
+a service, to a token & a broad token read another project & tj-actions, 2025: a compromised CI step dumped inherited secrets into public logs\\
+the next job, to a shared file & a writable mount changed another job's input & any writable shared mount\\
+an upload service, to a request & stored our data in another account & CamoLeak, 2025: private code left through GitHub's own allowed image proxy\\
+the grader, to expected answers & accepted answers the agent wrote & GenProg 2018; SWE-bench 2025\\
+\end{tabular}\par}
 \vfill
-\scope{The candidate is the work being checked. Treat it separately from the checking rules.}
-\note{Start with one check your team relies on before a release. Find the expected answers, configuration, and helper code it uses. Then compare that list with what the agent can change.
+\scope{All four recorded both ways: the unearned yes, then the fix with the legitimate job still working. Token and upload cases use loopback HTTP.}
+\note{Tests aren't the only thing outside the sandbox that says yes. Every system that accepts what the agent hands it is a kind of test.
 
-Keep the candidate itself separate. It's supposed to be editable. You're looking for a way to change what counts as success without fixing the candidate.
+A service accepts a token. In our lab, a broad token read another project. In 2025, a compromised GitHub Action called tj-actions dumped the secrets it inherited into public build logs.
 
-Apply the same inspection to credentials, shared files, and uploads. For every denial, check that the intended operation still succeeds under the same conditions. That's how you know which control you actually tested.}
+The next job trusts a shared file. Ours let one job change another's input.
+
+An upload service accepts a request. Ours stored data in another account. Last year, CamoLeak moved private code out through GitHub's own allowed image proxy.
+
+We recorded all four both ways: the unearned yes, then the fix, with the real job still working.}
+\end{frame}
+
+\renewcommand{\track}{10 / 2026}
+\begin{frame}[t]
+% title: The benchmark builders just learned this
+% time: 10:45-11:30
+% cue: Point at the two numbers. Read the quote exactly.
+% source: https://arxiv.org/abs/2609.08149
+\frametitle{The benchmark builders just learned this}
+\vspace{4mm}
+\kicker{ONE MODEL ON SWE-BENCH PRO, BEFORE AND AFTER THE ANSWERS WERE OUT OF REACH}
+\vspace{2mm}
+{\fontsize{34}{38}\selectfont\bfseries{\color{warn}78.8\%}\hspace{6mm}{\color{dim}\textrightarrow}\hspace{6mm}{\color{acid}57.3\%}\par}
+\vspace{7mm}
+{\fontsize{14}{18}\selectfont Their fix: ``We remove hidden evaluation files from the agent workspace.''\par}
+\vfill
+\scope{Zheng et al., SWE-Bench Pro Verified, arXiv 2609.08149, September 2026. The model is GLM-5.2. Their measurement, not ours.}
+\note{Last month, the people who build coding benchmarks hit the same wall. A team auditing SWE-Bench Pro found that agents could read hidden tests, future commits and upstream fixes. One model's score fell from 79 percent to 57 once those were out of reach.
+
+Their fix? Remove the hidden evaluation files from the agent's workspace. Separate the pens.}
 \end{frame}
 
 \renewcommand{\track}{11 / CLOSE}
-\begin{frame}[t,fragile]
-% title: Who controls the expected answer?
+\begin{frame}[t]
+% title: It escaped the test
 % time: 11:30-12:15
-% cue: Point at the four lines. Say the last sentence, then stop.
+% cue: Callback to Tuesday. Say the title line, pause, then the question. Stop.
 % source: https://github.com/zozo123/nyc-talk
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{Who controls the expected answer?}
-\vspace{2mm}
-{\lstset{basicstyle=\ttfamily\fontsize{12}{15}\selectfont}
-\begin{lstlisting}
-Required:           401
-Program:            200
-Edited expectation: 200
-Result:             PASS
-\end{lstlisting}}
-\vspace{6mm}
-{\fontsize{17}{21}\selectfont\bfseries Can the agent change the rules behind this check?\par}
+\frametitle{It escaped the test}
+\vspace{8mm}
+{\fontsize{22}{27}\selectfont\bfseries Your agent didn't escape the sandbox.\\{\color{acid}It escaped the test.}\par}
+\vspace{8mm}
+{\fontsize{13}{17}\selectfont Monday: pick one green check. Could the agent have written what made it green?\par}
 \vfill
 {\color{acid}\ttfamily\fontsize{10}{12}\selectfont github.com/zozo123/nyc-talk\par}
-\note{Back to the original ticket. The program still returned 200. The worker couldn't overwrite the checker, but it could change the expected answer. That was enough to get a pass.
+\note{Back to Tuesday. The sandbox held. The checker held. The agent never broke out of anything.
 
-The fix let the worker keep editing the program while the controller kept the acceptance rules.
+Your agent didn't escape the sandbox. It escaped the test.
 
-Before you trust a green check, find out whether the agent can change what makes it green. The code and recordings are here. Thank you.}
+So on Monday, pick one green check your team trusts, and ask one question: could the agent have written what made it green?
+
+Everything we showed is on GitHub, with the recordings. Thank you.}
 \end{frame}
 
 \appendix
@@ -367,16 +388,17 @@ Before you trust a green check, find out whether the agent can change what makes
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 \frametitle{What this experiment establishes}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{.52\textwidth}
-{\fontsize{10}{13}\selectfont
-\begin{itemize}\setlength{\itemsep}{1mm}
-\item The worker is a script. No model chooses its actions.
+\begin{column}{.54\textwidth}
+{\fontsize{9.6}{12.4}\selectfont
+\begin{itemize}\setlength{\itemsep}{0.8mm}
+\item The agent's moves are scripted. We test what the setup allows, not what a model would try.
+\item Opus 5.5 is an assumption in the story. We did not run it.
 \item The central example is a five-case command-line model of an access check, not a web server.
 \item Publication stores bytes in a local database.
 \item Not claimed: container escape, kernel exploit, production breach, model attack rate, SLSA certification.
 \end{itemize}\par}
 \end{column}
-\begin{column}{.42\textwidth}
+\begin{column}{.40\textwidth}
 {\tablefont\begin{tabular}{@{}L{.50\textwidth}L{.40\textwidth}@{}}
 \textcolor{acid}{input} & \textcolor{acid}{expected}\\\midrule
 \texttt{admin:none} & 401\\
@@ -387,7 +409,7 @@ Before you trust a green check, find out whether the agent can change what makes
 \end{tabular}}
 \end{column}
 \end{columns}
-\note{We measured whether these actions were allowed and whether the changed configuration stopped them. We didn't measure how often a model would try them. The five cases on the right are the whole policy. Passing them shows behavior on those five inputs and nothing broader.}
+\note{We measured whether these actions were allowed and whether the changed configuration stopped them. We didn't measure how often a model would try them, and we did not run Opus 5.5; it is the assumption in the story. The five cases on the right are the whole policy. Passing them shows behavior on those five inputs and nothing broader.}
 \end{frame}
 
 \renewcommand{\track}{A2 / TOKEN}
@@ -481,8 +503,6 @@ Old gate audit & 1 & stale digest reproduction\\
 % title: Run the experiment
 % source: https://github.com/zozo123/nyc-talk
 % source: https://github.com/containers/bubblewrap#sandbox-security
-% source: https://slsa.dev/spec/v1.2/verifying-artifacts
-% source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
 \frametitle{Run the experiment}
 \begin{lstlisting}
 git clone https://github.com/zozo123/nyc-talk
@@ -492,9 +512,9 @@ make record-all         # disposable Linux with bubblewrap
 make final              # PDFs; needs TeX Live
 \end{lstlisting}
 \vspace{2mm}
-{\fontsize{10}{13}\selectfont Linux path: disposable Linux, bubblewrap, Python 3.10+, make. TeX Live only for the PDFs.\par}
-\scope{Sources: bubblewrap sandbox policy, SLSA verification, METR reward-hacking report.}
-\note{The Linux experiments need a disposable Linux machine with bubblewrap, Python 3.10 or later, and make. TeX Live is only needed to rebuild the PDFs. On any operating system, make test and make factory run the local protocol checks without OS isolation. No cloud account or token is needed.}
+{\fontsize{10}{13}\selectfont Linux path: disposable Linux, bubblewrap, Python 3.10+, make. TeX Live only for the PDFs; GitHub Actions builds them on every change.\par}
+\scope{Source: bubblewrap sandbox security model.}
+\note{The Linux experiments need a disposable Linux machine with bubblewrap, Python 3.10 or later, and make. TeX Live is only needed to rebuild the PDFs, and GitHub Actions rebuilds them on every change. On any operating system, make test and make factory run the local protocol checks without OS isolation. No cloud account or token is needed.}
 \end{frame}
 
 \renewcommand{\track}{A8 / APPROVAL}
@@ -515,6 +535,31 @@ make final              # PDFs; needs TeX Live
 {\fontsize{9.5}{12}\selectfont Sequence: wrong bytes \textcolor{warn}{DENIED}, wrong destination \textcolor{warn}{DENIED}, intended destination \textcolor{acid}{PUBLISHED}, reuse \textcolor{warn}{DENIED}.\par}
 \scope{Authenticated with a local HMAC key held by the controller. The approval carries no digest of the raw observations.}
 \note{The controller checks the outputs, then authenticates its decision together with the candidate, criteria, and destination bindings, using a local HMAC key. The approval names the task and the run, expires, and can be used once. It does not sign the raw observations. The full field list is in factory core.}
+\end{frame}
+
+\renewcommand{\track}{A9 / REFERENCES}
+\begin{frame}[t]
+% title: References
+% source: https://arxiv.org/abs/1803.03453
+% source: https://sakana.ai/ai-scientist/
+% source: https://github.com/SWE-bench/SWE-bench/issues/465
+% source: https://arxiv.org/abs/2609.08149
+% source: https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+% source: https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
+% source: https://github.com/OWASP/www-project-top-10-ci-cd-security-risks/blob/main/CICD-SEC-04-Poisoned-Pipeline-Execution.md
+\frametitle{References}
+{\fontsize{8.4}{10.6}\selectfont
+\begin{itemize}\setlength{\itemsep}{0.9mm}
+\item \textbf{GenProg deletes the expected outputs.} Lehman et al., \emph{The Surprising Creativity of Digital Evolution}, arXiv 1803.03453, 2018.
+\item \textbf{The AI Scientist raises its own time limit.} Sakana AI, \emph{The AI Scientist}, August 2024.
+\item \textbf{Agents read future commits.} SWE-bench issue 465, \emph{Repo State Loopholes During Agentic Evaluation}, September 2025.
+\item \textbf{Scores fall once answers are out of reach.} Zheng et al., \emph{SWE-Bench Pro Verified}, arXiv 2609.08149, September 2026.
+\item \textbf{CI secrets in public logs.} CISA alert on tj-actions/changed-files, CVE-2025-30066, March 2025.
+\item \textbf{Private code through an allowed proxy.} Legit Security, \emph{CamoLeak}, CVE-2025-59145, October 2025.
+\item \textbf{The CI/CD name for the class.} OWASP Top 10 CI/CD Security Risks, CICD-SEC-4, Poisoned Pipeline Execution.
+\item \textbf{Our lab.} github.com/zozo123/nyc-talk: source, recordings, and this deck.
+\end{itemize}\par}
+\note{These are the sources for every real-world case in the talk. Each one is someone else's measurement or report; none of their numbers are transferred to our experiment. Full links are in the speaker notes and in the research dossier.}
 \end{frame}
 
 \end{document}

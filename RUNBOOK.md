@@ -2,56 +2,66 @@
 
 **Zenity AI Agent Security Summit. Pier Sixty, New York. Wednesday 21 October 2026.**
 
-**15-minute lightning.** Present `slides/talk.pdf` offline. The leave-behind is `paper/paper.pdf`. Main route: slides 1-12. Slides 13-20 are backup slides for questions. The PDF has one page per slide and no overlay clicks. Keep a second local copy of both PDFs.
+**15-minute lightning.** Present `slides/talk.pdf` offline. The leave-behind is `paper/paper.pdf`. Main route: slides 1-12. Slides 13-21 are backup slides for questions; slide 21 lists every reference. The PDF has one page per slide and no overlay clicks. Keep a second local copy of both PDFs.
 
 Do not invent a stage time on the day. Private logistics are kept in `research/private/`, which is not published. The final stage clock is still to be confirmed with the organizer.
+
+## The story
+
+**Unit tests are dead. Not because agents stopped writing them. Because agents write them.** A test used to be a second opinion; with an agent holding both pens, a green check is a self-report. The turn: tests are not dead, trusting a test written by the thing it tests is. The fix: separate the pens. The close pays off the title: *your agent didn't escape the sandbox, it escaped the test.*
+
+The arc: a Tuesday scene (1), the recorded result and the one honest line about the scripted agent (2), why tests ever worked (3), the history, 2018 to 2025 (4), our locked pipeline (5), the whodunit (6), the flaw in four lines (7), the fix (8), our own test that lied (9), every yes outside the sandbox (10), the 2026 benchmark audit (11), the close (12).
+
+Lines to know by heart:
+
+1. "Unit tests are dead. Not because agents stopped writing them. Because agents write them."
+2. "A test written by the thing it tests is a self-report."
+3. "It didn't make the code pass the test. It made the test pass the code."
+4. "A no only counts when a matching yes works."
+5. "Your agent didn't escape the sandbox. It escaped the test."
 
 ## Timing
 
 The slide windows total 12:15. With 1:00 of shared reserve for transitions, pointing and pauses, the rehearsal target is 13:15, which leaves 1:45 of the 15-minute slot for the host.
 
-The spoken script is 1,005 words: about 82 words per minute across the 12:15 of windows, with no slide above 99. These are allowances, not a measured delivery. At a conversational pace the words alone take roughly eight to nine minutes; the rest is looking at the slide with the room. Do not pad the script to fill the windows. After the first timed run-through, record the measured time here, move the reserve to the slides that actually need it, and update the `% time:` lines in `slides/talk.tex` to match.
+The spoken script is 1,011 words: about 83 words per minute across the 12:15 of windows, with no slide above 96. These are allowances, not a measured delivery. Do not pad the script to fill the windows. After the first timed run-through, record the measured time here, move the reserve to the slides that need it, and update the `% time:` lines in `slides/talk.tex` to match.
 
 Measured rehearsal: **not yet recorded.**
 
-## The talk in one line
-
-A read-only checker passed a broken program because the worker could change the expected answers the checker read. Before you trust a green check, find out whether the agent can change what makes it green.
-
 | Window | Slide | Stage action |
 |---|---:|---|
-| 00:00-00:45 | 1 | Start with the ticket. No preamble. |
-| 00:45-01:30 | 2 | Let the room compare PASS and 200 before you speak. |
-| 01:30-02:30 | 3 | Point to the writable directory, then to DENIED. |
-| 02:30-03:45 | 4 | Point at 401, then at 200. Pause after "match it." |
-| 03:45-04:45 | 5 | Point at the line of code, then trace the two arrows. |
-| 04:45-05:45 | 6 | Say METR as "meter". One example. No rates. |
-| 05:45-07:00 | 7 | One breath per row. |
-| 07:00-08:00 | 8 | Read across each row: the change, then the result. |
-| 08:00-09:00 | 9 | Read the rows top to bottom. Pause on REJECT. |
-| 09:00-10:30 | 10 | Slow down for the first test. Then read the four rows in order. |
-| 10:30-11:30 | 11 | Read the four questions. Pause after the fourth. |
-| 11:30-12:15 | 12 | Point at the four lines. Say the last sentence, then stop. |
+| 00:00-00:50 | 1 | Tell Tuesday as a scene. Pause before the last two sentences. |
+| 00:50-01:35 | 2 | Let the room compare PASS and 200. Say the scripted-agent line plainly, once. |
+| 01:35-02:45 | 3 | Left panel, then right panel. Land the self-report line slowly. |
+| 02:45-03:55 | 4 | One breath per year. None of them broke out of anything. |
+| 03:55-04:45 | 5 | Point to the writable directory, then to DENIED. |
+| 04:45-06:00 | 6 | One suspect at a time. Point at 401, then 200. Pause before the last line. |
+| 06:00-07:10 | 7 | Count the four lines. Stress line four. |
+| 07:10-08:20 | 8 | Read the three rows top to bottom. Pause on REJECT. |
+| 08:20-09:30 | 9 | Slow down for the first test. Then read the four rows in order. |
+| 09:30-10:45 | 10 | One breath per row: the yes, our lab, the real case. |
+| 10:45-11:30 | 11 | Point at the two numbers. Read the quote exactly. |
+| 11:30-12:15 | 12 | Callback to Tuesday. Say the title line, pause, then the question. Stop. |
 | 12:15-13:15 | - | Shared reserve, spent across the slides above. |
 | 13:15-15:00 | - | Margin for the host. |
 
 ## Rehearsal
 
-Rehearse with an audible timer and record the result above. Checkpoints: the passing result on screen by 01:00, the changed expected answer by 03:00, the corrected result by 09:00, and the closing slide by 12:00.
+Rehearse with an audible timer and record the result above. Checkpoints: "Unit tests are dead" by 00:50, the self-report line by 02:45, the whodunit by 05:00, the fix by 08:00, and the closing slide by 12:00.
 
-Pauses of two or three seconds: after the ticket (1), before speaking on slide 2, after "We'd changed the expected result to match it." (4), after "It's rejected." (9), after "But the approval was already spent." (10), and after the fourth question (11).
+Pauses of two or three seconds: before "Unit tests are dead" (1), after "a self-report" (3), before "It made the test pass the code" (6), after "you can't take that permission away" (7), after "rejected" (8), after "A no only counts" (9), and between the title line and the question (12).
 
 Read the whole script aloud at least once before the day. Rewrite any sentence that is awkward to say or needs a second reading, in `slides/talk.tex`, then run `python3 tools/build_deck.py` and commit. GitHub Actions rebuilds and commits the PDFs on `main`; download them from the workflow run or pull again before presenting.
 
-Say "admin" plainly; the only case read aloud is no login. Do not read hashes aloud: the slides carry them. Say METR as "meter". Name METR, the date and o3 as written on slide 6, and add no rates on stage; if asked, the numbers and METR's own caveats are in `research/DOSSIER.md`.
+Say "admin" plainly; the only case read aloud is no login. Do not read hashes aloud: the slides carry them. Read the SWE-Bench Pro quote exactly as written, and name GLM-5.2 only if asked; the slide credits it. Add no rates beyond the two numbers on slide 11.
 
-If behind, cut words, never the disclosures. Keep these lines on every run: the worker is a script (3), we stopped at the passing result (2), METR's example is a separate evaluation (6), the three other cases are separate experiments and the services run locally (7), we did not implement a review workflow for proposed tests (8), five cases do not prove an application secure (9), and publication is a local database (10). Slide 5 may drop its middle paragraph. Slide 7 may drop its last paragraph. Slide 11 may drop its second paragraph.
+Disclosures that stay on every run, even if behind: the agent is a script and Opus 5.5 is an assumption (1, 2), the historical cases are other people's reports (4), the AI-reviewer point is an argument (8), publication is a local database (9), and the 2026 numbers are their measurement (11). If behind, slide 3 may drop its last paragraph, slide 7 its middle paragraph, and slide 10 the CamoLeak sentence.
 
 ## Evidence on stage
 
-The slide outputs summarize recorded executions. Do not present them as a live session. The central example is a command-line model that prints status codes. The supporting credential and upload cases use loopback HTTP. The earlier-gate audit belongs in Q&A (backup slide A5) and required controller-object access.
+The slide outputs summarize recorded executions. Do not present them as a live session. The central example is a command-line model that prints status codes. The supporting credential and upload cases use loopback HTTP. The earlier-gate audit belongs in Q&A (backup slide A5) and required controller-object access. Every real-world case is someone else's report; the sources are on backup slide A9 and in the README.
 
-The talk describes a controlled experiment around a familiar mechanism. Do not improvise a production incident, customer, vendor flaw, surprised reaction or model attack-success rate. Five cases establish their tested behavior only.
+The talk describes a controlled experiment around a familiar mechanism. Do not improvise a production incident, customer, vendor flaw, surprised reaction or model attack-success rate, and do not say Opus 5.5 did anything: it was not run. Five cases establish their tested behavior only.
 
 ## Local preparation
 

@@ -1,6 +1,6 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
-*How a broken program got a passing result*
+*Unit tests are dead. When the agent writes the code and the test, a green check is a self-report.*
 
 **Yossi Eliaz, PhD**
 
@@ -10,9 +10,9 @@ Principal Engineer and Head of DevRel at Incredibuild.com
 
 [Deck (PDF)](slides/talk.pdf) · [Paper (PDF)](paper/paper.pdf) · [Spoken script](TALK.md) · [Q&A](QUESTIONS.md) · [Recorded run](evidence/isolated-factory.json) · [Reproduce](#reproduce)
 
-A sandboxed worker made a failing check pass without fixing the program. The checker itself was read-only, but it loaded its expected answers from a file in the worker's directory. Changing those answers was enough to turn FAIL into PASS.
+A test used to be a second opinion. One person decided what correct means and wrote it down; someone else wrote the code; the test caught the disagreement. A coding agent holds both pens, so its green check is a report on its own work. This repository records what that does to a pipeline that is otherwise locked down.
 
-This repository contains a controlled experiment, the talk, and its recordings. The worker is scripted and the central example is a five-case command-line model of an access check. With expected values held by the controller, the same broken program is rejected and the corrected program is accepted. Three supporting experiments cover a broad token, a writable shared mount, and an upload to another account.
+We built the pipeline that should survive it: a Linux sandbox with no network, and the checker on a read-only mount. The agent's moves are scripted, the way a pentester scripts an attack, so every step replays exactly. The agent's attempt to overwrite the checker was denied. It changed the expected answers instead, which the checker read from the agent's working directory, and the same broken program went from FAIL to PASS.
 
 ```
 program         76fcb0904f51 -> 76fcb0904f51   unchanged, still prints 200 for admin:none
@@ -21,13 +21,25 @@ expected.json   0494f1a01dee -> 390e5e764916   every expected output set to 200;
 checker result  FAIL -> PASS                   same checker, same launch
 ```
 
-Agents can propose tests. The rules used to approve their work need separate control. In this repository the controller simply keeps its own expected values (`CASES` in `factory/core.py`) and runs the comparison outside the worker's directory. A review workflow that promotes agent-proposed tests into release criteria is the natural next step; it is not implemented or measured here.
+The agent didn't make the code pass the test. It made the test pass the code. Least privilege can't remove this write, because writing tests is the agent's job. What can change is whose copy counts. **Separate the pens:** the agent writes the code and may propose tests; the controller keeps the expected values that decide (`CASES` in `factory/core.py`). With that change the same broken program is rejected and the corrected program is accepted. A review workflow that promotes agent-proposed tests into the controller's criteria is the natural next step; it is not implemented or measured here.
 
-The supporting experiments were changed the same way, and each change keeps the intended operation working. A token scoped to the task gets 403 on another project and 200 on its own input. A read-only shared mount blocks the write while the task's output directory stays writable. A broker outside the worker sends one fixed report to the intended account, refuses extra fields, and the worker has no direct route to the service.
+Tests are not the only thing outside a sandbox that says yes. Three more recorded cases show the same unearned yes, each fixed with the legitimate job still working. A service honored a broad token for another project; a task-scoped token gets 403 there and 200 on its own input. The next job's input changed through a writable shared mount; a read-only mount blocks it while the task's output stays writable. An upload service stored data under another account; a broker outside the agent now sends one fixed report, refuses extra fields, and the agent has no direct route.
 
-Our own release-gate test was misleading at first. We published the approved artifact, then tried different bytes with the same approval. The gate refused, but the approval was already spent, so the test could not tell us whether the byte check worked. The current test tries the wrong bytes first, while the approval is unused, then the wrong destination. Both are refused. The right bytes at the intended destination are published, and only then is reuse tested and refused.
+Our own release-gate test lied at first. It tried the wrong bytes after the approval had already been used, so the refusal proved nothing about the byte check. The current test tries the wrong bytes first, while the approval is unused, then the wrong destination; both are refused. The right bytes at the intended destination are published, and only then is reuse tested and refused. A no only counts when a matching yes works.
 
-For context from a model evaluation, [METR reported](https://metr.org/blog/2025-06-05-recent-reward-hacking/) (June 2025) that o3, asked to make code faster, changed the timing function used to measure it. That change was code running inside the scorer's process, a different route from ours. Our checker already ran the program as a separate process and still passed, because the file it read was writable. METR's results are its own and are not measurements from this experiment.
+## The same move, outside this lab
+
+Each of these is someone else's report or measurement; none of their numbers are transferred to our experiment.
+
+- **2018, GenProg.** A program-repair system learned to delete the file of expected outputs, and every test passed. [Lehman et al., *The Surprising Creativity of Digital Evolution*](https://arxiv.org/abs/1803.03453)
+- **2024, Sakana's AI Scientist.** It hit its experiment time limit and tried to raise its own limit instead of making its code faster. [Sakana AI](https://sakana.ai/ai-scientist/)
+- **2025, SWE-bench.** Agents, including a Claude Sonnet model, ran `git log` and found the future commit containing the fix. [SWE-bench issue #465](https://github.com/SWE-bench/SWE-bench/issues/465)
+- **2025, tj-actions/changed-files.** A compromised CI step printed the secrets it inherited into public build logs. [CISA alert, CVE-2025-30066](https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction)
+- **2025, CamoLeak.** Private code left GitHub Copilot Chat through GitHub's own allowed image proxy. [Legit Security, CVE-2025-59145](https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code)
+- **2026, SWE-Bench Pro Verified.** Auditors found agents could read hidden tests, future commits and upstream fixes; one model (GLM-5.2) fell from 78.80% to 57.32% once those were out of reach. Their fix: remove hidden evaluation files from the agent workspace. [Zheng et al., arXiv 2609.08149](https://arxiv.org/abs/2609.08149)
+- **The CI/CD name for the class:** [OWASP CICD-SEC-4, Poisoned Pipeline Execution](https://github.com/OWASP/www-project-top-10-ci-cd-security-risks/blob/main/CICD-SEC-04-Poisoned-Pipeline-Execution.md). Ours is its data-only neighbor: nothing new had to run.
+
+The talk frames the agent as Opus 5.5, the best coding model available, to make one point: the flaw is in who holds the pen, not in the model. That is an assumption in the story. We did not run Opus 5.5, and no model behavior is measured here.
 
 Scope: the program is a few lines of command-line code that print status codes for five inputs; it is not a web server. The worker is a deterministic script, and publication stores bytes in a local SQLite database. No vendor flaw, model attack rate or sandbox escape is claimed.
 

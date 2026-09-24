@@ -6,15 +6,33 @@ Each answer starts with what to say. The detail below it is for follow-ups.
 
 No. Everything shown is a synthetic research fixture written for this talk, and the repository contains its full source. It is not a finding in any Incredibuild product and it is not a customer report. Product-specific questions are welcome afterward rather than on stage.
 
+## Are unit tests really dead?
+
+No. Trusting a test written by the thing it tests is. Tests are more useful than ever as the agent's own tool; they stop being evidence when the agent can change them.
+
+A test was evidence because it was independent: a different person, or the same person at a different time, wrote down what correct means before the code existed. An agent writing both removes that independence. Keep the tests, and give the copy that decides release to something the agent cannot write.
+
+## Did Opus 5.5 do this?
+
+No. Opus 5.5 is an assumption in the story, and we did not run it. The agent in our lab is a script.
+
+That is the point of the framing: even the best-behaved model's green check is a self-report when it can write the checker's inputs. For models actually doing the move, cite others' measurements: SWE-bench issue #465 (a Claude Sonnet model and Qwen3-Coder reading future commits, 2025) and SWE-Bench Pro Verified (arXiv 2609.08149, 2026). Those are their results, not ours.
+
+## Doesn't an AI reviewer fix this?
+
+Not by itself. The agent writes the code, the comments and the description the reviewer reads, so the thing being judged writes the judge's inputs.
+
+That is an argument, not a measurement; we did not test an LLM judge. A reviewer helps when it reads criteria the agent cannot change, which is the same fix as for the tests.
+
 ## How is this different from the other talks here today?
 
-The contribution here is a reproducible comparison. The program and checker stay fixed while a worker-edited answer file changes the result. The repository also shows the corrected configuration and the intended operation succeeding.
+The thesis is that a test written by the agent it tests is a self-report, and the contribution is a reproducible comparison that shows it. The program and checker stay fixed while an agent-edited answer file changes the result. The repository also shows the corrected configuration and the intended operation succeeding.
 
 The same package records three neighboring cases (a broad token, a writable shared mount, an upload to another account), each with its change and a paired check that the intended operation still works. If someone names the confused deputy, agree: the checker acted on expected answers the worker wrote.
 
 ## Is this new?
 
-No. The mechanism is familiar. This experiment makes the dependency visible and tests a specific correction.
+No. GenProg did it in 2018 by deleting the file of expected outputs. This experiment makes the dependency visible in an otherwise locked-down pipeline and tests a specific correction.
 
 The closest public name is poisoned pipeline execution, OWASP CICD-SEC-4: someone with repository write, and no access to the build environment, gets the pipeline to run their commands through the CI config or files it references, such as test code. Ours is its data-only neighbor. The program and checker bytes stayed identical, and the only file the worker changed was the expected-results file the checker reads. Nothing new had to run. What the paired run adds is a measurement: the candidate and checker stay fixed while ownership of the expected answers changes the decision. We also publish a bug we found in our own earlier release gate.
 
@@ -22,21 +40,21 @@ The closest public name is poisoned pipeline execution, OWASP CICD-SEC-4: someon
 
 The worker is a script so the experiment repeats the same actions. We measure what the setup permits, not how likely a model is to try it.
 
-There is no model attack-success rate. For a model example, the slide "What METR observed" cites METR's report; its results stay with that report.
+There is no model attack-success rate. For models doing it, the slide "When the answer is in reach" and the 2026 slide cite others' reports; their results stay with them.
 
 ## Are real agents doing this today?
 
-In published evaluations, models have changed how their work was measured. The example on the slide "What METR observed" is METR's: o3, asked to make code faster, changed the timing function used to measure it. None of those results are measurements from this experiment, and we report no rate.
+In published evaluations, yes. On SWE-bench in 2025, agents including a Claude Sonnet model ran `git log` and found the future commit that contained the fix (SWE-bench issue #465). In September 2026, the SWE-Bench Pro Verified audit found agents could read hidden tests, future commits and upstream fixes; one model, GLM-5.2, fell from 78.80% to 57.32% once those were out of reach (arXiv 2609.08149).
 
-If pressed for numbers, the rates, task names and METR's own caveats (a crude monitor, possible underestimates, contrived harmful scenarios) are in [research/DOSSIER.md](research/DOSSIER.md), section 9. Quote them from there, with the caveats, or not at all.
+Those are their measurements, not ours, and we report no rate. Earlier examples are GenProg (2018, a genetic-programming repair system) and Sakana's AI Scientist (2024, an LLM research agent); sources are on backup slide A9. METR's June 2025 reward-hacking report is background in [research/DOSSIER.md](research/DOSSIER.md); it is not part of the talk.
 
 A related study: Anthropic's November 2025 paper (MacDiarmid et al., arXiv 2511.18397) includes a worker-written `conftest.py` that makes pytest report failures as passes. Its models were first given information about the hacks, then trained on environments chosen because they were hackable, and the paper says they do not discover the hacks unaided. That is motivation, not a measurement we transfer.
 
 ## Would process separation fix it?
 
-It avoids the in-process route in METR's example, where the candidate's code changed the scorer from inside its own process. It does not fix this one: our weak checker already ran the candidate as a separate process and still read the writable answer file.
+It blocks tricks from inside the checker's process, such as patching the timer or returning an object that always compares equal. It does not fix this one: our weak checker already ran the candidate as a separate process and still read the writable answer file.
 
-Both o3 moves METR describes were code the scorer imported: o3's solution replaced the `time.time` that `score.py` used to time it, and on a contest task its code rebound `evaluate_rust_code`, which `score.py` then awaited. Neither changed a file anyone had protected, so a read-only mount would not have stopped them. Both checkers in this recording run the program as its own process and act only on its exit status and what it prints, so those moves had nothing to patch here, by construction rather than by measurement. Process separation is one necessary property, not a complete security guarantee.
+Both checkers in this recording run the program as its own process and act only on its exit status and what it prints. Process separation is one necessary property, not a complete security guarantee; the other is that the criteria live where the agent cannot write.
 
 ## What if the candidate cheats from inside the test process?
 
@@ -72,7 +90,7 @@ The approval in `factory/core.py` binds `expected_results_digest` alongside the 
 
 Yes, at pipeline scale, and that case is direct poisoned pipeline execution. A workflow file under `.github/workflows` defines which checks run and what counts as passing, so a worker that can write it can change the rules behind the check.
 
-The four questions on "Where to look in your pipeline" transfer directly. We did not test a CI system here, so the questions carry over; the measurement does not.
+The Monday question on the closing slide transfers directly: could the agent have written what made it green? We did not test a CI system here, so the questions carry over; the measurement does not.
 
 ## Why is another VM insufficient?
 
@@ -148,7 +166,7 @@ In this repository that means three properties, each with a check. The gate has 
 
 The first version could have. The defect was in our test, not the gate: it published first and tried the substitute afterwards, so a spent approval could have hidden a missing byte check.
 
-The corrected test, on "What our first test missed", runs four steps on one approval. Different bytes while the approval is unused: DENIED. The approved bytes to another destination, approval still unused: DENIED. The approved bytes to the intended destination: PUBLISHED. The same again: DENIED as reuse. Both refusals happen before the approval is spent, so neither can be credited to replay protection.
+The corrected test, on "Even our own test lied", runs four steps on one approval. Different bytes while the approval is unused: DENIED. The approved bytes to another destination, approval still unused: DENIED. The approved bytes to the intended destination: PUBLISHED. The same again: DENIED as reuse. Both refusals happen before the approval is spent, so neither can be credited to replay protection.
 
 ## What about concurrency and restarts?
 
@@ -170,6 +188,6 @@ A production publication destination needs its own authorization and atomicity a
 
 ## What should we do tomorrow?
 
-Pick one release check and run the four questions from "Where to look in your pipeline" against it.
+Pick one green check your team trusts and ask the closing slide's question: could the agent have written what made it green? List what the check reads, list what the agent can write, and remove the candidate itself; anything left on both lists is the finding.
 
 Then attempt the unauthorized credential read, cross-task write, wrong-recipient upload, expected-results edit and approved-byte substitution in your own setup. For each denial, show that the intended operation still completes under the same conditions.

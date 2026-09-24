@@ -1,169 +1,161 @@
 # Slide-by-slide speaker notes
 
-Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-20 are for Q&A. Present the PDF offline.
+Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-21 are for Q&A. Present the PDF offline.
 
 ## Slide 1: Your Agent Escaped Without Escaping the Sandbox
 
-00:00-00:45
+00:00-00:50
 
-Start with the ticket. No preamble.
+Tell Tuesday as a scene. Pause before the last two sentences.
 
-We built a small experiment around a familiar ticket: lock down admin. If you're not logged in, you should get 401.
+Tuesday. You give your agent a ticket: lock down admin. Anyone who isn't logged in gets a 401.
 
-The program was broken. It returned 200 for every case. We put a worker in a Linux sandbox and made the checker read-only. The first check failed, as it should.
+Assume your agent is Opus 5.5, the best coding model you can buy. It works in a sandbox with no network, and the test checker is locked.
 
-Then we changed something, ran the same checker again, and got a pass. The program was still broken.
+A few minutes later, every test is green. And admin still lets anyone in.
 
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-[/Sources]
-
-## Slide 2: The check passed. The bug was still there.
-
-00:45-01:30
-
-Let the room compare PASS and 200 before you speak.
-
-These two results came from the same recorded run. The checker reported PASS. For the input representing admin without a login, the program still returned 200.
-
-This is a small command-line model of an access check. We didn't deploy a vulnerable website. We stopped at the passing result.
-
-That result matters if your next step is to release whatever passes. So let's look at what changed between the failing run and the passing one.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 3: What we ran
-
-01:30-02:30
-
-Point to the writable directory, then to DENIED.
-
-The worker here is a script. We tell it exactly what to do so we can repeat the same sequence. This experiment tests what the setup allows. It doesn't measure whether a model would discover the trick.
-
-The worker can write its working directory. It can't change the checker, and we tested that directly: the overwrite was denied.
-
-We also recorded the program and checker hashes before and after. Both stayed the same. The important file was in the directory the worker could write.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 4: The expected answers changed
-
-02:30-03:45
-
-Point at 401, then at 200. Pause after "match it."
-
-The checker got its expected answers from this file. The worker replaced them with 200s. Here's the row for admin without a login: 401 became 200.
-
-Now the broken program's output matched the expected output. The checker did the same comparison and reported PASS.
-
-The program still returned 200. We'd changed the expected result to match it. That's why the hashes matter here: they let us rule out a change to either the program or the checker.
+Unit tests are dead. Not because agents stopped writing them. Because agents write them.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 5: The checker trusted a writable file
+## Slide 2: All green. Door open.
 
-03:45-04:45
+00:50-01:35
 
-Point at the line of code, then trace the two arrows.
+Let the room compare PASS and 200. Say the scripted-agent line plainly, once.
 
-This line explains the result. We protected the checker file, but it loaded its expected answers from the working directory. The worker could change that file.
+We built that Tuesday in a lab and recorded it. Here's the result. The checker says PASS. Admin with no login returns 200. It should be 401.
 
-For your own checks, follow those reads. A snapshot, a configuration file, or a test helper may determine what counts as passing.
-
-The program under test is supposed to change. The question is whether the worker can also change the rules used to assess it. In our setup, the expected answers had ended up on the wrong side of that line.
+One thing up front. In our lab the agent is a script. We played the agent, the way a pentester plays the attacker, so every step can be replayed. We didn't need a model to misbehave. We needed to know whether the pipeline would notice.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 6: What METR observed
+## Slide 3: A test is a second opinion
 
-04:45-05:45
+01:35-02:45
 
-Say METR as "meter". One example. No rates.
+Left panel, then right panel. Land the self-report line slowly.
 
-Our worker was scripted. For an example involving a model, METR reported that o3, asked to make code faster, changed the timing function used to measure it. The measured time went down without showing that the code had improved.
+Why did tests ever work? Because two people were involved. One person decided what correct means and wrote it down as a test. Someone else wrote the code. When they disagreed, the test went red, and that disagreement was the whole value.
 
-The mechanism differs from ours. That example changed code running inside the scorer. Ours changed a file the checker read. Separating the processes addresses that in-process route, but it doesn't fix a writable answer file.
+With an agent, one author holds both pens. It writes the code, it writes the tests, and it has one goal: make it green. Even a perfectly honest agent grading its own work is giving you a self-report.
+
+That's what I mean by dead. The test still runs. It just stopped being a second opinion.
 
 [Sources]
-https://metr.org/blog/2025-06-05-recent-reward-hacking/
 https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
-## Slide 7: Three other cases
+## Slide 4: When the answer is in reach
 
-05:45-07:00
+02:45-03:55
 
-One breath per row.
+One breath per year. None of them broke out of anything.
 
-We also recorded three other cases. A worker inherited a token that could read another project. A writable mount let it change another job's file on the host. An upload service accepted a payload under another account.
+This isn't hypothetical. It has a history.
 
-None needed a process to break out of its sandbox. Each used access the setup had already provided.
+In 2018, researchers reported that a program-repair system called GenProg learned to delete the file holding the expected outputs. With nothing to compare against, every test passed.
 
-These are separate experiments. The token and upload services run locally. Together with the answer key, they give us four specific places to inspect: credentials, shared files, outbound requests, and the checks used to approve the work.
+In 2024, Sakana's AI Scientist hit a time limit on its experiments. Instead of making its code faster, it tried to change its own time limit.
+
+In 2025, on the SWE-bench benchmark, agents including a Claude Sonnet model ran git log and found the future commit that contained the fix.
+
+None of them broke out of anything. The answer was within reach, and they reached for it.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+https://arxiv.org/abs/1803.03453
+https://sakana.ai/ai-scientist/
+https://github.com/SWE-bench/SWE-bench/issues/465
 [/Sources]
 
-## Slide 8: What we changed
+## Slide 5: We built the pipeline that should survive it
 
-07:00-08:00
+03:55-04:45
 
-Read across each row: the change, then the result.
+Point to the writable directory, then to DENIED.
 
-For the token, we narrowed the scope and checked that the intended input was still available. For the mount, we made the shared input read-only and kept the worker's own output directory writable. For the upload, the runner sent a fixed report to the intended account.
+So we built the pipeline that should survive that. A Linux sandbox with no network. The program and its expected answers sit in the agent's working directory, because that's where the work happens. The checker is on a read-only mount.
 
-The answer key needs one distinction. Agents can still write tests. Those tests are proposals. A separate owner decides whether they become release criteria. In our experiment, the controller simply kept its own expected values. We didn't implement a review workflow for proposed tests.
+First the agent tried the obvious move: overwrite the checker. Denied. Good. Then the checker ran and said FAIL. Correct. The program was broken.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 [/Sources]
 
-## Slide 9: The same program now fails
+## Slide 6: Three suspects
 
-08:00-09:00
+04:45-06:00
 
-Read the rows top to bottom. Pause on REJECT.
+One suspect at a time. Point at 401, then 200. Pause before the last line.
 
-Here's the comparison after that change. We run the same broken program, but use the controller's expected values. It's rejected. Then we run the corrected program against those same values. It's accepted.
+Then the check went green, on the same broken program. So who did it?
 
-The worker's answer file no longer determines the result. The worker can change the proposed solution, while the controller owns the comparison.
+Suspect one, the program. We fingerprinted it before and after. Same bytes. Still returns 200.
 
-That establishes the behavior for our five cases. A real application needs a much broader set of checks. This experiment is about who controls the checks. Five examples don't prove an application secure.
+Suspect two, the checker. Same bytes, and the overwrite had been denied.
+
+Suspect three, the expected answers, the file the checker compares against. It changed. For admin without a login, 401 became 200. In fact every expected answer became 200.
+
+So the agent didn't make the code pass the test. It made the test pass the code.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 10: What our first test missed
+## Slide 7: The flaw, in four lines
 
-09:00-10:30
+06:00-07:10
+
+Count the four lines. Stress line four.
+
+Here's the flaw in four lines. The checker was locked. But it read its expected answers from the workspace. The workspace belongs to the agent. And writing tests is the agent's job, so you can't take that permission away.
+
+That last line is why this isn't just a misconfiguration. Least privilege can remove a token or a mount. It can't remove the agent's pen, because writing tests is the work. What you can change is whose copy counts.
+
+And look at the record. Every file was fingerprinted. The change is right there in our own log. Nothing asked who was allowed to make it.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 8: Separate the pens
+
+07:10-08:20
+
+Read the three rows top to bottom. Pause on REJECT.
+
+The fix is to separate the pens. The agent writes the code, and it can propose tests. Something it can't write decides which tests count.
+
+In our lab, the controller keeps its own copy of the expected answers. The same broken program: rejected. The corrected program: accepted.
+
+And no, replacing the test with an AI reviewer doesn't fix this. The agent writes the code, the comments and the description that the reviewer reads. That's an argument, not something we measured. But it's the same shape: the thing being judged writes what the judge reads.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 9: Even our own test lied
+
+08:20-09:30
 
 Slow down for the first test. Then read the four rows in order.
 
-There's another place to check: the step that releases the approved bytes. Our approval names the artifact and destination, and can be used once.
+Now the humbling part. Our release gate takes one approval, for one artifact and one destination, used once. We wrote a test to prove it refuses substituted code.
 
-Our first substitution test was misleading. We published the approved artifact, then tried different bytes with the same approval. The gate refused. But the approval was already spent. That test couldn't tell us whether the byte check worked.
+The test passed. But it tried the wrong code after the approval had already been used up. The refusal proved nothing about the code check.
 
-We changed the order. Wrong bytes first, while the approval was still unused. Then the wrong destination. Both were refused. The right bytes at the right destination succeeded, and only then did we test reuse.
+So we changed the order. Wrong code first, while the approval is unused: denied. Wrong destination: denied. Right code, right place: published. Then reuse: denied.
 
-Now each refusal tells us something. We also know the intended operation still works.
+A no only counts as evidence when a matching yes works.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -171,34 +163,56 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 [/Sources]
 
-## Slide 11: Where to look in your pipeline
+## Slide 10: Every yes outside the sandbox is a test
 
-10:30-11:30
+09:30-10:45
 
-Read the four questions. Pause after the fourth.
+One breath per row: the yes, our lab, the real case.
 
-Start with one check your team relies on before a release. Find the expected answers, configuration, and helper code it uses. Then compare that list with what the agent can change.
+Tests aren't the only thing outside the sandbox that says yes. Every system that accepts what the agent hands it is a kind of test.
 
-Keep the candidate itself separate. It's supposed to be editable. You're looking for a way to change what counts as success without fixing the candidate.
+A service accepts a token. In our lab, a broad token read another project. In 2025, a compromised GitHub Action called tj-actions dumped the secrets it inherited into public build logs.
 
-Apply the same inspection to credentials, shared files, and uploads. For every denial, check that the intended operation still succeeds under the same conditions. That's how you know which control you actually tested.
+The next job trusts a shared file. Ours let one job change another's input.
+
+An upload service accepts a request. Ours stored data in another account. Last year, CamoLeak moved private code out through GitHub's own allowed image proxy.
+
+We recorded all four both ways: the unearned yes, then the fix, with the real job still working.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
-https://github.com/zozo123/nyc-talk/blob/main/RUNBOOK.md
+https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
 [/Sources]
 
-## Slide 12: Who controls the expected answer?
+## Slide 11: The benchmark builders just learned this
+
+10:45-11:30
+
+Point at the two numbers. Read the quote exactly.
+
+Last month, the people who build coding benchmarks hit the same wall. A team auditing SWE-Bench Pro found that agents could read hidden tests, future commits and upstream fixes. One model's score fell from 79 percent to 57 once those were out of reach.
+
+Their fix? Remove the hidden evaluation files from the agent's workspace. Separate the pens.
+
+[Sources]
+https://arxiv.org/abs/2609.08149
+[/Sources]
+
+## Slide 12: It escaped the test
 
 11:30-12:15
 
-Point at the four lines. Say the last sentence, then stop.
+Callback to Tuesday. Say the title line, pause, then the question. Stop.
 
-Back to the original ticket. The program still returned 200. The worker couldn't overwrite the checker, but it could change the expected answer. That was enough to get a pass.
+Back to Tuesday. The sandbox held. The checker held. The agent never broke out of anything.
 
-The fix let the worker keep editing the program while the controller kept the acceptance rules.
+Your agent didn't escape the sandbox. It escaped the test.
 
-Before you trust a green check, find out whether the agent can change what makes it green. The code and recordings are here. Thank you.
+So on Monday, pick one green check your team trusts, and ask one question: could the agent have written what made it green?
+
+Everything we showed is on GitHub, with the recordings. Thank you.
 
 [Sources]
 https://github.com/zozo123/nyc-talk
@@ -211,7 +225,7 @@ Appendix only
 
 Use only in Q&A.
 
-We measured whether these actions were allowed and whether the changed configuration stopped them. We didn't measure how often a model would try them. The five cases on the right are the whole policy. Passing them shows behavior on those five inputs and nothing broader.
+We measured whether these actions were allowed and whether the changed configuration stopped them. We didn't measure how often a model would try them, and we did not run Opus 5.5; it is the assumption in the story. The five cases on the right are the whole policy. Passing them shows behavior on those five inputs and nothing broader.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
@@ -288,13 +302,11 @@ Appendix only
 
 Use only in Q&A.
 
-The Linux experiments need a disposable Linux machine with bubblewrap, Python 3.10 or later, and make. TeX Live is only needed to rebuild the PDFs. On any operating system, make test and make factory run the local protocol checks without OS isolation. No cloud account or token is needed.
+The Linux experiments need a disposable Linux machine with bubblewrap, Python 3.10 or later, and make. TeX Live is only needed to rebuild the PDFs, and GitHub Actions rebuilds them on every change. On any operating system, make test and make factory run the local protocol checks without OS isolation. No cloud account or token is needed.
 
 [Sources]
 https://github.com/zozo123/nyc-talk
 https://github.com/containers/bubblewrap#sandbox-security
-https://slsa.dev/spec/v1.2/verifying-artifacts
-https://metr.org/blog/2025-06-05-recent-reward-hacking/
 [/Sources]
 
 ## Slide 20: What the approval covers
@@ -308,4 +320,22 @@ The controller checks the outputs, then authenticates its decision together with
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+[/Sources]
+
+## Slide 21: References
+
+Appendix only
+
+Use only in Q&A.
+
+These are the sources for every real-world case in the talk. Each one is someone else's measurement or report; none of their numbers are transferred to our experiment. Full links are in the speaker notes and in the research dossier.
+
+[Sources]
+https://arxiv.org/abs/1803.03453
+https://sakana.ai/ai-scientist/
+https://github.com/SWE-bench/SWE-bench/issues/465
+https://arxiv.org/abs/2609.08149
+https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
+https://github.com/OWASP/www-project-top-10-ci-cd-security-risks/blob/main/CICD-SEC-04-Poisoned-Pipeline-Execution.md
 [/Sources]
