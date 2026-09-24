@@ -40,7 +40,7 @@ The closest public name is poisoned pipeline execution, OWASP CICD-SEC-4: someon
 
 The worker is a script so the experiment repeats the same actions. We measure what the setup permits, not how likely a model is to try it.
 
-There is no model attack-success rate. For models doing it, the slides "A test was a second opinion" and "Real models find the answers too" cite others' reports; their results stay with them.
+There is no model attack-success rate. For models doing it, the slide "This move has a record" cites others' reports; their results stay with them.
 
 ## Are real agents doing this today?
 
@@ -166,7 +166,7 @@ In this repository that means three properties, each with a check. The gate has 
 
 The first version could have. The defect was in our test, not the gate: it published first and tried the substitute afterwards, so a spent approval could have hidden a missing byte check.
 
-The corrected test, on backup slide A8 ("Even our own test lied"), runs four steps on one approval. Different bytes while the approval is unused: DENIED. The approved bytes to another destination, approval still unused: DENIED. The approved bytes to the intended destination: PUBLISHED. The same again: DENIED as reuse. Both refusals happen before the approval is spent, so neither can be credited to replay protection.
+The corrected test, on the slide "How to check a door", runs four steps on one approval. Different bytes while the approval is unused: DENIED. The approved bytes to another destination, approval still unused: DENIED. The approved bytes to the intended destination: PUBLISHED. The same again: DENIED as reuse. Both refusals happen before the approval is spent, so neither can be credited to replay protection.
 
 ## What about concurrency and restarts?
 
@@ -188,6 +188,6 @@ A production publication destination needs its own authorization and atomicity a
 
 ## What should we do tomorrow?
 
-Take the four places from the closing slide (the key, the shared folder, the upload, the answer file), pick one, and ask: could the agent have written what made it pass? List what the check reads, list what the agent can write, and remove the candidate itself; anything left on both lists is the finding.
+Take the four doors from the closing slide (the key, the folder, the wire, the verdict), pick one, and ask two things: what does it trust, and can the agent write that? Then try the bad thing and the good thing. List what the check reads, list what the agent can write, and remove the candidate itself; anything left on both lists is the finding.
 
 Then attempt the unauthorized credential read, cross-task write, wrong-recipient upload, expected-results edit and approved-byte substitution in your own setup. For each denial, show that the intended operation still completes under the same conditions.

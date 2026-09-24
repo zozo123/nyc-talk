@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MAX_WPM = 150
 # Slide windows end at TARGET. RESERVE is shared time for transitions and
 # pauses, to be redistributed after a timed rehearsal; BUDGET is their sum.
-MAIN, APPENDIX, TARGET = 8, 9, '10:00'
-RESERVE, BUDGET = '1:00', '11:00'
+MAIN, APPENDIX, TARGET = 10, 9, '10:15'
+RESERVE, BUDGET = '1:00', '11:15'
 WORDS = (600, 1300)
 
 
@@ -19,7 +19,7 @@ def main():
     if len(frames) != MAIN + APPENDIX or sum(f.start() < appendix for f in frames) != MAIN:
         raise SystemExit(f'Require {MAIN} main slides and {APPENDIX} appendix slides')
     script = ['# Your Agent Escaped Without Escaping the Sandbox', '',
-              '*Unit tests are dead.*', '',
+              '*Four doors: the key, the folder, the wire, the verdict.*', '',
               '**Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**', '',
               'Generated from `slides/talk.tex`. Edit the LaTeX, run `python3 tools/build_deck.py`, and commit; '
               'GitHub Actions rebuilds the PDFs. '
@@ -98,7 +98,7 @@ def notes_document(frames, appendix):
 \begin{center}
 {\color{alarm}\sffamily\bfseries AI AGENT SECURITY SUMMIT \textbullet\ PIER SIXTY}\\[4pt]
 {\LARGE\bfseries Your Agent Escaped\\ Without Escaping the Sandbox}\\[8pt]
-{\large Unit tests are dead.}\\[8pt]
+{\large Four doors: the key, the folder, the wire, the verdict.}\\[8pt]
 {\small Yossi Eliaz, PhD \textbullet\ Incredibuild \textbullet\ 21 October 2026}\\[2pt]
 {\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--MAINN are the talk. Slides APPA--APPB are for questions.}
 \end{center}

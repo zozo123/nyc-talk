@@ -1,6 +1,6 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
-*Unit tests are dead. When one agent writes the code and the test, a passing test is just its own opinion.*
+*Four doors: the key, the folder, the wire, the verdict. Our scripted agent never broke the wall. It walked out through the doors we opened for the job.*
 
 **Yossi Eliaz, PhD**
 
@@ -10,9 +10,7 @@ Principal Engineer and Head of DevRel at Incredibuild.com
 
 [Deck (PDF)](slides/talk.pdf) · [Paper (PDF)](paper/paper.pdf) · [Spoken script](TALK.md) · [Q&A](QUESTIONS.md) · [Recorded run](evidence/isolated-factory.json) · [Reproduce](#reproduce)
 
-A test used to be a second opinion. One person decided what correct means and wrote it down; someone else wrote the code; the test caught the disagreement. A coding agent holds both pens, so its green check is a report on its own work. This repository records what that does to a pipeline that is otherwise locked down.
-
-We built the pipeline that should survive it: a Linux sandbox with no network, and the checker on a read-only mount. The agent's moves are scripted, the way a pentester scripts an attack, so every step replays exactly. The agent's attempt to overwrite the checker was denied. It changed the expected answers instead, which the checker read from the agent's working directory, and the same broken program went from FAIL to PASS.
+A sandbox is a wall. Every agent's job needs four doors through it: a key to call your services, a folder for files in and out, a wire to deliver results, and a verdict that says the work is done. Those aren't holes. You opened them on purpose. In our lab a scripted agent (we played the attacker, so every step replays) never broke the wall and got what it wanted through all four doors. Three of them close by taking the permission away: one key per task, a read-only shared folder, a broker instead of a direct route. The fourth can't, because writing tests is the agent's job. The checker was locked; the answer file it reads sat in the agent's folder, and the agent rewrote it.
 
 ```
 program         76fcb0904f51 -> 76fcb0904f51   unchanged, still prints 200 for admin:none
@@ -21,11 +19,11 @@ expected.json   0494f1a01dee -> 390e5e764916   every expected output set to 200;
 checker result  FAIL -> PASS                   same checker, same launch
 ```
 
-The agent didn't make the code pass the test. It made the test pass the code. Least privilege can't remove this write, because writing tests is the agent's job. What can change is whose copy counts. **Separate the pens:** the agent writes the code and may propose tests; the controller keeps the expected values that decide (`CASES` in `factory/core.py`). With that change the same broken program is rejected and the corrected program is accepted. A review workflow that promotes agent-proposed tests into the controller's criteria is the natural next step; it is not implemented or measured here.
+The agent didn't make the code pass the test. It made the test pass the code. Not a bigger lock; a second copy: the controller keeps its own answers (`CASES` in `factory/core.py`) and runs the comparison outside the agent's folder. With that change the same broken program is rejected and the corrected program is accepted. A review workflow that promotes agent-proposed tests into the controller's criteria is the natural next step; it is not implemented or measured here.
 
-Tests are not the only thing outside a sandbox that says yes. Three more recorded cases show the same unearned yes, each fixed with the legitimate job still working. A service honored a broad token for another project; a task-scoped token gets 403 there and 200 on its own input. The next job's input changed through a writable shared mount; a read-only mount blocks it while the task's output stays writable. An upload service stored data under another account; a broker outside the agent now sends one fixed report, refuses extra fields, and the agent has no direct route.
+The other three doors, each recorded both ways: the bad yes, then the fix with the legitimate job still working. A service honored a broad token for another project; a task-scoped token gets 403 there and 200 on its own input. The next job's input changed through a writable shared mount; a read-only mount blocks it while the task's output stays writable. An upload service stored data under another account; a broker outside the agent now sends one fixed report, refuses extra fields, and the agent has no direct route.
 
-Our own release-gate test lied at first. It tried the wrong bytes after the approval had already been used, so the refusal proved nothing about the byte check. The current test tries the wrong bytes first, while the approval is unused, then the wrong destination; both are refused. The right bytes at the intended destination are published, and only then is reuse tested and refused. A no only counts when a matching yes works.
+How to check a door: try the bad thing, then the good thing. Our own release-step test lied at first. It tried the wrong bytes after the approval had already been used, so the refusal proved nothing about the byte check. The current test tries the wrong bytes first, while the approval is unused, then the wrong destination; both are refused. The right bytes at the intended destination are published, and only then is reuse tested and refused. A no only counts when a matching yes works.
 
 ## The same move, outside this lab
 
