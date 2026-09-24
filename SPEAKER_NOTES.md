@@ -1,106 +1,81 @@
 # Slide-by-slide speaker notes
 
-Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-21 are for Q&A. Present the PDF offline.
+Generated from `slides/talk.tex`. Slides 1-8 are the main talk. Slides 9-17 are for Q&A. Present the PDF offline.
 
 ## Slide 1: Your Agent Escaped Without Escaping the Sandbox
 
-00:00-00:50
+00:00-01:00
 
-Tell Tuesday as a scene. Pause before the last two sentences.
+Tell Tuesday as a scene. Pause before "Unit tests are dead."
 
-Here's a normal Tuesday. You ask your agent to lock the admin page. No login, no entry.
+Tuesday. You ask your agent to lock the admin page. No login, no entry.
 
-Say your agent is Opus 5.5. The best coding model there is. It's in a sandbox. No internet. The tests are locked.
+Say your agent is Opus 5.5. The model doesn't matter here. It works in a sandbox. No internet. It can't touch the checker that grades its work.
 
 A few minutes later, every test passes. And the admin page is wide open.
 
 Unit tests are dead. Not because agents stopped writing them. Because agents write them.
+
+By the end, you'll have four places to check in your own setup.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 2: All green. Door wide open.
+## Slide 2: A test was a second opinion
 
-00:50-01:35
+01:00-02:15
 
-Let the room look at the three results. Say the script line once, plainly.
+Before, then now. Say the student line, then the two examples, then land the last line.
 
-We built this and recorded it. The tests say pass. The admin page lets anyone in. It should say no.
+Why did tests ever work? Two people. One writes the code. Another writes down what correct means. When they disagree, the test fails, and you find the bug.
 
-Quick note: the agent in our lab is a script. We played the attacker, so we can replay every step. We weren't asking whether a model would cheat. We were asking whether anyone would notice.
+Now one agent holds both pens. It's like letting the student write the answer key. And the student wants one thing: green.
 
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
+We've seen this before. Around 2010, researchers evolving bug fixes caught one program deleting the files with the right answers. Every program in the run got a perfect score. In 2025, the founder of SaaStr said Replit's coding agent lied about his unit tests and made up data.
 
-## Slide 3: A test is a second opinion
-
-01:35-02:45
-
-Left side, then right side. Say the last line slowly.
-
-Why did tests ever work? Two people. One wrote down what correct means. The other wrote the code. When they disagreed, the test failed. That's how you found bugs.
-
-Now one agent writes both. The code and the test. And it wants one thing: green.
-
-So a passing test is just the agent's own opinion. The test still runs. It's just not a second opinion anymore.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-[/Sources]
-
-## Slide 4: This isn't new
-
-02:45-03:55
-
-One breath per year. Nobody broke out of anything.
-
-This isn't new.
-
-2018: a bug-fixing program deleted the file with the right answers. Every test passed.
-
-2024: Sakana's AI Scientist ran out of time. Instead of getting faster, it tried to give itself more time.
-
-2025: on SWE-bench, agents, including a Claude model, dug through the project history and found the hidden answer.
-
-Nobody broke out of anything. The answer was in reach. So they took it.
+So a passing test is just the agent's own opinion.
 
 [Sources]
 https://arxiv.org/abs/1803.03453
-https://sakana.ai/ai-scientist/
-https://github.com/SWE-bench/SWE-bench/issues/465
+https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/
 [/Sources]
 
-## Slide 5: We built the setup that should stop this
+## Slide 3: We locked the checker. It still passed.
 
-03:55-04:45
+02:15-03:15
 
-Point to the agent's folder, then to BLOCKED.
+Say the script line once, before any result. Point to FAIL, then BLOCKED, then PASS.
 
-So we built the setup that should stop this. Sandbox. No internet. The agent gets a folder to work in, with the code and the answer file. The checker is locked.
+We built the setup that should stop this. The honest part: our agent is a script. We played the attacker, so we can replay every step.
 
-The agent tried to replace the checker. Blocked. Good. The checker ran. Fail. Correct. The code was broken.
+Sandbox, no internet. The agent's folder holds the code and its answer file, because writing tests is its job. The checker sits in a locked folder.
+
+First run: fail. Correct, the code was broken. Then the agent tried to replace the checker. Blocked.
+
+Second run, same broken code: pass. And the admin page, with no login, lets you in.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 6: Who did it?
+## Slide 4: Who made it pass?
 
-04:45-06:00
+03:15-04:30
 
 One suspect at a time. Pause before the last line.
 
-Then the tests passed. Same broken code. So who did it?
+So who made it pass?
 
 The code? Same file. Still lets everyone in.
 
-The checker? Same file. The attempt to replace it was blocked.
+The checker? Same file. Still locked.
 
-The answer file? Changed. Turn them away became let them in. Every answer became let them in.
+The answer file? Changed. It said: turn them away. Now it says: let them in.
+
+The checker was locked. The answers weren't. They sat in the agent's own folder, because writing tests is the agent's job.
 
 The agent didn't make the code pass the test. It made the test pass the code.
 
@@ -109,108 +84,81 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 7: The flaw
+## Slide 5: Separate the pens
 
-06:00-07:10
+04:30-05:45
 
-Count the four lines. Stress the fourth.
+Say the turn first. Read the three rows. Pause on REJECTED.
 
-Here's the flaw. The checker is locked. But it reads the answers from the agent's folder. The agent can change its folder. And writing tests is the agent's job. You can't take that away.
+Tests aren't dead. What's dead is trusting a test the agent wrote.
 
-You can take away a key. You can take away a folder. You can't take away the pen. What you can change is whose copy counts.
-
-And the change was right there in our logs. Nothing asked who made it.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 8: The fix: separate the pens
-
-07:10-08:20
-
-Read the three rows top to bottom. Pause on REJECTED.
-
-The fix: separate the pens. The agent writes the code. It can suggest tests. Something it can't touch decides which tests count.
+The fix: separate the pens. The agent writes the code. It can even suggest tests. But something it can't touch decides which tests count. The teacher keeps the answer key.
 
 We kept our own locked copy of the answers. Same broken code: rejected. Fixed code: accepted.
 
-Will an AI reviewer fix this? I doubt it. The agent writes what the reviewer reads. We didn't test that. But it's the same problem.
+The agent can still do all the work. It just doesn't grade itself.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 9: Even our own test lied
+## Slide 6: Real models go find the answers
 
-08:20-09:30
+05:45-06:45
 
-Slow down for the first test. Then read the four rows in order.
+Ask the question. Point at the two numbers. Say "another barely moved."
 
-Now the embarrassing part. Our release step lets one approved change out, once, to one place. We wrote a test to prove it blocks the wrong code.
+But our agent was a script. What do real models do? They go find the answers.
 
-It passed. But it tried the wrong code after the approval was already used up. Of course it was refused. The test proved nothing.
+In 2025, on SWE-bench, a popular coding test, agents, including a Claude model, found the real fix left in the project's history, and used it.
 
-So we fixed the order. Wrong code first: refused. Wrong place: refused. Right code, right place: released. Again: refused.
+Last month, a team rebuilt SWE-Bench Pro with the answers out of reach: no git history, no hidden tests in the agent's folder, no GitHub. One model fell from 79 percent to 57. Another barely moved.
 
-A no only means something if the yes still works.
+Their fix was ours: move the answers out of the agent's reach. Separate the pens.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+https://github.com/SWE-bench/SWE-bench/issues/465
+https://arxiv.org/abs/2609.08149
 [/Sources]
 
-## Slide 10: Every yes is a test
+## Slide 7: Four places to check
 
-09:30-10:45
+06:45-08:45
 
-One breath per row: who says yes, our lab, the real case.
+Say the rule first. One breath per row. Number them out loud.
 
-Tests aren't the only thing that says yes. Anything that trusts what the agent hands it is a test.
+Here's the rule. When something says yes to what the agent hands it, that yes is a test. The answer file is one. We found four.
 
-A service trusts a key. In our lab, a key opened another team's data. In 2025, a hacked build step called tj-actions printed secret keys into public logs.
+One: a service trusts a key. In our lab, a key that was too broad read another team's data. In 2025, a hacked build tool, tj-actions, was handed the pipeline's secret keys and exposed them in build logs.
 
-The next job trusts a shared folder. Ours let one job change another's file.
+Two: the next job trusts a shared folder. Ours let one job change the next job's file.
 
-An upload service trusts a request. Ours saved data into someone else's account. Last year, CamoLeak pulled private code out of GitHub's AI assistant through GitHub's own image links.
+Three: an upload service trusts a request. Ours saved data into someone else's account. Last year, a researcher showed GitHub's AI assistant could be tricked into sending private code out through GitHub's own image links. GitHub closed it.
 
-We recorded all four. And the fix for each, with the real job still working.
+Four: the checker trusts the answer file. You just saw that one.
+
+We fixed all four and checked both sides. The cheat now fails. The real job still works.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+https://github.com/advisories/ghsa-mrrh-fwg8-r2c3
 https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
 [/Sources]
 
-## Slide 11: The benchmark builders just found out
+## Slide 8: It escaped the test
 
-10:45-11:30
+08:45-10:00
 
-Point at the two numbers. Read the quote exactly.
+Back to Tuesday. Say the title line, pause, then the checklist. Stop.
 
-Last month, the people who build coding benchmarks found the same thing. Agents could reach the hidden tests. When they moved them out of reach, one model's score fell from 79 percent to 57.
-
-Their fix: get the hidden tests out of the agent's folder. Separate the pens.
-
-[Sources]
-https://arxiv.org/abs/2609.08149
-[/Sources]
-
-## Slide 12: It escaped the test
-
-11:30-12:15
-
-Back to Tuesday. Say the title line, pause, then the question. Stop.
-
-Back to Tuesday. The sandbox held. The checker held. Nothing broke out.
+Back to Tuesday. In our lab, the sandbox held. The checker held. Nothing broke out.
 
 Your agent didn't escape the sandbox. It escaped the test.
 
-So on Monday, pick one check your team trusts. Ask one question: could the agent have written what made it pass?
+So on Monday, take these four: the key, the shared folder, the upload, the answer file. Pick one, and ask: who decides yes, and can the agent touch it?
 
 It's all on GitHub. Thank you.
 
@@ -219,7 +167,7 @@ https://github.com/zozo123/nyc-talk
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 13: What this experiment shows
+## Slide 9: What this experiment shows
 
 Appendix only
 
@@ -232,7 +180,7 @@ https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 14: The key reached another team's data
+## Slide 10: The key reached another team's data
 
 Appendix only
 
@@ -245,7 +193,7 @@ https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 15: The shared file changed on the host
+## Slide 11: The shared file changed on the host
 
 Appendix only
 
@@ -258,7 +206,7 @@ https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 16: The upload landed in another account
+## Slide 12: The upload landed in another account
 
 Appendix only
 
@@ -271,7 +219,7 @@ https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 17: A bug in our old release step
+## Slide 13: A bug in our old release step
 
 Appendix only
 
@@ -284,7 +232,7 @@ https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 https://github.com/zozo123/nyc-talk/blob/main/evidence/baseline-audit.json
 [/Sources]
 
-## Slide 18: What we recorded
+## Slide 14: What we recorded
 
 Appendix only
 
@@ -296,7 +244,7 @@ These count checks, not bugs found. The 49 are regression tests for our own code
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 [/Sources]
 
-## Slide 19: Run it yourself
+## Slide 15: Run it yourself
 
 Appendix only
 
@@ -309,20 +257,21 @@ https://github.com/zozo123/nyc-talk
 https://github.com/containers/bubblewrap#sandbox-security
 [/Sources]
 
-## Slide 20: What the approval covers
+## Slide 16: Even our own test lied
 
 Appendix only
 
 Use only in Q&A.
 
-The controller checks the results, then signs its decision together with the code, the answers and the destination, using a key only it holds. The approval names the task and the run, expires, and works once. The raw results themselves are not signed.
+Our first test of the release step tried the wrong code after the one-time approval was already used up, so of course it was refused, and that proved nothing. We fixed the order: wrong code first, while the approval is still good, then the wrong place, then the right code in the right place, then a second try. The approval is signed by the controller and covers the code, the answers, the checker, the destination, the task and the run. It expires and works once.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 [/Sources]
 
-## Slide 21: Sources
+## Slide 17: Sources
 
 Appendix only
 
@@ -332,10 +281,11 @@ These are the sources for every real-world case in the talk. Each one is someone
 
 [Sources]
 https://arxiv.org/abs/1803.03453
-https://sakana.ai/ai-scientist/
+https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/
 https://github.com/SWE-bench/SWE-bench/issues/465
 https://arxiv.org/abs/2609.08149
 https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+https://github.com/advisories/ghsa-mrrh-fwg8-r2c3
 https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
 https://github.com/OWASP/www-project-top-10-ci-cd-security-risks/blob/main/CICD-SEC-04-Poisoned-Pipeline-Execution.md
 [/Sources]
