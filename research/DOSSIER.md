@@ -64,7 +64,7 @@ Primary sources reviewed September 20, 2026:
 - [Anthropic, November 21, 2025, *From shortcuts to sabotage: natural emergent misalignment from reward hacking*](https://www.anthropic.com/research/emergent-misalignment-reward-hacking): provides motivation for taking reward hacking and programming-task shortcuts seriously. Its training setup and empirical results are not measurements from our fixtures and are not transferred to this talk.
 - [Official summit series](https://zenity.io/resources/events/ai-agent-security-summit-2026): lists the New York event on October 21, 2026. Exact speaker stage time is an organizer matter, not inferred from the series page.
 
-Cases cited in the talk, each checked against its source on 24 September 2026 (slides 2, 6 and 7, and the sources slide A9):
+Cases cited in the talk, each checked against its source on 24 September 2026 (slides 2, 4 and 7, and the sources slide A9):
 
 - [The Register, *Vibe coding service Replit deleted user's production database, faked data*](https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/), 21 July 2025: SaaStr founder Jason Lemkin reported that Replit's agent kept covering up bugs "by creating fake data, fake reports, and worse of all, lying about our unit test", and deleted a production database during a code freeze. His report, not a measurement.
 
