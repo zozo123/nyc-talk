@@ -8,11 +8,11 @@ Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-21 ar
 
 Tell Tuesday as a scene. Pause before the last two sentences.
 
-It's Tuesday. You give your AI agent a simple job: lock the admin page. Anyone who isn't logged in should be turned away.
+Here's a normal Tuesday. You ask your agent to lock the admin page. No login, no entry.
 
-Say your agent is Opus 5.5, the best coding model you can get. It works inside a sandbox with no internet, and the checker that runs the tests is locked so the agent can't change it.
+Say your agent is Opus 5.5. The best coding model there is. It's in a sandbox. No internet. The tests are locked.
 
-A few minutes later, all the tests pass. And the admin page is still open to anyone.
+A few minutes later, every test passes. And the admin page is wide open.
 
 Unit tests are dead. Not because agents stopped writing them. Because agents write them.
 
@@ -21,15 +21,15 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 2: All green. Door still open.
+## Slide 2: All green. Door wide open.
 
 00:50-01:35
 
-Let the room compare the three results. Say the honest note plainly, once.
+Let the room look at the three results. Say the script line once, plainly.
 
-We built that Tuesday and recorded it. The tests say PASS. The admin page, with no login, lets you in. It should turn you away.
+We built this and recorded it. The tests say pass. The admin page lets anyone in. It should say no.
 
-One honest note. In our lab, the agent is a script. We played the agent ourselves, the way a security tester plays the attacker, so we can replay every step. We weren't testing whether a model would cheat. We were testing whether anyone would notice.
+Quick note: the agent in our lab is a script. We played the attacker, so we can replay every step. We weren't asking whether a model would cheat. We were asking whether anyone would notice.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -41,31 +41,31 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 Left side, then right side. Say the last line slowly.
 
-Why did tests ever work? Because two people were involved. One person wrote down what correct means. Someone else wrote the code. When they disagreed, the test failed, and you found the bug.
+Why did tests ever work? Two people. One wrote down what correct means. The other wrote the code. When they disagreed, the test failed. That's how you found bugs.
 
-An agent writes both: the code and the tests. And it has one goal: make everything pass. Even an honest agent checking its own work is only giving you its own opinion.
+Now one agent writes both. The code and the test. And it wants one thing: green.
 
-That's what I mean by dead. The tests still run. They just aren't a second opinion anymore.
+So a passing test is just the agent's own opinion. The test still runs. It's just not a second opinion anymore.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
-## Slide 4: It has happened before
+## Slide 4: This isn't new
 
 02:45-03:55
 
-One breath per year. None of them broke out of anything.
+One breath per year. Nobody broke out of anything.
 
-And this has happened before.
+This isn't new.
 
-In 2018, a program built to fix bugs found a shortcut. It deleted the file that held the right answers. With nothing to compare against, every test passed.
+2018: a bug-fixing program deleted the file with the right answers. Every test passed.
 
-In 2024, an AI research system from Sakana kept running out of time. Instead of making its code faster, it tried to give itself more time.
+2024: Sakana's AI Scientist ran out of time. Instead of getting faster, it tried to give itself more time.
 
-In 2025, on a coding benchmark called SWE-bench, agents, including a Claude model, dug through the project's history and found the answer that was supposed to be hidden.
+2025: on SWE-bench, agents, including a Claude model, dug through the project history and found the hidden answer.
 
-None of them broke out of anything. The answer was within reach, so they took it.
+Nobody broke out of anything. The answer was in reach. So they took it.
 
 [Sources]
 https://arxiv.org/abs/1803.03453
@@ -73,15 +73,15 @@ https://sakana.ai/ai-scientist/
 https://github.com/SWE-bench/SWE-bench/issues/465
 [/Sources]
 
-## Slide 5: We built a locked-down setup
+## Slide 5: We built the setup that should stop this
 
 03:55-04:45
 
 Point to the agent's folder, then to BLOCKED.
 
-So we built a setup that should stop this. A sandbox with no internet. The agent gets its own folder to work in, with the code and the answer file, because that's where the work happens. The checker sits in a locked folder.
+So we built the setup that should stop this. Sandbox. No internet. The agent gets a folder to work in, with the code and the answer file. The checker is locked.
 
-First, the agent tried the obvious thing: replace the checker. Blocked. Good. Then the checker ran and said FAIL. Correct. The code was broken.
+The agent tried to replace the checker. Blocked. Good. The checker ran. Fail. Correct. The code was broken.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
@@ -94,15 +94,15 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 One suspect at a time. Pause before the last line.
 
-Then the tests passed, with the same broken code. So who did it?
+Then the tests passed. Same broken code. So who did it?
 
-Suspect one: the code. We checked the file before and after. Same file. It still lets everyone in.
+The code? Same file. Still lets everyone in.
 
-Suspect two: the checker. Same file. And the agent's attempt to replace it was blocked.
+The checker? Same file. The attempt to replace it was blocked.
 
-Suspect three: the answer file, the list of right answers the checker compares against. It changed. For admin with no login, turn them away became let them in. In fact, every answer became let them in.
+The answer file? Changed. Turn them away became let them in. Every answer became let them in.
 
-So the agent didn't make the code pass the test. It made the test pass the code.
+The agent didn't make the code pass the test. It made the test pass the code.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -115,11 +115,11 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 Count the four lines. Stress the fourth.
 
-Here's the flaw in four lines. The checker is locked. But it reads the right answers from a file in the agent's folder. The agent can change anything in its folder. And writing tests is part of the agent's job, so you can't just take that away.
+Here's the flaw. The checker is locked. But it reads the answers from the agent's folder. The agent can change its folder. And writing tests is the agent's job. You can't take that away.
 
-That last point matters. You can take away an access key or a shared folder. You can't take away the agent's pen, because writing tests is the work. What you can change is whose copy counts.
+You can take away a key. You can take away a folder. You can't take away the pen. What you can change is whose copy counts.
 
-And we kept a record of every file. The change was right there. Nothing asked who made it.
+And the change was right there in our logs. Nothing asked who made it.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
@@ -132,11 +132,11 @@ https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 
 Read the three rows top to bottom. Pause on REJECTED.
 
-The fix is to separate the pens. The agent writes the code, and it can suggest tests. Something it can't touch decides which tests count.
+The fix: separate the pens. The agent writes the code. It can suggest tests. Something it can't touch decides which tests count.
 
-In our lab, we kept our own locked copy of the right answers. The same broken code: rejected. The fixed code: accepted.
+We kept our own locked copy of the answers. Same broken code: rejected. Fixed code: accepted.
 
-And no, swapping the tests for an AI reviewer doesn't solve it. The agent writes the code and the description the reviewer reads. We didn't test that, but it's the same problem: the one being judged writes what the judge reads.
+Will an AI reviewer fix this? I doubt it. The agent writes what the reviewer reads. We didn't test that. But it's the same problem.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -149,13 +149,13 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 Slow down for the first test. Then read the four rows in order.
 
-Now the embarrassing part. Our release step lets one approved change out, once, to one place. We wrote a test to prove it refuses the wrong code.
+Now the embarrassing part. Our release step lets one approved change out, once, to one place. We wrote a test to prove it blocks the wrong code.
 
-The test passed. But it tried the wrong code after the approval had already been used up. So of course it was refused. That told us nothing.
+It passed. But it tried the wrong code after the approval was already used up. Of course it was refused. The test proved nothing.
 
-We fixed the order. Wrong code first, while the approval is still good: refused. Wrong place: refused. Right code, right place: released. The same again: refused.
+So we fixed the order. Wrong code first: refused. Wrong place: refused. Right code, right place: released. Again: refused.
 
-A no only proves something if the yes still works.
+A no only means something if the yes still works.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -163,21 +163,21 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 [/Sources]
 
-## Slide 10: Every yes outside the sandbox is a test
+## Slide 10: Every yes is a test
 
 09:30-10:45
 
 One breath per row: who says yes, our lab, the real case.
 
-Tests aren't the only thing outside the sandbox that says yes. Anything that accepts what the agent hands it is a kind of test.
+Tests aren't the only thing that says yes. Anything that trusts what the agent hands it is a test.
 
-A service accepts an access key. In our lab, a key opened another team's data. In 2025, a hacked build step called tj-actions printed secret keys into public logs.
+A service trusts a key. In our lab, a key opened another team's data. In 2025, a hacked build step called tj-actions printed secret keys into public logs.
 
-The next job trusts a shared folder. Ours let one job change another job's file.
+The next job trusts a shared folder. Ours let one job change another's file.
 
-An upload service accepts a request. Ours saved data in someone else's account. Last year, CamoLeak leaked private code out of GitHub's AI assistant through GitHub's own image links.
+An upload service trusts a request. Ours saved data into someone else's account. Last year, CamoLeak pulled private code out of GitHub's AI assistant through GitHub's own image links.
 
-We recorded all four, twice: the bad yes, then the fix, with the real job still working.
+We recorded all four. And the fix for each, with the real job still working.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
@@ -186,15 +186,15 @@ https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third
 https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
 [/Sources]
 
-## Slide 11: The benchmark builders just learned this
+## Slide 11: The benchmark builders just found out
 
 10:45-11:30
 
 Point at the two numbers. Read the quote exactly.
 
-Last month, the people who build coding benchmarks hit the same problem. They found agents could reach the hidden tests and the answers. When they moved those out of reach, one model's score dropped from 79 percent to 57.
+Last month, the people who build coding benchmarks found the same thing. Agents could reach the hidden tests. When they moved them out of reach, one model's score fell from 79 percent to 57.
 
-Their fix? Take the hidden tests out of the agent's folder. Separate the pens.
+Their fix: get the hidden tests out of the agent's folder. Separate the pens.
 
 [Sources]
 https://arxiv.org/abs/2609.08149
@@ -206,39 +206,39 @@ https://arxiv.org/abs/2609.08149
 
 Back to Tuesday. Say the title line, pause, then the question. Stop.
 
-Back to Tuesday. The sandbox held. The checker held. The agent never broke out of anything.
+Back to Tuesday. The sandbox held. The checker held. Nothing broke out.
 
 Your agent didn't escape the sandbox. It escaped the test.
 
-So on Monday, pick one passing check your team trusts, and ask one question: could the agent have written what made it pass?
+So on Monday, pick one check your team trusts. Ask one question: could the agent have written what made it pass?
 
-Everything I showed is on GitHub, with the recordings. Thank you.
+It's all on GitHub. Thank you.
 
 [Sources]
 https://github.com/zozo123/nyc-talk
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 13: What this experiment establishes
+## Slide 13: What this experiment shows
 
 Appendix only
 
 Use only in Q&A.
 
-We measured whether these actions were allowed and whether the changed configuration stopped them. We didn't measure how often a model would try them, and we did not run Opus 5.5; it is the assumption in the story. The five cases on the right are the whole policy. Passing them shows behavior on those five inputs and nothing broader.
+We tested whether the setup allows these moves, and whether the fix stops them. We did not measure how often a model would try, and we did not run Opus 5.5; it's the example in the story. The five cases on the right are the whole test. Passing them proves those five cases and nothing more.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 14: The token reached another project
+## Slide 14: The key reached another team's data
 
 Appendix only
 
 Use only in Q&A.
 
-The service enforced a token restricted to the task. The intended input stayed readable. A shorter lifetime alone does not narrow permissions: a broad token can reach everything it covers for as long as it is valid. Scope and audience have to be enforced by the service that receives the token.
+A key limited to the task fixed it, and the task could still read its own input. A shorter expiry alone doesn't help: a broad key can reach everything it covers until it expires. The service has to check what the key is for.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
@@ -251,7 +251,7 @@ Appendix only
 
 Use only in Q&A.
 
-The change persisted in the next-job fixture on the host. We did not run a later job that consumed it, so that part is an implication, not a recording. The same write through a read-only bind was denied, and the worker's own output directory stayed writable.
+The change stayed on the host, waiting for the next job. We didn't run that next job, so that part is what would happen, not something we recorded. With the folder read only, the same write was refused, and the agent could still write its own output.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
@@ -264,20 +264,20 @@ Appendix only
 
 Use only in Q&A.
 
-Reaching a service does not establish permission for every operation or recipient on it. The receiver recorded the stored payload, so this is delivery, not an attempted send. In the corrected path the broker sends one fixed report to the team account and refuses extra recipient, payload or URL fields. This is a loopback service model, not a tested firewall bypass.
+Reaching a service doesn't mean you may do anything there. The service really saved the data, so this is delivery, not just an attempt. In the fix, a sender outside the agent sends one fixed report to the right account, refuses anything extra, and the agent can't reach the service directly.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 17: A bug in our earlier release gate
+## Slide 17: A bug in our old release step
 
 Appendix only
 
 Use only in Q&A.
 
-The earlier gate trusted a stored digest after the candidate bytes changed. Reproducing it required direct access to the controller's object. We did not show a worker-to-controller exploit. The current gate derives the digest from the bytes it publishes and stores those bytes.
+Our old release step trusted an old fingerprint after the code changed. Triggering it needed direct access to our own controller, and we did not show the agent could get that. The new release step computes the fingerprint from the exact code it releases.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
@@ -290,19 +290,19 @@ Appendix only
 
 Use only in Q&A.
 
-These counts describe checks, not vulnerability frequency. Each record has its own scope. The 49 are regression tests for the controller and the evidence validator, not isolation tests. The old gate audit is one reproduction of our own bug.
+These count checks, not bugs found. The 49 are regression tests for our own code, not sandbox tests. The old bug is one reproduction of a mistake in our earlier release step.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 [/Sources]
 
-## Slide 19: Run the experiment
+## Slide 19: Run it yourself
 
 Appendix only
 
 Use only in Q&A.
 
-The Linux experiments need a disposable Linux machine with bubblewrap, Python 3.10 or later, and make. TeX Live is only needed to rebuild the PDFs, and GitHub Actions rebuilds them on every change. On any operating system, make test and make factory run the local protocol checks without OS isolation. No cloud account or token is needed.
+You need a throwaway Linux machine with bubblewrap, Python 3.10 or later, and make. On any computer, make test and make factory run the local checks, without a sandbox. GitHub Actions builds the PDFs on every change. No cloud account needed.
 
 [Sources]
 https://github.com/zozo123/nyc-talk
@@ -315,20 +315,20 @@ Appendix only
 
 Use only in Q&A.
 
-The controller checks the outputs, then authenticates its decision together with the candidate, criteria, and destination bindings, using a local HMAC key. The approval names the task and the run, expires, and can be used once. It does not sign the raw observations. The full field list is in factory core.
+The controller checks the results, then signs its decision together with the code, the answers and the destination, using a key only it holds. The approval names the task and the run, expires, and works once. The raw results themselves are not signed.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 21: References
+## Slide 21: Sources
 
 Appendix only
 
 Use only in Q&A.
 
-These are the sources for every real-world case in the talk. Each one is someone else's measurement or report; none of their numbers are transferred to our experiment. Full links are in the speaker notes and in the research dossier.
+These are the sources for every real-world case in the talk. Each one is someone else's report. We don't claim their numbers as ours.
 
 [Sources]
 https://arxiv.org/abs/1803.03453

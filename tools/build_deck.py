@@ -9,7 +9,7 @@ MAX_WPM = 150
 # pauses, to be redistributed after a timed rehearsal; BUDGET is their sum.
 MAIN, APPENDIX, TARGET = 12, 9, '12:15'
 RESERVE, BUDGET = '1:00', '13:15'
-WORDS = (900, 1300)
+WORDS = (750, 1300)
 
 
 def main():

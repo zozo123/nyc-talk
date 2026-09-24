@@ -1,6 +1,6 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
-*Unit tests are dead. When the agent writes both the code and the test, a pass is just its own opinion.*
+*Unit tests are dead. When one agent writes the code and the test, a passing test is just its own opinion.*
 
 **Yossi Eliaz, PhD**
 
