@@ -25,7 +25,7 @@
 \setbeamertemplate{footline}{\hspace{10mm}{\color{dim}\fontsize{6}{7}\selectfont YOSSI ELIAZ / INCREDIBUILD / NYC / 21 OCT 2026}\hfill{\color{acid}\fontsize{6}{7}\selectfont\insertframenumber}\hspace{10mm}\vspace{2mm}}
 \lstset{basicstyle=\ttfamily\fontsize{9.4}{11.2}\selectfont,keywordstyle=\color{acid},commentstyle=\color{dim},stringstyle=\color{gold},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,aboveskip=1pt,belowskip=0pt}
 \newcommand{\kicker}[1]{{\color{acid}\fontsize{8}{9}\selectfont\bfseries #1}\par}
-\newcommand{\scope}[1]{\par\vspace{1mm}{\color{dim}\fontsize{7}{8}\selectfont #1}\par}
+\newcommand{\scope}[1]{\par\vspace{1mm}{\color{dim}\fontsize{8}{9.6}\selectfont #1}\par}
 \newcommand{\takeaway}[1]{\par\vfill{\fontsize{13}{16}\selectfont #1}\par}
 \newcommand{\giant}[2]{{\color{#1}\fontsize{39}{42}\selectfont\bfseries #2}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
@@ -122,10 +122,10 @@ That's what I mean by dead. The tests still run. They just aren't a second opini
 % source: https://github.com/SWE-bench/SWE-bench/issues/465
 \frametitle{It has happened before}
 \vspace{2mm}
-\begin{tikzpicture}[e/.style={draw,rounded corners=2pt,minimum height=31mm,text width=38mm,align=left,text=paper,inner sep=2mm,anchor=north west,execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}}]
-\node[e,draw=gold] at (0,0) {{\color{gold}\fontsize{17}{19}\selectfont\bfseries 2018}\\[1.5mm]{\bfseries GenProg}\\[1mm]{\small A bug-fixing program deletes the file of right answers. Every test passes.}};
-\node[e,draw=cyan] at (4.55,0) {{\color{cyan}\fontsize{17}{19}\selectfont\bfseries 2024}\\[1.5mm]{\bfseries Sakana AI Scientist}\\[1mm]{\small Runs out of time. Tries to give itself more time instead of getting faster.}};
-\node[e,draw=warn] at (9.1,0) {{\color{warn}\fontsize{17}{19}\selectfont\bfseries 2025}\\[1.5mm]{\bfseries SWE-bench}\\[1mm]{\small Agents, including a Claude model, dig through the project history and find the hidden answer.}};
+\begin{tikzpicture}[e/.style={draw,rounded corners=2pt,text=paper,inner sep=2mm,anchor=north west,execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}}]
+\node[e,draw=gold] at (0,0) {\parbox[t][36mm][t]{38mm}{\raggedright {\color{gold}\fontsize{17}{19}\selectfont\bfseries 2018}\\[1.5mm]{\bfseries GenProg}\\[1mm]{\small A bug-fixing program deletes the file of right answers. Every test passes.}}};
+\node[e,draw=cyan] at (4.55,0) {\parbox[t][36mm][t]{38mm}{\raggedright {\color{cyan}\fontsize{17}{19}\selectfont\bfseries 2024}\\[1.5mm]{\bfseries Sakana AI Scientist}\\[1mm]{\small Runs out of time. Tries to give itself more time instead of getting faster.}}};
+\node[e,draw=warn] at (9.1,0) {\parbox[t][36mm][t]{38mm}{\raggedright {\color{warn}\fontsize{17}{19}\selectfont\bfseries 2025}\\[1.5mm]{\bfseries SWE-bench}\\[1mm]{\small Agents, including a Claude model, dig through the project history and find the hidden answer.}}};
 \end{tikzpicture}
 \vfill
 \scope{None of these broke out of a sandbox. Sources are on the last slide.}
@@ -148,30 +148,21 @@ None of them broke out of anything. The answer was within reach, so they took it
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{We built a locked-down setup}
-\vspace{2mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.40\textwidth}
-{\fontsize{11}{15}\selectfont
-\begin{itemize}\setlength{\itemsep}{1.4mm}
-\item A sandbox with no internet.
-\item The agent's folder holds the code and the answer file.
-\item The checker sits in a locked folder.
-\item Replace the checker: {\color{warn}\bfseries BLOCKED}.
-\item First run: {\color{warn}\bfseries FAIL}, which is correct.
-\end{itemize}\par}
-\end{column}
-\begin{column}{.58\textwidth}
-\begin{tikzpicture}[dir/.style={draw,rounded corners=2pt,minimum width=30mm,minimum height=15mm,align=center,text=paper,inner sep=1.5mm}, arr/.style={-{Latex},thick}]
-\draw[warn,dashed,thick,rounded corners=3pt] (-0.2,-0.9) rectangle (7.2,3.5);
-\node[warn,font=\scriptsize\bfseries,anchor=west] at (-0.1,3.25) {SANDBOX / NO INTERNET};
-\node[draw=cyan,rounded corners=2pt,minimum width=34mm,minimum height=9mm,text=paper] (w) at (3.5,2.3) {agent (a script)};
-\node[dir,draw=acid] (work) at (1.7,0.1) {{\bfseries agent's folder}\\{\scriptsize\color{acid} it can write here}\\{\scriptsize the code}\\{\scriptsize the answer file}};
-\node[dir,draw=dim] (ver) at (5.4,0.1) {{\bfseries locked folder}\\{\scriptsize\color{dim} read only}\\{\scriptsize the checker}};
-\draw[arr,acid] (w) -- node[left,font=\scriptsize,color=acid,xshift=-1mm]{write} (work);
-\draw[arr,warn] (w) -- node[right,font=\scriptsize\bfseries,color=warn,xshift=1mm]{BLOCKED} (ver);
+\vspace{1mm}
+\begin{center}
+\begin{tikzpicture}[dir/.style={draw,rounded corners=2pt,minimum width=44mm,minimum height=16mm,align=center,text=paper,inner sep=1.6mm}, arr/.style={-{Latex},very thick}]
+\draw[warn,dashed,thick,rounded corners=3pt] (-0.3,-0.95) rectangle (11.3,3.45);
+\node[warn,font=\small\bfseries,anchor=west] at (-0.1,3.12) {SANDBOX / NO INTERNET};
+\node[draw=cyan,rounded corners=2pt,minimum width=40mm,minimum height=9mm,text=paper] (w) at (5.5,2.2) {agent (a script)};
+\node[dir,draw=acid] (work) at (2.4,0.1) {{\bfseries agent's folder}\\{\small\color{acid} it can write here}\\{\small the code, the answer file}};
+\node[dir,draw=dim] (ver) at (8.6,0.1) {{\bfseries locked folder}\\{\small\color{dim} read only}\\{\small the checker}};
+\draw[arr,acid] (w) -- node[left,font=\small,color=acid,xshift=-1mm]{write} (work);
+\draw[arr,warn] (w) -- node[right,font=\small\bfseries,color=warn,xshift=1mm]{BLOCKED} (ver);
 \end{tikzpicture}
-\end{column}
-\end{columns}
+\end{center}
+\vfill
+{\fontsize{13}{16}\selectfont Replace the checker: {\color{warn}\bfseries BLOCKED}.\hspace{8mm}First run: {\color{warn}\bfseries FAIL}, which is correct.\par}
+\vspace{2mm}
 \note{So we built a setup that should stop this. A sandbox with no internet. The agent gets its own folder to work in, with the code and the answer file, because that's where the work happens. The checker sits in a locked folder.
 
 First, the agent tried the obvious thing: replace the checker. Blocked. Good. Then the checker ran and said FAIL. Correct. The code was broken.}
@@ -220,7 +211,7 @@ So the agent didn't make the code pass the test. It made the test pass the code.
 \item The checker is locked.
 \item But it reads the right answers from a file in the agent's folder.
 \item The agent can change anything in its folder.
-\item Writing tests is the agent's job, so you can't take that away.
+\item {\color{acid}\bfseries Writing tests is the agent's job, so you can't take that away.}
 \end{enumerate}\par}
 \vfill
 \scope{We kept a record of every file. The change is right there. Nothing asked who made it.}
@@ -270,7 +261,7 @@ And no, swapping the tests for an AI reviewer doesn't solve it. The agent writes
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 \frametitle{Even our own test lied}
 \vspace{1mm}
-{\fontsize{12}{15}\selectfont Our release step lets one approved change out, once, to one place. Our first test tried the wrong code after the approval was already used up.\par}
+{\fontsize{12}{15}\selectfont Our first test tried the wrong code after the one-time approval was already used up.\par}
 \vspace{3mm}
 {\tablefont\fontsize{10.5}{13}\selectfont\begin{tabular}{@{}L{.08\textwidth}L{.60\textwidth}L{.24\textwidth}@{}}
 & \textcolor{acid}{the fixed test, one approval} & \textcolor{acid}{result}\\\midrule
@@ -300,15 +291,16 @@ A no only proves something if the yes still works.}
 % source: https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
 % source: https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
 \frametitle{Every yes outside the sandbox is a test}
-{\tablefont\fontsize{9.4}{11.4}\selectfont\begin{tabular}{@{}L{.24\textwidth}L{.33\textwidth}L{.37\textwidth}@{}}
+\vspace{2mm}
+{\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.37\textwidth}L{.37\textwidth}L{.20\textwidth}@{}}
 \textcolor{acid}{who says yes} & \textcolor{acid}{in our lab} & \textcolor{acid}{in the real world}\\\midrule
-a service, to an access key & a key opened another team's data & tj-actions, 2025: a hacked build step printed secret keys into public logs\\
-the next job, to a shared folder & one job changed another job's file & any shared folder the agent can write to\\
-an upload service, to a request & it saved our data in someone else's account & CamoLeak, 2025: private code leaked out through GitHub's own image links\\
-the checker, to the answer file & it accepted answers the agent wrote & GenProg 2018; SWE-bench 2025\\
+a service accepts a key & opened another team's data & tj-actions, 2025\\
+the next job trusts a shared folder & changed another job's file & any shared folder\\
+an upload service accepts a request & saved data in someone else's account & CamoLeak, 2025\\
+the checker trusts the answer file & accepted the agent's answers & GenProg, SWE-bench\\
 \end{tabular}\par}
 \vfill
-\scope{We recorded each case twice: the bad yes, then the fix, with the real job still working. The key and upload cases run on one machine.}
+\scope{Each case recorded twice: the bad yes, then the fix, with the real job still working. The key and upload cases run on one machine.}
 \note{Tests aren't the only thing outside the sandbox that says yes. Anything that accepts what the agent hands it is a kind of test.
 
 A service accepts an access key. In our lab, a key opened another team's data. In 2025, a hacked build step called tj-actions printed secret keys into public logs.
