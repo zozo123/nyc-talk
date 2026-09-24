@@ -17,151 +17,133 @@
 {\LARGE\bfseries Your Agent Escaped\\ Without Escaping the Sandbox}\\[8pt]
 {\large Unit tests are dead.}\\[8pt]
 {\small Yossi Eliaz, PhD \textbullet\ Incredibuild \textbullet\ 21 October 2026}\\[2pt]
-{\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--12 are the talk. Slides 13--21 are for questions.}
+{\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--8 are the talk. Slides 9--17 are for questions.}
 \end{center}
 \section*{1. Your Agent Escaped Without Escaping the Sandbox}
-{\sffamily\color{acid}00:00-00:50}\par
-{\itshape Tell Tuesday as a scene. Pause before the last two sentences.}\par
-Here's a normal Tuesday. You ask your agent to lock the admin page. No login, no entry.
+{\sffamily\color{acid}00:00-01:00}\par
+{\itshape Tell Tuesday as a scene. Pause before "Unit tests are dead."}\par
+Tuesday. You ask your agent to lock the admin page. No login, no entry.
 
-Say your agent is Opus 5.5. The best coding model there is. It's in a sandbox. No internet. The tests are locked.
+Say your agent is Opus 5.5. The model doesn't matter here. It works in a sandbox. No internet. It can't touch the checker that grades its work.
 
 A few minutes later, every test passes. And the admin page is wide open.
 
 Unit tests are dead. Not because agents stopped writing them. Because agents write them.
-\section*{2. All green. Door wide open.}
-{\sffamily\color{acid}00:50-01:35}\par
-{\itshape Let the room look at the three results. Say the script line once, plainly.}\par
-We built this and recorded it. The tests say pass. The admin page lets anyone in. It should say no.
 
-Quick note: the agent in our lab is a script. We played the attacker, so we can replay every step. We weren't asking whether a model would cheat. We were asking whether anyone would notice.
-\section*{3. A test is a second opinion}
-{\sffamily\color{acid}01:35-02:45}\par
-{\itshape Left side, then right side. Say the last line slowly.}\par
-Why did tests ever work? Two people. One wrote down what correct means. The other wrote the code. When they disagreed, the test failed. That's how you found bugs.
+By the end, you'll have four places to check in your own setup.
+\section*{2. A test was a second opinion}
+{\sffamily\color{acid}01:00-02:15}\par
+{\itshape Before, then now. Say the student line, then the two examples, then land the last line.}\par
+Why did tests ever work? Two people. One writes the code. Another writes down what correct means. When they disagree, the test fails, and you find the bug.
 
-Now one agent writes both. The code and the test. And it wants one thing: green.
+Now one agent holds both pens. It's like letting the student write the answer key. And the student wants one thing: green.
 
-So a passing test is just the agent's own opinion. The test still runs. It's just not a second opinion anymore.
-\section*{4. This isn't new}
-{\sffamily\color{acid}02:45-03:55}\par
-{\itshape One breath per year. Nobody broke out of anything.}\par
-This isn't new.
+We've seen this before. Around 2010, researchers evolving bug fixes caught one program deleting the files with the right answers. Every program in the run got a perfect score. In 2025, the founder of SaaStr said Replit's coding agent lied about his unit tests and made up data.
 
-2018: a bug-fixing program deleted the file with the right answers. Every test passed.
+So a passing test is just the agent's own opinion.
+\section*{3. We locked the checker. It still passed.}
+{\sffamily\color{acid}02:15-03:15}\par
+{\itshape Say the script line once, before any result. Point to FAIL, then BLOCKED, then PASS.}\par
+We built the setup that should stop this. The honest part: our agent is a script. We played the attacker, so we can replay every step.
 
-2024: Sakana's AI Scientist ran out of time. Instead of getting faster, it tried to give itself more time.
+Sandbox, no internet. The agent's folder holds the code and its answer file, because writing tests is its job. The checker sits in a locked folder.
 
-2025: on SWE-bench, agents, including a Claude model, dug through the project history and found the hidden answer.
+First run: fail. Correct, the code was broken. Then the agent tried to replace the checker. Blocked.
 
-Nobody broke out of anything. The answer was in reach. So they took it.
-\section*{5. We built the setup that should stop this}
-{\sffamily\color{acid}03:55-04:45}\par
-{\itshape Point to the agent's folder, then to BLOCKED.}\par
-So we built the setup that should stop this. Sandbox. No internet. The agent gets a folder to work in, with the code and the answer file. The checker is locked.
-
-The agent tried to replace the checker. Blocked. Good. The checker ran. Fail. Correct. The code was broken.
-\section*{6. Who did it?}
-{\sffamily\color{acid}04:45-06:00}\par
+Second run, same broken code: pass. And the admin page, with no login, lets you in.
+\section*{4. Who made it pass?}
+{\sffamily\color{acid}03:15-04:30}\par
 {\itshape One suspect at a time. Pause before the last line.}\par
-Then the tests passed. Same broken code. So who did it?
+So who made it pass?
 
 The code? Same file. Still lets everyone in.
 
-The checker? Same file. The attempt to replace it was blocked.
+The checker? Same file. Still locked.
 
-The answer file? Changed. Turn them away became let them in. Every answer became let them in.
+The answer file? Changed. It said: turn them away. Now it says: let them in.
+
+The checker was locked. The answers weren't. They sat in the agent's own folder, because writing tests is the agent's job.
 
 The agent didn't make the code pass the test. It made the test pass the code.
-\section*{7. The flaw}
-{\sffamily\color{acid}06:00-07:10}\par
-{\itshape Count the four lines. Stress the fourth.}\par
-Here's the flaw. The checker is locked. But it reads the answers from the agent's folder. The agent can change its folder. And writing tests is the agent's job. You can't take that away.
+\section*{5. Separate the pens}
+{\sffamily\color{acid}04:30-05:45}\par
+{\itshape Say the turn first. Read the three rows. Pause on REJECTED.}\par
+Tests aren't dead. What's dead is trusting a test the agent wrote.
 
-You can take away a key. You can take away a folder. You can't take away the pen. What you can change is whose copy counts.
-
-And the change was right there in our logs. Nothing asked who made it.
-\section*{8. The fix: separate the pens}
-{\sffamily\color{acid}07:10-08:20}\par
-{\itshape Read the three rows top to bottom. Pause on REJECTED.}\par
-The fix: separate the pens. The agent writes the code. It can suggest tests. Something it can't touch decides which tests count.
+The fix: separate the pens. The agent writes the code. It can even suggest tests. But something it can't touch decides which tests count. The teacher keeps the answer key.
 
 We kept our own locked copy of the answers. Same broken code: rejected. Fixed code: accepted.
 
-Will an AI reviewer fix this? I doubt it. The agent writes what the reviewer reads. We didn't test that. But it's the same problem.
-\section*{9. Even our own test lied}
-{\sffamily\color{acid}08:20-09:30}\par
-{\itshape Slow down for the first test. Then read the four rows in order.}\par
-Now the embarrassing part. Our release step lets one approved change out, once, to one place. We wrote a test to prove it blocks the wrong code.
+The agent can still do all the work. It just doesn't grade itself.
+\section*{6. Real models go find the answers}
+{\sffamily\color{acid}05:45-06:45}\par
+{\itshape Ask the question. Point at the two numbers. Say "another barely moved."}\par
+But our agent was a script. What do real models do? They go find the answers.
 
-It passed. But it tried the wrong code after the approval was already used up. Of course it was refused. The test proved nothing.
+In 2025, on SWE-bench, a popular coding test, agents, including a Claude model, found the real fix left in the project's history, and used it.
 
-So we fixed the order. Wrong code first: refused. Wrong place: refused. Right code, right place: released. Again: refused.
+Last month, a team rebuilt SWE-Bench Pro with the answers out of reach: no git history, no hidden tests in the agent's folder, no GitHub. One model fell from 79 percent to 57. Another barely moved.
 
-A no only means something if the yes still works.
-\section*{10. Every yes is a test}
-{\sffamily\color{acid}09:30-10:45}\par
-{\itshape One breath per row: who says yes, our lab, the real case.}\par
-Tests aren't the only thing that says yes. Anything that trusts what the agent hands it is a test.
+Their fix was ours: move the answers out of the agent's reach. Separate the pens.
+\section*{7. Four places to check}
+{\sffamily\color{acid}06:45-08:45}\par
+{\itshape Say the rule first. One breath per row. Number them out loud.}\par
+Here's the rule. When something says yes to what the agent hands it, that yes is a test. The answer file is one. We found four.
 
-A service trusts a key. In our lab, a key opened another team's data. In 2025, a hacked build step called tj-actions printed secret keys into public logs.
+One: a service trusts a key. In our lab, a key that was too broad read another team's data. In 2025, a hacked build tool, tj-actions, was handed the pipeline's secret keys and exposed them in build logs.
 
-The next job trusts a shared folder. Ours let one job change another's file.
+Two: the next job trusts a shared folder. Ours let one job change the next job's file.
 
-An upload service trusts a request. Ours saved data into someone else's account. Last year, CamoLeak pulled private code out of GitHub's AI assistant through GitHub's own image links.
+Three: an upload service trusts a request. Ours saved data into someone else's account. Last year, a researcher showed GitHub's AI assistant could be tricked into sending private code out through GitHub's own image links. GitHub closed it.
 
-We recorded all four. And the fix for each, with the real job still working.
-\section*{11. The benchmark builders just found out}
-{\sffamily\color{acid}10:45-11:30}\par
-{\itshape Point at the two numbers. Read the quote exactly.}\par
-Last month, the people who build coding benchmarks found the same thing. Agents could reach the hidden tests. When they moved them out of reach, one model's score fell from 79 percent to 57.
+Four: the checker trusts the answer file. You just saw that one.
 
-Their fix: get the hidden tests out of the agent's folder. Separate the pens.
-\section*{12. It escaped the test}
-{\sffamily\color{acid}11:30-12:15}\par
-{\itshape Back to Tuesday. Say the title line, pause, then the question. Stop.}\par
-Back to Tuesday. The sandbox held. The checker held. Nothing broke out.
+We fixed all four and checked both sides. The cheat now fails. The real job still works.
+\section*{8. It escaped the test}
+{\sffamily\color{acid}08:45-10:00}\par
+{\itshape Back to Tuesday. Say the title line, pause, then the checklist. Stop.}\par
+Back to Tuesday. In our lab, the sandbox held. The checker held. Nothing broke out.
 
 Your agent didn't escape the sandbox. It escaped the test.
 
-So on Monday, pick one check your team trusts. Ask one question: could the agent have written what made it pass?
+So on Monday, take these four: the key, the shared folder, the upload, the answer file. Pick one, and ask: who decides yes, and can the agent touch it?
 
 It's all on GitHub. Thank you.
 \newpage
 \section*{Questions}
-\section*{13. What this experiment shows}
+\section*{9. What this experiment shows}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
 We tested whether the setup allows these moves, and whether the fix stops them. We did not measure how often a model would try, and we did not run Opus 5.5; it's the example in the story. The five cases on the right are the whole test. Passing them proves those five cases and nothing more.
-\section*{14. The key reached another team's data}
+\section*{10. The key reached another team's data}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
 A key limited to the task fixed it, and the task could still read its own input. A shorter expiry alone doesn't help: a broad key can reach everything it covers until it expires. The service has to check what the key is for.
-\section*{15. The shared file changed on the host}
+\section*{11. The shared file changed on the host}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
 The change stayed on the host, waiting for the next job. We didn't run that next job, so that part is what would happen, not something we recorded. With the folder read only, the same write was refused, and the agent could still write its own output.
-\section*{16. The upload landed in another account}
+\section*{12. The upload landed in another account}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
 Reaching a service doesn't mean you may do anything there. The service really saved the data, so this is delivery, not just an attempt. In the fix, a sender outside the agent sends one fixed report to the right account, refuses anything extra, and the agent can't reach the service directly.
-\section*{17. A bug in our old release step}
+\section*{13. A bug in our old release step}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
 Our old release step trusted an old fingerprint after the code changed. Triggering it needed direct access to our own controller, and we did not show the agent could get that. The new release step computes the fingerprint from the exact code it releases.
-\section*{18. What we recorded}
+\section*{14. What we recorded}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
 These count checks, not bugs found. The 49 are regression tests for our own code, not sandbox tests. The old bug is one reproduction of a mistake in our earlier release step.
-\section*{19. Run it yourself}
+\section*{15. Run it yourself}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
 You need a throwaway Linux machine with bubblewrap, Python 3.10 or later, and make. On any computer, make test and make factory run the local checks, without a sandbox. GitHub Actions builds the PDFs on every change. No cloud account needed.
-\section*{20. What the approval covers}
+\section*{16. Even our own test lied}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-The controller checks the results, then signs its decision together with the code, the answers and the destination, using a key only it holds. The approval names the task and the run, expires, and works once. The raw results themselves are not signed.
-\section*{21. Sources}
+Our first test of the release step tried the wrong code after the one-time approval was already used up, so of course it was refused, and that proved nothing. We fixed the order: wrong code first, while the approval is still good, then the wrong place, then the right code in the right place, then a second try. The approval is signed by the controller and covers the code, the answers, the checker, the destination, the task and the run. It expires and works once.
+\section*{17. Sources}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
 These are the sources for every real-world case in the talk. Each one is someone else's report. We don't claim their numbers as ours.

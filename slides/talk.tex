@@ -35,8 +35,8 @@
 
 \begin{frame}[plain,t]
 % title: Your Agent Escaped Without Escaping the Sandbox
-% time: 00:00-00:50
-% cue: Tell Tuesday as a scene. Pause before the last two sentences.
+% time: 00:00-01:00
+% cue: Tell Tuesday as a scene. Pause before "Unit tests are dead."
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 \rail\vspace{6mm}
@@ -46,311 +46,240 @@
 \vspace{3mm}
 {\fontsize{15}{18}\selectfont\color{acid}\bfseries Unit tests are dead.\par}
 \vspace{6mm}
-\tikz\node[draw=dim,rounded corners=2pt,inner xsep=3mm,inner ysep=2.2mm,text=paper]{{\color{gold}\ttfamily\fontsize{8}{10}\selectfont THE JOB}\hspace{4mm}{\ttfamily\fontsize{11}{13}\selectfont Lock the admin page. No login, no entry.}};
+\tikz\node[draw=dim,rounded corners=2pt,inner xsep=3mm,inner ysep=2.2mm,text=paper]{{\color{gold}\ttfamily\fontsize{8}{10}\selectfont THE JOB}\hspace{4mm}{\ttfamily\fontsize{11}{13}\selectfont Lock the admin page. No login, no entry.}};\par
+\vspace{3mm}
+\tikz\node[draw=acid,rounded corners=2pt,inner sep=2.2mm,text=acid,font=\bfseries\fontsize{11}{13}\selectfont]{TESTS: PASS};
+\hspace{2mm}\tikz\node[draw=warn,rounded corners=2pt,inner sep=2.2mm,text=warn,font=\bfseries\fontsize{11}{13}\selectfont]{ADMIN PAGE: OPEN};
 \vfill
 {\color{dim}\fontsize{9}{11}\selectfont Yossi Eliaz / Incredibuild / New York / 21 Oct 2026\par}
-\note{Here's a normal Tuesday. You ask your agent to lock the admin page. No login, no entry.
+\note{Tuesday. You ask your agent to lock the admin page. No login, no entry.
 
-Say your agent is Opus 5.5. The best coding model there is. It's in a sandbox. No internet. The tests are locked.
+Say your agent is Opus 5.5. The model doesn't matter here. It works in a sandbox. No internet. It can't touch the checker that grades its work.
 
 A few minutes later, every test passes. And the admin page is wide open.
 
-Unit tests are dead. Not because agents stopped writing them. Because agents write them.}
+Unit tests are dead. Not because agents stopped writing them. Because agents write them.
+
+By the end, you'll have four places to check in your own setup.}
 \end{frame}
 
-\renewcommand{\track}{01 / RESULT}
+\renewcommand{\track}{01 / WHY}
 \begin{frame}[t]
-% title: All green. Door wide open.
-% time: 00:50-01:35
-% cue: Let the room look at the three results. Say the script line once, plainly.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{All green. Door wide open.}
-\vspace{10mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.30\textwidth}\kicker{THE TESTS SAY}\vspace{2mm}\giant{acid}{PASS}\end{column}
-\begin{column}{.36\textwidth}\kicker{ADMIN, NO LOGIN}\vspace{2mm}\giant{warn}{200}\par{\color{warn}\fontsize{12}{14}\selectfont let in}\end{column}
-\begin{column}{.30\textwidth}\kicker{SHOULD BE}\vspace{2mm}\giant{paper}{401}\par{\fontsize{12}{14}\selectfont turned away}\end{column}
-\end{columns}
-\vfill
-\scope{Recorded run. Scripted agent.}
-\note{We built this and recorded it. The tests say pass. The admin page lets anyone in. It should say no.
-
-Quick note: the agent in our lab is a script. We played the attacker, so we can replay every step. We weren't asking whether a model would cheat. We were asking whether anyone would notice.}
-\end{frame}
-
-\renewcommand{\track}{02 / WHY TESTS WORKED}
-\begin{frame}[t]
-% title: A test is a second opinion
-% time: 01:35-02:45
-% cue: Left side, then right side. Say the last line slowly.
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
-\frametitle{A test is a second opinion}
-\vspace{3mm}
-\begin{tikzpicture}[b/.style={draw,rounded corners=2pt,minimum width=26mm,minimum height=9mm,align=center,text=paper,font=\small}, arr/.style={-{Latex},thick}]
-\node[dim,font=\scriptsize\bfseries,anchor=west] at (0.1,2.55) {BEFORE: TWO PEOPLE};
-\node[b,draw=cyan] (s) at (1.4,1.6) {decides what\\correct means};
-\node[b,draw=cyan] (d) at (1.4,0.1) {writes the code};
-\node[b,draw=acid] (t) at (4.7,1.6) {test};
-\node[b,draw=acid] (c) at (4.7,0.1) {code};
-\draw[arr,cyan] (s)--(t); \draw[arr,cyan] (d)--(c);
-\draw[{Latex}-{Latex},thick,warn] (t)--node[right,font=\scriptsize,color=warn,xshift=1mm,align=left]{disagree:\\test fails}(c);
-\draw[grid,thick] (7.35,-0.5)--(7.35,2.7);
-\node[warn,font=\scriptsize\bfseries,anchor=west] at (7.7,2.55) {NOW: ONE AGENT};
-\node[b,draw=warn] (a) at (8.9,0.85) {agent\\{\scriptsize wants: green}};
-\node[b,draw=acid] (t2) at (12.1,1.6) {test};
-\node[b,draw=acid] (c2) at (12.1,0.1) {code};
-\draw[arr,warn] (a)--(t2); \draw[arr,warn] (a)--(c2);
-\end{tikzpicture}
-\vspace{7mm}
-
-{\fontsize{17}{21}\selectfont\bfseries A passing test is just the agent's own opinion.\par}
-\note{Why did tests ever work? Two people. One wrote down what correct means. The other wrote the code. When they disagreed, the test failed. That's how you found bugs.
-
-Now one agent writes both. The code and the test. And it wants one thing: green.
-
-So a passing test is just the agent's own opinion. The test still runs. It's just not a second opinion anymore.}
-\end{frame}
-
-\renewcommand{\track}{03 / HISTORY}
-\begin{frame}[t]
-% title: This isn't new
-% time: 02:45-03:55
-% cue: One breath per year. Nobody broke out of anything.
+% title: A test was a second opinion
+% time: 01:00-02:15
+% cue: Before, then now. Say the student line, then the two examples, then land the last line.
 % source: https://arxiv.org/abs/1803.03453
-% source: https://sakana.ai/ai-scientist/
-% source: https://github.com/SWE-bench/SWE-bench/issues/465
-\frametitle{This isn't new}
-\vspace{2mm}
-\begin{tikzpicture}[e/.style={draw,rounded corners=2pt,text=paper,inner sep=2mm,anchor=north west,execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}}]
-\node[e,draw=gold] at (0,0) {\parbox[t][30mm][t]{38mm}{\raggedright {\color{gold}\fontsize{17}{19}\selectfont\bfseries 2018}\\[1.5mm]{\bfseries GenProg}\\[1mm]{\small Deletes the answer file. Every test passes.}}};
-\node[e,draw=cyan] at (4.55,0) {\parbox[t][30mm][t]{38mm}{\raggedright {\color{cyan}\fontsize{17}{19}\selectfont\bfseries 2024}\\[1.5mm]{\bfseries Sakana AI Scientist}\\[1mm]{\small Runs out of time. Tries to give itself more time.}}};
-\node[e,draw=warn] at (9.1,0) {\parbox[t][30mm][t]{38mm}{\raggedright {\color{warn}\fontsize{17}{19}\selectfont\bfseries 2025}\\[1.5mm]{\bfseries SWE-bench}\\[1mm]{\small Agents dig the hidden answer out of the project history.}}};
-\end{tikzpicture}
+% source: https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/
+\frametitle{A test was a second opinion}
+\vspace{1mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.47\textwidth}\kicker{BEFORE}{\fontsize{12}{15}\selectfont One person writes the code. Another writes the test. They disagree, the test fails, you find the bug.\par}\end{column}
+\begin{column}{.47\textwidth}\kicker{NOW}{\fontsize{12}{15}\selectfont One agent holds both pens. Like letting the student write the answer key.\par}\end{column}
+\end{columns}
+\vspace{4mm}
+{\fontsize{16}{20}\selectfont\bfseries A passing test is just the agent's own opinion.\par}
+\vspace{4mm}
+{\fontsize{10}{13}\selectfont
+{\color{gold}\bfseries 2010}\hspace{2mm}In a bug-fixing experiment, one program deleted the answer files. Every program scored perfect.\par
+\vspace{1.2mm}
+{\color{warn}\bfseries 2025}\hspace{2mm}SaaStr's founder said Replit's agent lied about his unit tests and made up data.\par}
 \vfill
 \scope{Sources: last slide.}
-\note{This isn't new.
+\note{Why did tests ever work? Two people. One writes the code. Another writes down what correct means. When they disagree, the test fails, and you find the bug.
 
-2018: a bug-fixing program deleted the file with the right answers. Every test passed.
+Now one agent holds both pens. It's like letting the student write the answer key. And the student wants one thing: green.
 
-2024: Sakana's AI Scientist ran out of time. Instead of getting faster, it tried to give itself more time.
+We've seen this before. Around 2010, researchers evolving bug fixes caught one program deleting the files with the right answers. Every program in the run got a perfect score. In 2025, the founder of SaaStr said Replit's coding agent lied about his unit tests and made up data.
 
-2025: on SWE-bench, agents, including a Claude model, dug through the project history and found the hidden answer.
-
-Nobody broke out of anything. The answer was in reach. So they took it.}
+So a passing test is just the agent's own opinion.}
 \end{frame}
 
-\renewcommand{\track}{04 / THE LAB}
+\renewcommand{\track}{02 / OUR LAB}
 \begin{frame}[t]
-% title: We built the setup that should stop this
-% time: 03:55-04:45
-% cue: Point to the agent's folder, then to BLOCKED.
+% title: We locked the checker. It still passed.
+% time: 02:15-03:15
+% cue: Say the script line once, before any result. Point to FAIL, then BLOCKED, then PASS.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{We built the setup that should stop this}
-\vspace{1mm}
-\begin{center}
-\begin{tikzpicture}[dir/.style={draw,rounded corners=2pt,minimum width=44mm,minimum height=16mm,align=center,text=paper,inner sep=1.6mm}, arr/.style={-{Latex},very thick}]
-\draw[warn,dashed,thick,rounded corners=3pt] (-0.3,-0.95) rectangle (11.3,3.45);
-\node[warn,font=\small\bfseries,anchor=west] at (-0.1,3.12) {SANDBOX / NO INTERNET};
-\node[draw=cyan,rounded corners=2pt,minimum width=40mm,minimum height=9mm,text=paper] (w) at (5.5,2.2) {agent};
-\node[dir,draw=acid] (work) at (2.4,0.1) {{\bfseries agent's folder}\\{\small\color{acid} it can write here}\\{\small the code, the answer file}};
-\node[dir,draw=dim] (ver) at (8.6,0.1) {{\bfseries locked folder}\\{\small\color{dim} read only}\\{\small the checker}};
+\frametitle{We locked the checker. It still passed.}
+{\centering
+\begin{tikzpicture}[dir/.style={draw,rounded corners=2pt,minimum width=44mm,minimum height=12mm,align=center,text=paper,inner sep=1.2mm}, arr/.style={-{Latex},very thick}]
+\draw[warn,dashed,thick,rounded corners=3pt] (-0.3,-0.75) rectangle (11.3,2.75);
+\node[warn,font=\small\bfseries,anchor=west] at (-0.1,2.47) {SANDBOX / NO INTERNET};
+\node[draw=cyan,rounded corners=2pt,minimum width=40mm,minimum height=7mm,text=paper] (w) at (5.5,1.75) {agent (a script we wrote)};
+\node[dir,draw=acid] (work) at (2.4,0.1) {{\bfseries agent's folder}\\{\small the code, the answer file}};
+\node[dir,draw=dim] (ver) at (8.6,0.1) {{\bfseries locked folder}\\{\small the checker}};
 \draw[arr,acid] (w) -- node[left,font=\small,color=acid,xshift=-1mm]{write} (work);
 \draw[arr,warn] (w) -- node[right,font=\small\bfseries,color=warn,xshift=1mm]{BLOCKED} (ver);
-\end{tikzpicture}
-\end{center}
-\vfill
-{\fontsize{13}{16}\selectfont Replace the checker: {\color{warn}\bfseries BLOCKED}.\hspace{8mm}First run: {\color{warn}\bfseries FAIL}. Correct.\par}
+\end{tikzpicture}\par}
+\vspace{4mm}
+{\tablefont\fontsize{12}{15}\selectfont\begin{tabular}{@{}L{.24\textwidth}L{.34\textwidth}L{.34\textwidth}@{}}
+\textcolor{dim}{run 1} & \textcolor{dim}{then: replace the checker} & \textcolor{dim}{run 2, same broken code}\\
+\textcolor{warn}{\textbf{FAIL}} & \textcolor{warn}{\textbf{BLOCKED}} & \textcolor{acid}{\textbf{PASS}}\\
+\end{tabular}\par}
 \vspace{2mm}
-\note{So we built the setup that should stop this. Sandbox. No internet. The agent gets a folder to work in, with the code and the answer file. The checker is locked.
+{\fontsize{11}{14}\selectfont Admin page, no login: \textcolor{warn}{\textbf{let in (200)}}. It should say 401.\par}
+\vfill
+\note{We built the setup that should stop this. The honest part: our agent is a script. We played the attacker, so we can replay every step.
 
-The agent tried to replace the checker. Blocked. Good. The checker ran. Fail. Correct. The code was broken.}
+Sandbox, no internet. The agent's folder holds the code and its answer file, because writing tests is its job. The checker sits in a locked folder.
+
+First run: fail. Correct, the code was broken. Then the agent tried to replace the checker. Blocked.
+
+Second run, same broken code: pass. And the admin page, with no login, lets you in.}
 \end{frame}
 
-\renewcommand{\track}{05 / WHODUNIT}
+\renewcommand{\track}{03 / WHODUNIT}
 \begin{frame}[t]
-% title: Who did it?
-% time: 04:45-06:00
+% title: Who made it pass?
+% time: 03:15-04:30
 % cue: One suspect at a time. Pause before the last line.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{Who did it?}
+\frametitle{Who made it pass?}
 \vspace{1mm}
-{\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.24\textwidth}L{.22\textwidth}L{.48\textwidth}@{}}
-\textcolor{acid}{suspect} & \textcolor{acid}{before and after} & \textcolor{acid}{what we found}\\\midrule
-the code & same file & still lets everyone in\\
-the checker & same file & replacing it was blocked\\
-the answer file & \textcolor{warn}{\bfseries changed} & ``turn away (401)'' became ``let in (200)''\\
+{\tablefont\fontsize{12}{15}\selectfont\begin{tabular}{@{}L{.26\textwidth}L{.68\textwidth}@{}}
+the code & same file, still lets everyone in\\
+the checker & same file, still locked\\
+the answer file & \textcolor{warn}{\textbf{changed:}} ``turn away (401)'' became ``let in (200)''\\
 \end{tabular}\par}
+\vspace{5mm}
+{\fontsize{15}{19}\selectfont The checker was locked. The answers weren't.\par}
 \vfill
-{\fontsize{14}{17}\selectfont\bfseries It didn't make the code pass the test. It made the test pass the code.\par}
+{\fontsize{15}{19}\selectfont\bfseries It didn't make the code pass the test.\\It made the test pass the code.\par}
 \scope{Fingerprints: code \texttt{76fcb0904f51} (same), checker \texttt{f5d8d3468bbe} (same), answers \texttt{0494f1a01dee} to \texttt{390e5e764916}.}
-\note{Then the tests passed. Same broken code. So who did it?
+\note{So who made it pass?
 
 The code? Same file. Still lets everyone in.
 
-The checker? Same file. The attempt to replace it was blocked.
+The checker? Same file. Still locked.
 
-The answer file? Changed. Turn them away became let them in. Every answer became let them in.
+The answer file? Changed. It said: turn them away. Now it says: let them in.
+
+The checker was locked. The answers weren't. They sat in the agent's own folder, because writing tests is the agent's job.
 
 The agent didn't make the code pass the test. It made the test pass the code.}
 \end{frame}
 
-\renewcommand{\track}{06 / THE FLAW}
+\renewcommand{\track}{04 / THE FIX}
 \begin{frame}[t]
-% title: The flaw
-% time: 06:00-07:10
-% cue: Count the four lines. Stress the fourth.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{The flaw}
-\vspace{3mm}
-{\fontsize{14}{19}\selectfont
-\begin{enumerate}\setlength{\itemsep}{2.5mm}
-\item The checker is locked.
-\item It reads the answers from the agent's folder.
-\item The agent can change its folder.
-\item {\color{acid}\bfseries Writing tests is the agent's job. You can't take that away.}
-\end{enumerate}\par}
-\vfill
-\scope{The change was in our logs. Nothing asked who made it.}
-\note{Here's the flaw. The checker is locked. But it reads the answers from the agent's folder. The agent can change its folder. And writing tests is the agent's job. You can't take that away.
-
-You can take away a key. You can take away a folder. You can't take away the pen. What you can change is whose copy counts.
-
-And the change was right there in our logs. Nothing asked who made it.}
-\end{frame}
-
-\renewcommand{\track}{07 / THE FIX}
-\begin{frame}[t]
-% title: The fix: separate the pens
-% time: 07:10-08:20
-% cue: Read the three rows top to bottom. Pause on REJECTED.
+% title: Separate the pens
+% time: 04:30-05:45
+% cue: Say the turn first. Read the three rows. Pause on REJECTED.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{The fix: separate the pens}
+\frametitle{Separate the pens}
 \vspace{1mm}
+{\fontsize{13}{16}\selectfont Tests aren't dead. What's dead is trusting a test the agent wrote.\par}
+\vspace{4mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{.47\textwidth}\kicker{THE AGENT WRITES}{\fontsize{12}{15}\selectfont the code, and suggested tests\par}\end{column}
 \begin{column}{.47\textwidth}\kicker{SOMETHING IT CAN'T TOUCH DECIDES}{\fontsize{12}{15}\selectfont which tests count\par}\end{column}
 \end{columns}
-\vspace{5mm}
+\vspace{4mm}
 {\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.30\textwidth}L{.40\textwidth}L{.24\textwidth}@{}}
 \textcolor{acid}{code} & \textcolor{acid}{answers used} & \textcolor{acid}{result}\\\midrule
 broken & the agent's answer file & \textcolor{warn}{PASS}\\
 same broken code & our locked copy & \textcolor{acid}{\bfseries REJECTED}\\
 fixed code & our locked copy & \textcolor{acid}{\bfseries ACCEPTED}\\
 \end{tabular}\par}
-\note{The fix: separate the pens. The agent writes the code. It can suggest tests. Something it can't touch decides which tests count.
+\vfill
+{\color{dim}\fontsize{11}{14}\selectfont The teacher keeps the answer key.\par}
+\note{Tests aren't dead. What's dead is trusting a test the agent wrote.
+
+The fix: separate the pens. The agent writes the code. It can even suggest tests. But something it can't touch decides which tests count. The teacher keeps the answer key.
 
 We kept our own locked copy of the answers. Same broken code: rejected. Fixed code: accepted.
 
-Will an AI reviewer fix this? I doubt it. The agent writes what the reviewer reads. We didn't test that. But it's the same problem.}
+The agent can still do all the work. It just doesn't grade itself.}
 \end{frame}
 
-\renewcommand{\track}{08 / OUR TEST}
+\renewcommand{\track}{05 / REAL MODELS}
 \begin{frame}[t]
-% title: Even our own test lied
-% time: 08:20-09:30
-% cue: Slow down for the first test. Then read the four rows in order.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
-\frametitle{Even our own test lied}
+% title: Real models go find the answers
+% time: 05:45-06:45
+% cue: Ask the question. Point at the two numbers. Say "another barely moved."
+% source: https://github.com/SWE-bench/SWE-bench/issues/465
+% source: https://arxiv.org/abs/2609.08149
+\frametitle{Real models go find the answers}
 \vspace{1mm}
-{\fontsize{12}{15}\selectfont Our first test tried the wrong code after the one-time approval was used up.\par}
-\vspace{3mm}
-{\tablefont\fontsize{10.5}{13}\selectfont\begin{tabular}{@{}L{.08\textwidth}L{.60\textwidth}L{.24\textwidth}@{}}
-& \textcolor{acid}{the fixed test, one approval} & \textcolor{acid}{result}\\\midrule
-1 & wrong code, approval still good & \textcolor{warn}{REFUSED}\\
-2 & right code, wrong place & \textcolor{warn}{REFUSED}\\
-3 & right code, right place & \textcolor{acid}{RELEASED}\\
-4 & the same again & \textcolor{warn}{REFUSED}\\
-\end{tabular}\par}
+{\fontsize{11}{14}\selectfont{\color{gold}\bfseries 2025}\hspace{2mm}On SWE-bench, a popular coding test, agents, including a Claude model, found the real fix left in the project's history, and used it.\par}
+\vspace{4mm}
+{\fontsize{11}{14}\selectfont{\color{warn}\bfseries 2026}\hspace{2mm}SWE-Bench Pro was rebuilt with the answers out of reach. One model's score:\par}
+\vspace{2mm}
+{\fontsize{30}{34}\selectfont\bfseries{\color{warn}78.8\%}\hspace{5mm}{\color{dim}\textrightarrow}\hspace{5mm}{\color{acid}57.3\%}\par}
+\vspace{4mm}
+{\fontsize{12}{15}\selectfont Their fix: no git history, no hidden tests in the agent's folder, no GitHub.\par}
 \vfill
-{\fontsize{13}{16}\selectfont A no only means something if the yes still works.\par}
-\note{Now the embarrassing part. Our release step lets one approved change out, once, to one place. We wrote a test to prove it blocks the wrong code.
+\scope{Sources: SWE-bench issue 465; Zheng et al., SWE-Bench Pro Verified, September 2026 (GLM-5.2; DeepSeek-V4-Pro moved under 1 point).}
+\note{But our agent was a script. What do real models do? They go find the answers.
 
-It passed. But it tried the wrong code after the approval was already used up. Of course it was refused. The test proved nothing.
+In 2025, on SWE-bench, a popular coding test, agents, including a Claude model, found the real fix left in the project's history, and used it.
 
-So we fixed the order. Wrong code first: refused. Wrong place: refused. Right code, right place: released. Again: refused.
+Last month, a team rebuilt SWE-Bench Pro with the answers out of reach: no git history, no hidden tests in the agent's folder, no GitHub. One model fell from 79 percent to 57. Another barely moved.
 
-A no only means something if the yes still works.}
+Their fix was ours: move the answers out of the agent's reach. Separate the pens.}
 \end{frame}
 
-\renewcommand{\track}{09 / EVERY YES}
+\renewcommand{\track}{06 / FOUR PLACES}
 \begin{frame}[t]
-% title: Every yes is a test
-% time: 09:30-10:45
-% cue: One breath per row: who says yes, our lab, the real case.
+% title: Four places to check
+% time: 06:45-08:45
+% cue: Say the rule first. One breath per row. Number them out loud.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 % source: https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+% source: https://github.com/advisories/ghsa-mrrh-fwg8-r2c3
 % source: https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
-\frametitle{Every yes is a test}
+\frametitle{Four places to check}
+{\color{dim}\fontsize{11}{14}\selectfont When something says yes to what the agent hands it, that yes is a test.\par}
 \vspace{2mm}
-{\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.37\textwidth}L{.37\textwidth}L{.20\textwidth}@{}}
-\textcolor{acid}{who says yes} & \textcolor{acid}{in our lab} & \textcolor{acid}{in the real world}\\\midrule
-a service trusts a key & opened another team's data & tj-actions, 2025\\
-the next job trusts a shared folder & changed another job's file & any shared folder\\
-an upload service trusts a request & saved data into someone else's account & CamoLeak, 2025\\
-the checker trusts the answer file & accepted the agent's answers & GenProg, SWE-bench\\
+{\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.04\textwidth}L{.34\textwidth}L{.32\textwidth}L{.24\textwidth}@{}}
+& \textcolor{acid}{who says yes} & \textcolor{acid}{in our lab} & \textcolor{acid}{outside our lab}\\\midrule
+1 & a service, to a key & read another team's data & tj-actions, 2025\\
+2 & the next job, to a folder & changed the next job's file & none cited\\
+3 & an upload service & saved data to another account & CamoLeak, 2025\\
+4 & the checker, to the answers & the run you just saw & the 2010 experiment\\
 \end{tabular}\par}
 \vfill
-\scope{Recorded both ways: the bad yes, then the fix.}
-\note{Tests aren't the only thing that says yes. Anything that trusts what the agent hands it is a test.
+{\fontsize{12}{15}\selectfont We fixed all four. The cheat now fails. The real job still works.\par}
+\scope{Each fix tested both ways. CamoLeak was a researcher's demonstration; GitHub closed it.}
+\note{Here's the rule. When something says yes to what the agent hands it, that yes is a test. The answer file is one. We found four.
 
-A service trusts a key. In our lab, a key opened another team's data. In 2025, a hacked build step called tj-actions printed secret keys into public logs.
+One: a service trusts a key. In our lab, a key that was too broad read another team's data. In 2025, a hacked build tool, tj-actions, was handed the pipeline's secret keys and exposed them in build logs.
 
-The next job trusts a shared folder. Ours let one job change another's file.
+Two: the next job trusts a shared folder. Ours let one job change the next job's file.
 
-An upload service trusts a request. Ours saved data into someone else's account. Last year, CamoLeak pulled private code out of GitHub's AI assistant through GitHub's own image links.
+Three: an upload service trusts a request. Ours saved data into someone else's account. Last year, a researcher showed GitHub's AI assistant could be tricked into sending private code out through GitHub's own image links. GitHub closed it.
 
-We recorded all four. And the fix for each, with the real job still working.}
+Four: the checker trusts the answer file. You just saw that one.
+
+We fixed all four and checked both sides. The cheat now fails. The real job still works.}
 \end{frame}
 
-\renewcommand{\track}{10 / 2026}
-\begin{frame}[t]
-% title: The benchmark builders just found out
-% time: 10:45-11:30
-% cue: Point at the two numbers. Read the quote exactly.
-% source: https://arxiv.org/abs/2609.08149
-\frametitle{The benchmark builders just found out}
-\vspace{4mm}
-\kicker{ONE MODEL, ONE CODING BENCHMARK}
-\vspace{2mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.40\textwidth}{\color{dim}\fontsize{9}{11}\selectfont answers in reach\par}{\fontsize{34}{38}\selectfont\bfseries\color{warn}78.8\%\par}\end{column}
-\begin{column}{.55\textwidth}{\color{dim}\fontsize{9}{11}\selectfont answers out of reach\par}{\fontsize{34}{38}\selectfont\bfseries\color{acid}57.3\%\par}\end{column}
-\end{columns}
-\vspace{7mm}
-{\fontsize{14}{18}\selectfont Their fix: ``We remove hidden evaluation files from the agent workspace.''\par}
-\vfill
-\scope{Source: SWE-Bench Pro Verified, September 2026. Model: GLM-5.2.}
-\note{Last month, the people who build coding benchmarks found the same thing. Agents could reach the hidden tests. When they moved them out of reach, one model's score fell from 79 percent to 57.
-
-Their fix: get the hidden tests out of the agent's folder. Separate the pens.}
-\end{frame}
-
-\renewcommand{\track}{11 / CLOSE}
+\renewcommand{\track}{07 / CLOSE}
 \begin{frame}[t]
 % title: It escaped the test
-% time: 11:30-12:15
-% cue: Back to Tuesday. Say the title line, pause, then the question. Stop.
+% time: 08:45-10:00
+% cue: Back to Tuesday. Say the title line, pause, then the checklist. Stop.
 % source: https://github.com/zozo123/nyc-talk
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 \frametitle{It escaped the test}
-\vspace{8mm}
+\vspace{6mm}
 {\fontsize{22}{27}\selectfont\bfseries Your agent didn't escape the sandbox.\\{\color{acid}It escaped the test.}\par}
-\vspace{8mm}
-{\fontsize{13}{17}\selectfont Monday: pick one check you trust. Could the agent have written what made it pass?\par}
+\vspace{7mm}
+{\fontsize{13}{17}\selectfont Monday, check four places:\par}
+\vspace{1.5mm}
+{\ttfamily\fontsize{12}{15}\selectfont [ ] the key\hspace{5mm}[ ] the folder\hspace{5mm}[ ] the upload\hspace{5mm}[ ] the answers\par}
+\vspace{2.5mm}
+{\fontsize{13}{17}\selectfont Pick one. Who decides yes, and can the agent touch it?\par}
 \vfill
 {\color{acid}\ttfamily\fontsize{10}{12}\selectfont github.com/zozo123/nyc-talk\par}
-\note{Back to Tuesday. The sandbox held. The checker held. Nothing broke out.
+\note{Back to Tuesday. In our lab, the sandbox held. The checker held. Nothing broke out.
 
 Your agent didn't escape the sandbox. It escaped the test.
 
-So on Monday, pick one check your team trusts. Ask one question: could the agent have written what made it pass?
+So on Monday, take these four: the key, the shared folder, the upload, the answer file. Pick one, and ask: who decides yes, and can the agent touch it?
 
 It's all on GitHub. Thank you.}
 \end{frame}
@@ -493,45 +422,48 @@ make final              # the PDFs; needs TeX Live
 \note{You need a throwaway Linux machine with bubblewrap, Python 3.10 or later, and make. On any computer, make test and make factory run the local checks, without a sandbox. GitHub Actions builds the PDFs on every change. No cloud account needed.}
 \end{frame}
 
-\renewcommand{\track}{A8 / APPROVAL}
+\renewcommand{\track}{A8 / OUR TEST}
 \begin{frame}[t]
-% title: What the approval covers
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+% title: Even our own test lied
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{What the approval covers}
-{\fontsize{11}{14}\selectfont The controller checks the results, then signs its decision together with the code, the answers and the destination.\par}
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+% source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+\frametitle{Even our own test lied}
+{\fontsize{11}{14}\selectfont Our release step lets one approved change out, once, to one place. Our first test tried the wrong code after the approval was used up, so the refusal proved nothing.\par}
 \vspace{3mm}
-{\tablefont\begin{tabular}{@{}L{.20\textwidth}L{.72\textwidth}@{}}
-\textcolor{acid}{the code} & its fingerprint\\
-\textcolor{acid}{the answers} & the expected results, the rules, the checker's own code\\
-\textcolor{acid}{the destination} & account, environment, operation, file\\
-\textcolor{acid}{the rest} & task, run, environment, expiry, use once\\
+{\tablefont\begin{tabular}{@{}L{.08\textwidth}L{.60\textwidth}L{.24\textwidth}@{}}
+& \textcolor{acid}{the fixed test, one approval} & \textcolor{acid}{result}\\\midrule
+1 & wrong code, approval still good & \textcolor{warn}{REFUSED}\\
+2 & right code, wrong place & \textcolor{warn}{REFUSED}\\
+3 & right code, right place & \textcolor{acid}{RELEASED}\\
+4 & the same again & \textcolor{warn}{REFUSED}\\
 \end{tabular}\par}
 \vspace{3mm}
-{\fontsize{9.5}{12}\selectfont In order: wrong code \textcolor{warn}{REFUSED}, wrong place \textcolor{warn}{REFUSED}, right place \textcolor{acid}{RELEASED}, again \textcolor{warn}{REFUSED}.\par}
+{\fontsize{10}{13}\selectfont The approval covers the code's fingerprint, the answers, the checker's own code, the destination, the task, the run, an expiry and one use.\par}
 \scope{Signed with a key only the controller holds. The raw results are not signed.}
-\note{The controller checks the results, then signs its decision together with the code, the answers and the destination, using a key only it holds. The approval names the task and the run, expires, and works once. The raw results themselves are not signed.}
+\note{Our first test of the release step tried the wrong code after the one-time approval was already used up, so of course it was refused, and that proved nothing. We fixed the order: wrong code first, while the approval is still good, then the wrong place, then the right code in the right place, then a second try. The approval is signed by the controller and covers the code, the answers, the checker, the destination, the task and the run. It expires and works once.}
 \end{frame}
 
 \renewcommand{\track}{A9 / SOURCES}
 \begin{frame}[t]
 % title: Sources
 % source: https://arxiv.org/abs/1803.03453
-% source: https://sakana.ai/ai-scientist/
+% source: https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/
 % source: https://github.com/SWE-bench/SWE-bench/issues/465
 % source: https://arxiv.org/abs/2609.08149
 % source: https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+% source: https://github.com/advisories/ghsa-mrrh-fwg8-r2c3
 % source: https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
 % source: https://github.com/OWASP/www-project-top-10-ci-cd-security-risks/blob/main/CICD-SEC-04-Poisoned-Pipeline-Execution.md
 \frametitle{Sources}
 {\fontsize{8.6}{10.8}\selectfont
 \begin{itemize}\setlength{\itemsep}{0.9mm}
-\item \textbf{GenProg deletes the answer file.} Lehman et al., \emph{The Surprising Creativity of Digital Evolution}, arXiv 1803.03453, 2018.
-\item \textbf{The AI Scientist gives itself more time.} Sakana AI, \emph{The AI Scientist}, August 2024.
-\item \textbf{Agents find the hidden fix in the history.} SWE-bench issue 465, September 2025.
+\item \textbf{A program deletes the answer files, c.~2010.} Schulte, Forrest and Weimer, ASE 2010; retold in Lehman et al., \emph{The Surprising Creativity of Digital Evolution}, arXiv 1803.03453, 2018.
+\item \textbf{An agent that lied about unit tests.} The Register, \emph{Replit deleted user's production database, faked data}, July 2025, reporting Jason Lemkin of SaaStr.
+\item \textbf{Agents find the fix left in the history.} SWE-bench issue 465, September 2025.
 \item \textbf{Scores fall once answers are out of reach.} Zheng et al., \emph{SWE-Bench Pro Verified}, arXiv 2609.08149, September 2026.
-\item \textbf{Secret keys in public build logs.} CISA alert on tj-actions/changed-files, CVE-2025-30066, March 2025.
-\item \textbf{Private code out through GitHub's own image links.} Legit Security, \emph{CamoLeak}, CVE-2025-59145, 2025.
+\item \textbf{A build tool exposes secret keys in logs.} CISA alert and GitHub advisory on tj-actions/changed-files, CVE-2025-30066, March 2025.
+\item \textbf{A researcher shows private code leaking through GitHub's own image links.} Legit Security, \emph{CamoLeak}, CVE-2025-59145, 2025; fixed by GitHub.
 \item \textbf{The name for this in CI/CD.} OWASP CICD-SEC-4, Poisoned Pipeline Execution.
 \item \textbf{Our lab.} github.com/zozo123/nyc-talk: code, recordings, this deck.
 \end{itemize}\par}

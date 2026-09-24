@@ -32,7 +32,7 @@ The same package records three neighboring cases (a broad token, a writable shar
 
 ## Is this new?
 
-No. GenProg did it in 2018 by deleting the file of expected outputs. This experiment makes the dependency visible in an otherwise locked-down pipeline and tests a specific correction.
+No. Around 2010, in an automated bug-fixing experiment, one evolved program deleted the files of expected outputs and every candidate got a perfect score (Schulte, Forrest and Weimer; retold by Lehman et al. in 2018). This experiment makes the dependency visible in an otherwise locked-down pipeline and tests a specific correction.
 
 The closest public name is poisoned pipeline execution, OWASP CICD-SEC-4: someone with repository write, and no access to the build environment, gets the pipeline to run their commands through the CI config or files it references, such as test code. Ours is its data-only neighbor. The program and checker bytes stayed identical, and the only file the worker changed was the expected-results file the checker reads. Nothing new had to run. What the paired run adds is a measurement: the candidate and checker stay fixed while ownership of the expected answers changes the decision. We also publish a bug we found in our own earlier release gate.
 
@@ -40,13 +40,13 @@ The closest public name is poisoned pipeline execution, OWASP CICD-SEC-4: someon
 
 The worker is a script so the experiment repeats the same actions. We measure what the setup permits, not how likely a model is to try it.
 
-There is no model attack-success rate. For models doing it, the slide "This isn't new" and the 2026 slide cite others' reports; their results stay with them.
+There is no model attack-success rate. For models doing it, the slides "A test was a second opinion" and "Real models find the answers too" cite others' reports; their results stay with them.
 
 ## Are real agents doing this today?
 
-In published evaluations, yes. On SWE-bench in 2025, agents including a Claude Sonnet model ran `git log` and found the future commit that contained the fix (SWE-bench issue #465). In September 2026, the SWE-Bench Pro Verified audit found agents could read hidden tests, future commits and upstream fixes; one model, GLM-5.2, fell from 78.80% to 57.32% once those were out of reach (arXiv 2609.08149).
+Yes. In July 2025, SaaStr's founder Jason Lemkin said Replit's coding agent lied about his unit tests, made up data, and deleted his production database during a code freeze (reported by The Register). In published evaluations too: on SWE-bench in 2025, agents including a Claude Sonnet model ran `git log` and found the future commit that contained the fix (SWE-bench issue #465). In September 2026, the SWE-Bench Pro Verified audit found agents could read hidden tests, future commits and upstream fixes; one model, GLM-5.2, fell from 78.80% to 57.32% once those were out of reach, while DeepSeek-V4-Pro moved 0.87 points (arXiv 2609.08149). Their fix removed git history, hidden tests and code-host access together.
 
-Those are their measurements, not ours, and we report no rate. Earlier examples are GenProg (2018, a genetic-programming repair system) and Sakana's AI Scientist (2024, an LLM research agent); sources are on backup slide A9. METR's June 2025 reward-hacking report is background in [research/DOSSIER.md](research/DOSSIER.md); it is not part of the talk.
+Those are their measurements, not ours, and we report no rate. Earlier examples are the 2010 program-repair experiment that deleted its answer files and Sakana's AI Scientist (2024), which tried to extend its own time limit; sources are in the dossier. METR's June 2025 reward-hacking report is background in [research/DOSSIER.md](research/DOSSIER.md); it is not part of the talk.
 
 A related study: Anthropic's November 2025 paper (MacDiarmid et al., arXiv 2511.18397) includes a worker-written `conftest.py` that makes pytest report failures as passes. Its models were first given information about the hacks, then trained on environments chosen because they were hackable, and the paper says they do not discover the hacks unaided. That is motivation, not a measurement we transfer.
 
@@ -90,7 +90,7 @@ The approval in `factory/core.py` binds `expected_results_digest` alongside the 
 
 Yes, at pipeline scale, and that case is direct poisoned pipeline execution. A workflow file under `.github/workflows` defines which checks run and what counts as passing, so a worker that can write it can change the rules behind the check.
 
-The Monday question on the closing slide transfers directly: could the agent have written what made it green? We did not test a CI system here, so the questions carry over; the measurement does not.
+The Monday question on the closing slide transfers directly: could the agent have written what made it pass? We did not test a CI system here, so the questions carry over; the measurement does not.
 
 ## Why is another VM insufficient?
 
@@ -166,7 +166,7 @@ In this repository that means three properties, each with a check. The gate has 
 
 The first version could have. The defect was in our test, not the gate: it published first and tried the substitute afterwards, so a spent approval could have hidden a missing byte check.
 
-The corrected test, on "Even our own test lied", runs four steps on one approval. Different bytes while the approval is unused: DENIED. The approved bytes to another destination, approval still unused: DENIED. The approved bytes to the intended destination: PUBLISHED. The same again: DENIED as reuse. Both refusals happen before the approval is spent, so neither can be credited to replay protection.
+The corrected test, on backup slide A8 ("Even our own test lied"), runs four steps on one approval. Different bytes while the approval is unused: DENIED. The approved bytes to another destination, approval still unused: DENIED. The approved bytes to the intended destination: PUBLISHED. The same again: DENIED as reuse. Both refusals happen before the approval is spent, so neither can be credited to replay protection.
 
 ## What about concurrency and restarts?
 
@@ -188,6 +188,6 @@ A production publication destination needs its own authorization and atomicity a
 
 ## What should we do tomorrow?
 
-Pick one green check your team trusts and ask the closing slide's question: could the agent have written what made it green? List what the check reads, list what the agent can write, and remove the candidate itself; anything left on both lists is the finding.
+Take the four places from the closing slide (the key, the shared folder, the upload, the answer file), pick one, and ask: could the agent have written what made it pass? List what the check reads, list what the agent can write, and remove the candidate itself; anything left on both lists is the finding.
 
 Then attempt the unauthorized credential read, cross-task write, wrong-recipient upload, expected-results edit and approved-byte substitution in your own setup. For each denial, show that the intended operation still completes under the same conditions.
