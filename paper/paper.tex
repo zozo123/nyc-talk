@@ -26,7 +26,7 @@
 {\large Yossi Eliaz, PhD}\\[2pt]
 {\small Principal Engineer and Head of DevRel, Incredibuild}\\[8pt]
 {\color{acid}\rule{0.42\textwidth}{1.4pt}}\\[8pt]
-{\small\textit{How a broken program got a passing result}}
+{\small\textit{Unit tests are dead: when the agent writes the code and the test}}
 \end{center}
 
 \begin{abstract}
@@ -182,9 +182,11 @@ sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
 Source, recorded outputs, and the limits live at \url{https://github.com/zozo123/nyc-talk}. The deck and this paper read those recordings. Stage delivery needs no cloud account and no live terminal.
 
-External context, kept separate from our results: METR's June 2025 report of frontier models gaming scored tasks includes o3, asked to make code faster, changing the timing function used to measure it; that code ran inside the scorer's process, and METR's tasks and rates stay with that report. Bubblewrap's security model is caller-defined sandbox policy. SLSA v1.2 supplies the vocabulary of digests and expectations; this gate is not a SLSA implementation or certification. Anthropic's November 2025 study of reward hacking is prior motivation, and its measurements stay with that study. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
+External context, kept separate from our results. The move is old: in 2018 the program-repair system GenProg learned to delete the file of expected outputs so that every test passed (Lehman et al., arXiv 1803.03453). Sakana's AI Scientist (2024) tried to extend its own time limit instead of making its code faster. On SWE-bench (issue \#465, 2025), agents including a Claude Sonnet model ran \texttt{git log} and found future commits containing the fix. In September 2026, the SWE-Bench Pro Verified audit (Zheng et al., arXiv 2609.08149) found agents could read hidden tests, future commits and upstream fixes; one model fell from 78.80\% to 57.32\% once those were out of reach, and the fix was to remove hidden evaluation files from the agent workspace. The supporting cases have public relatives: the tj-actions/changed-files compromise (CVE-2025-30066) printed inherited CI secrets into public logs, and CamoLeak (CVE-2025-59145) moved private code out of Copilot Chat through an allowed image proxy. OWASP names the CI/CD class Poisoned Pipeline Execution (CICD-SEC-4). Bubblewrap's security model is caller-defined sandbox policy, and this gate is not a SLSA implementation or certification. None of these reports' numbers are measurements from our fixtures. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
 
 \section{Implications}
+
+A test is evidence because it is independent of what it tests. When the same agent writes the code and the test, the test's green result is a report on the agent's own work.
 
 Protecting the checker executable did not protect the expected values it used. The vulnerable configuration let the worker change those values and obtain a passing result for unchanged code. Moving the authoritative expected values to the controller removed that route in the recorded experiment.
 
