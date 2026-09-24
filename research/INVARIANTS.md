@@ -8,7 +8,7 @@
 
 **Single use.** Checking and consuming a nonce and recording candidate bytes occur in one SQLite transaction. Parallel use of the same approval produces one publication. A fresh controller has a new key and run ID and rejects previous-session approvals.
 
-**Evidence integrity.** All required sources and all named checks must be present. Missing, skipped, stale, malformed, duplicate or failed evidence blocks the deck build. Missing or malformed candidate observations produce no approval, not a claimed successful defense.
+**Evidence integrity.** The build checks required source hashes, named checks, and selected recorded observations for consistency. A missing, skipped, stale, duplicate or failed check blocks the deck build. Nested record data beyond those selected observations is not validated. Missing or malformed candidate observations produce no approval, not a claimed successful defense.
 
 **Trust assumptions.** The controller, its key, policy, interpreter, SQLite store, and host remain trusted. The worker receives neither those writable paths nor those capabilities in the isolated experiment. Local `python -I` is not process isolation. The diagnostic content-addressed store is not a hostile multi-tenant filesystem.
 

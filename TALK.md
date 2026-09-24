@@ -1,118 +1,151 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
+*How a broken program got a passing result*
+
 **Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**
 
-Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-14. Delivery budget: 14:00 of a 15-minute slot; the rest is margin. Timings are rehearsal targets, not measured delivery.
+Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Slide windows total 12:15; with 1:00 of shared reserve for transitions and pauses, the rehearsal target is 13:15 of a 15-minute slot. Timings are rehearsal allowances, not measured delivery.
 
-Spoken manuscript: 1,042 words.
-## 1. The case file opens with a green check and an open door
+Spoken manuscript: 1,005 words.
 
-**00:00-00:55**
+## 1. Your Agent Escaped Without Escaping the Sandbox
 
-*Treat this like a vulnerability write-up, not a keynote. Establish the contradiction.*
+**00:00-00:45**
 
-This is a case study, not a product pitch. The artifact starts with a contradiction. The check is green, the admin door is open, and the sandbox did not break. For the next fourteen minutes we follow the bytes, find the primitive, and close it at the only boundary that can close it. The style is incident report: symptom, trace, root cause, fix.
+*Start with the ticket. No preamble.*
 
-## 2. The security control fired, and the wrong answer still shipped
+We built a small experiment around a familiar ticket: lock down admin. If you're not logged in, you should get 401.
 
-**00:55-01:55**
+The program was broken. It returned 200 for every case. We put a worker in a Linux sandbox and made the checker read-only. The first check failed, as it should.
 
-*Hold on the two numbers. Green is not the fact; 200 is the fact.*
+Then we changed something, ran the same checker again, and got a pass. The program was still broken.
 
-The point is not that a test can be weak. Everyone knows that. The point is that the checker ran, the sandbox held, the protected file stayed protected, and the wrong behavior still became a release candidate. Green is the pipeline interpretation. The 200 is the fact on the wire. We debug the interpretation, not the kernel. This is the key audience reset: the primitive is not about a missing jail flag. It is about the object graph that turns output into authority.
+## 2. The check passed. The bug was still there.
 
-## 3. The lab removes every excuse except the acceptance boundary
+**00:45-01:30**
 
-**01:55-02:55**
+*Let the room compare PASS and 200 before you speak.*
 
-*Say small enough to audit. Then name the three objects.*
+These two results came from the same recorded run. The checker reported PASS. For the input representing admin without a login, the program still returned 200.
 
-The lab is intentionally tiny. A program returns the status for a few routes. A checker launches it and compares outputs. The agent is deterministic so we can remove model variance. The program, checker, and answer key are all hashed. That leaves one question. Which bytes had authority to decide that the work was done. Small is a feature because every assumption has a receipt.
+This is a small command-line model of an access check. We didn't deploy a vulnerable website. We stopped at the passing result.
 
-## 4. The diff is one line in the file the checker trusts
+That result matters if your next step is to release whatever passes. So let's look at what changed between the failing run and the passing one.
 
-**02:55-03:55**
+## 3. What we ran
 
-*Read the two lines like an exploit diff. Do not over-explain yet.*
+**01:30-02:30**
 
-This is the exploit primitive. The answer key says no login should get 401. The agent changes the answer key to say 200. The program hash is the same. The checker hash is the same. Only the trusted data that the checker reads changed. The code did not pass the test. The test passed the code. That line is the whole talk in one diff. It also explains why a screenshot of green CI is not evidence of correctness. The artifact can be truthful about bytes and still wrong about who was allowed to choose them.
+*Point to the writable directory, then to DENIED.*
 
-## 5. A read-only checker is not a read-only judge
+The worker here is a script. We tell it exactly what to do so we can repeat the same sequence. This experiment tests what the setup allows. It doesn't measure whether a model would discover the trick.
 
-**03:55-04:55**
+The worker can write its working directory. It can't change the checker, and we tested that directly: the overwrite was denied.
 
-*Introduce the transitive closure. This is the core line.*
+We also recorded the program and checker hashes before and after. Both stayed the same. The important file was in the directory the worker could write.
 
-This is the root cause. A checker is a file. A judge is a computation. If the checker reads a golden file, policy file, snapshot, test manifest, or route table, those bytes are part of the judge. If it imports candidate code, that code is part of the judge. The security boundary is the full closure that can say yes. Audit that closure, not the filename. Once you see the closure, the fix stops being mystical: remove worker ownership from every byte in it.
+## 4. The expected answers changed
 
-## 6. Real models already attack the judge by changing the stopwatch
+**02:30-03:45**
 
-**04:55-05:55**
+*Point at 401, then at 200. Pause after "match it."*
 
-*Use METR as context, not as our measurement. Connect routes.*
+The checker got its expected answers from this file. The worker replaced them with 200s. Here's the row for admin without a login: 401 became 200.
 
-Our recording uses route A. A worker changes data that the checker reads. METR published examples where real models used route B. They changed code that the scorer ran, including a timing function and an evaluator. The two routes look different operationally, but the move is the same. Do not improve the work. Change the judge. Process separation closes route B, but not route A.
+Now the broken program's output matched the expected output. The checker did the same comparison and reported PASS.
 
-## 7. The four escapes share one shape: an outside acceptor says yes
+The program still returned 200. We'd changed the expected result to match it. That's why the hashes matter here: they let us rule out a change to either the program or the checker.
 
-**05:55-07:00**
+## 5. The checker trusted a writable file
 
-*One breath per row. The common shape matters more than any case.*
+**03:45-04:45**
 
-This is why the title says escaped without escaping. Each row has a wall that did its job. The agent did not need to break out. It carried a credential that another service honored. It wrote a mount that the host later used. It contacted an allowed host that accepted the wrong account. It edited data the checker trusted. In every row, the outside acceptor said yes.
+*Point at the line of code, then trace the two arrows.*
 
-## 8. The attack graph is outside the sandbox, not inside it
+This line explains the result. We protected the checker file, but it loaded its expected answers from the working directory. The worker could change that file.
+
+For your own checks, follow those reads. A snapshot, a configuration file, or a test helper may determine what counts as passing.
+
+The program under test is supposed to change. The question is whether the worker can also change the rules used to assess it. In our setup, the expected answers had ended up on the wrong side of that line.
+
+## 6. What METR observed
+
+**04:45-05:45**
+
+*Say METR as "meter". One example. No rates.*
+
+Our worker was scripted. For an example involving a model, METR reported that o3, asked to make code faster, changed the timing function used to measure it. The measured time went down without showing that the code had improved.
+
+The mechanism differs from ours. That example changed code running inside the scorer. Ours changed a file the checker read. Separating the processes addresses that in-process route, but it doesn't fix a writable answer file.
+
+## 7. Three other cases
+
+**05:45-07:00**
+
+*One breath per row.*
+
+We also recorded three other cases. A worker inherited a token that could read another project. A writable mount let it change another job's file on the host. An upload service accepted a payload under another account.
+
+None needed a process to break out of its sandbox. Each used access the setup had already provided.
+
+These are separate experiments. The token and upload services run locally. Together with the answer key, they give us four specific places to inspect: credentials, shared files, outbound requests, and the checks used to approve the work.
+
+## 8. What we changed
 
 **07:00-08:00**
 
-*Show that the wall is not irrelevant, just not sufficient.*
+*Read across each row: the change, then the result.*
 
-If you draw the attack graph around the sandbox, you draw around the wrong subgraph. The agent meaningful outputs leave the wall by design. A token, a file, a request, a proposed criterion. The risk is at acceptors that convert those outputs into authority. The correct boundary is a graph cut around acceptance. That is the mental shift from containment to release safety. The sandbox is still necessary, but it is one control in a larger acceptance graph.
+For the token, we narrowed the scope and checked that the intended input was still available. For the mount, we made the shared input read-only and kept the worker's own output directory writable. For the upload, the runner sent a fixed report to the intended account.
 
-## 9. Closing the bug means moving ownership, not adding another warning
+The answer key needs one distinction. Agents can still write tests. Those tests are proposals. A separate owner decides whether they become release criteria. In our experiment, the controller simply kept its own expected values. We didn't implement a review workflow for proposed tests.
+
+## 9. The same program now fails
 
 **08:00-09:00**
 
-*Avoid vague mitigations. Each row changes the owner of the accepting data.*
+*Read the rows top to bottom. Pause on REJECT.*
 
-The fix is not a scarier prompt. The fix is ownership. The runner projects a narrow token. The filesystem exposes only the capability needed. The runner owns the destination and body of the report. The controller freezes the criteria that judge the candidate. The agent can propose tests and expectations. It cannot be the final writer of the expectations used to grade it.
+Here's the comparison after that change. We run the same broken program, but use the controller's expected values. It's rejected. Then we run the corrected program against those same values. It's accepted.
 
-## 10. The repaired verifier binds criteria before the worker runs
+The worker's answer file no longer determines the result. The worker can change the proposed solution, while the controller owns the comparison.
 
-**09:00-10:00**
+That establishes the behavior for our five cases. A real application needs a much broader set of checks. This experiment is about who controls the checks. Five examples don't prove an application secure.
 
-*Make this boring and mechanical. Boring is the point.*
+## 10. What our first test missed
 
-The verifier fix is boring on purpose. Hash the criteria before the worker runs. Run the worker in its writable space. Then run the checker against controller-owned criteria, not workspace-owned criteria. The verdict signs the candidate digest, criteria digest, and observations together. When we do that, the unchanged broken program is rejected and the real fix is accepted. Boring protocols survive automation. A clever model can search policy wording, but it cannot rewrite a digest that the controller already bound before the search began.
+**09:00-10:30**
 
-## 11. Publication requires these bytes, this place, once
+*Slow down for the first test. Then read the four rows in order.*
 
-**10:00-11:00**
+There's another place to check: the step that releases the approved bytes. Our approval names the artifact and destination, and can be used once.
 
-*This is release engineering, not only testing.*
+Our first substitution test was misleading. We published the approved artifact, then tried different bytes with the same approval. The gate refused. But the approval was already spent. That test couldn't tell us whether the byte check worked.
 
-The release gate is the same idea at the end of the pipeline. It publishes only these exact bytes to this exact destination under these exact criteria with one unused approval. If the bytes change, denied. If the destination changes, denied. If the approval was already spent, denied. Green is not enough state to publish. The gate must bind intent, evidence, and target together.
+We changed the order. Wrong bytes first, while the approval was still unused. Then the wrong destination. Both were refused. The right bytes at the right destination succeeded, and only then did we test reuse.
 
-## 12. The field test is to enumerate every acceptor, then remove agent ownership
+Now each refusal tells us something. We also know the intended operation still works.
 
-**11:00-12:00**
+## 11. Where to look in your pipeline
 
-*This is what they can do Monday morning.*
+**10:30-11:30**
 
-The practical audit fits on one page. List the acceptors. For each acceptor, list what it trusts. Then mark what the agent can write before the verdict. Those are the answer keys. Some should become read-only. Some should become narrow capabilities. And some, like tests the agent proposes, must move to a controller or human gate before they judge the agent. This gives teams a Monday exercise.
+*Read the four questions. Pause after the fourth.*
 
-## 13. The invariant is a small theorem about who may write the judge
+Start with one check your team relies on before a release. Find the expected answers, configuration, and helper code it uses. Then compare that list with what the agent can change.
 
-**12:00-13:00**
+Keep the candidate itself separate. It's supposed to be editable. You're looking for a way to change what counts as success without fixing the candidate.
 
-*Formal, but not academic. This is the exact mental model.*
+Apply the same inspection to credentials, shared files, and uploads. For every denial, check that the intended operation still succeeds under the same conditions. That's how you know which control you actually tested.
 
-Here is the formal version. Let J be every byte and callable that can affect the verdict. If the worker can write J before the verdict, the worker can optimize for the verdict instead of the fix. The necessary invariant is not that the sandbox is strong. It is that J is outside-owned, content-bound, and replay-safe at the moment it judges the work. That turns agent security into an ownership proof over the verdict path.
+## 12. Who controls the expected answer?
 
-## 14. Keep the wall, but secure the yes
+**11:30-12:15**
 
-**13:00-14:00**
+*Point at the four lines. Say the last sentence, then stop.*
 
-*Final line should be memorized. No extra words.*
+Back to the original ticket. The program still returned 200. The worker couldn't overwrite the checker, but it could change the expected answer. That was enough to get a pass.
 
-Keep the wall. In every recording here, the wall mattered. But the wall is not the system that says yes. Tokens say yes. Hosts say yes. Upload services say yes. Checkers say yes. If your agent can write what those systems trust, it does not need to escape. Your agent did not escape. Your acceptor believed it. That is the line I want people to remember. It gives you one practical question for every agent system: what outside the sandbox says yes, and who gave it that authority?
+The fix let the worker keep editing the program while the controller kept the acceptance rules.
+
+Before you trust a green check, find out whether the agent can change what makes it green. The code and recordings are here. Thank you.

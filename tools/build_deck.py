@@ -5,8 +5,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_WPM = 150
-MAIN, APPENDIX, TARGET = 14, 8, '14:00'
-WORDS = (1000, 1450)
+# Slide windows end at TARGET. RESERVE is shared time for transitions and
+# pauses, to be redistributed after a timed rehearsal; BUDGET is their sum.
+MAIN, APPENDIX, TARGET = 12, 8, '12:15'
+RESERVE, BUDGET = '1:00', '13:15'
+WORDS = (900, 1300)
 
 
 def main():
@@ -16,10 +19,12 @@ def main():
     if len(frames) != MAIN + APPENDIX or sum(f.start() < appendix for f in frames) != MAIN:
         raise SystemExit(f'Require {MAIN} main slides and {APPENDIX} appendix slides')
     script = ['# Your Agent Escaped Without Escaping the Sandbox', '',
+              '*How a broken program got a passing result*', '',
               '**Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**', '',
               'Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. '
-              f'Main route: slides 1-{MAIN}. Delivery budget: {TARGET} of a 15-minute slot; the rest is margin. '
-              'Timings are rehearsal targets, not measured delivery.', '']
+              f'Main route: slides 1-{MAIN}. Slide windows total {TARGET}; with {RESERVE} of shared reserve '
+              f'for transitions and pauses, the rehearsal target is {BUDGET} of a 15-minute slot. '
+              'Timings are rehearsal allowances, not measured delivery.', '']
     notes = ['# Slide-by-slide speaker notes', '',
              f'Generated from `slides/talk.tex`. Slides 1-{MAIN} are the main talk. '
              f'Slides {MAIN + 1}-{MAIN + APPENDIX} are for Q&A. Present the PDF offline.', '']
@@ -59,11 +64,12 @@ def main():
     count = len(' '.join(spoken).split())
     if previous_end != TARGET or not WORDS[0] <= count <= WORDS[1]:
         raise SystemExit(f'Expected {TARGET} and {WORDS[0]}-{WORDS[1]} words; got {previous_end}, {count}')
-    script.insert(6, f'Spoken manuscript: {count:,} words.')
+    script[8:8] = [f'Spoken manuscript: {count:,} words.', '']
     (ROOT / 'TALK.md').write_text('\n'.join(script))
     (ROOT / 'SPEAKER_NOTES.md').write_text('\n'.join(notes))
     (ROOT / 'slides' / 'notes.tex').write_text(notes_document(frames, appendix))
-    print(f'Canonical LaTeX: {MAIN} main + {APPENDIX} appendix slides; {count} spoken words; {TARGET} target.')
+    print(f'Canonical LaTeX: {MAIN} main + {APPENDIX} appendix slides; {count} spoken words; '
+          f'{TARGET} of slides + {RESERVE} reserve = {BUDGET} rehearsal target.')
 
 
 def tex_escape(text):
@@ -91,7 +97,7 @@ def notes_document(frames, appendix):
 \begin{center}
 {\color{alarm}\sffamily\bfseries AI AGENT SECURITY SUMMIT \textbullet\ PIER SIXTY}\\[4pt]
 {\LARGE\bfseries Your Agent Escaped\\ Without Escaping the Sandbox}\\[8pt]
-{\large The agent changes the answers.\\ The check goes green.}\\[8pt]
+{\large How a broken program got a passing result}\\[8pt]
 {\small Yossi Eliaz, PhD \textbullet\ Incredibuild \textbullet\ 21 October 2026}\\[2pt]
 {\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--MAINN are the talk. Slides APPA--APPB are for questions.}
 \end{center}

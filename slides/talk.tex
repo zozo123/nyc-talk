@@ -1,5 +1,5 @@
-% Canonical LaTeX source. Blazakis-style technical case-study pass.
-% Principle: artifact first, theory last. One exploit primitive per slide.
+% Canonical LaTeX source. An engineer walking colleagues through one experiment.
+% Name the actual components. Show the recorded result, then explain it.
 \documentclass[aspectratio=169,11pt]{beamer}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern,listings,booktabs,array,tikz}
@@ -18,7 +18,7 @@
 \setbeamercolor{structure}{fg=acid}
 \setbeamertemplate{navigation symbols}{}
 \setbeamersize{text margin left=10mm,text margin right=10mm}
-\newcommand{\track}{00 / CASE}
+\newcommand{\track}{00 / TICKET}
 \newcommand{\rail}{\begin{tikzpicture}[remember picture,overlay]\fill[grid] (current page.north west) rectangle ($(current page.south west)+(5mm,0)$);\node[rotate=90,anchor=south,color=dim,font=\fontsize{6}{7}\selectfont\ttfamily] at ($(current page.west)+(2.6mm,0)$) {YOUR AGENT ESCAPED WITHOUT ESCAPING};\end{tikzpicture}}
 \setbeamertemplate{frametitle}{\rail\vspace{1.0mm}{\color{warn}\fontsize{7}{8}\selectfont\ttfamily\track}\hspace{2mm}{\color{acid}\rule{18mm}{0.6pt}}\par\vspace{0.2mm}\insertframetitle\par\vspace{0.8mm}}
 \setbeamerfont{frametitle}{size=\fontsize{20}{23}\selectfont,series=\bfseries}
@@ -28,413 +28,493 @@
 \newcommand{\scope}[1]{\par\vspace{1mm}{\color{dim}\fontsize{7}{8}\selectfont #1}\par}
 \newcommand{\takeaway}[1]{\par\vfill{\fontsize{13}{16}\selectfont #1}\par}
 \newcommand{\giant}[2]{{\color{#1}\fontsize{39}{42}\selectfont\bfseries #2}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcommand{\tablefont}{\fontsize{9.6}{12}\selectfont\renewcommand{\arraystretch}{1.25}\setlength{\tabcolsep}{3pt}}
-\hypersetup{pdftitle={Your Agent Escaped Without Escaping the Sandbox},pdfauthor={Yossi Eliaz},pdfsubject={A technical case study in acceptance-boundary failure}}
+\hypersetup{pdftitle={Your Agent Escaped Without Escaping the Sandbox},pdfauthor={Yossi Eliaz},pdfsubject={How a broken program got a passing result}}
 \begin{document}
 
 \begin{frame}[plain,t]
-% title: The case file opens with a green check and an open door
-% time: 00:00-00:55
-% cue: Treat this like a vulnerability write-up, not a keynote. Establish the contradiction.
+% title: Your Agent Escaped Without Escaping the Sandbox
+% time: 00:00-00:45
+% cue: Start with the ticket. No preamble.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 \rail\vspace{6mm}
-{\color{warn}\ttfamily\fontsize{8}{10}\selectfont CASE STUDY / AI AGENT SECURITY SUMMIT / PIER SIXTY\par}
-\vspace{6mm}
+{\color{warn}\ttfamily\fontsize{8}{10}\selectfont AI AGENT SECURITY SUMMIT / PIER SIXTY / NEW YORK\par}
+\vspace{5mm}
 {\fontsize{27}{31}\selectfont\bfseries Your Agent Escaped\\Without Escaping the Sandbox\par}
-\vspace{4mm}
-{\fontsize{13}{16}\selectfont The wall held. The release decision still failed.\par}
+\vspace{3mm}
+{\fontsize{13}{16}\selectfont How a broken program got a passing result\par}
+\vspace{6mm}
+\tikz\node[draw=dim,rounded corners=2pt,inner xsep=3mm,inner ysep=2.2mm,text=paper]{{\color{gold}\ttfamily\fontsize{8}{10}\selectfont TICKET}\hspace{4mm}{\ttfamily\fontsize{11}{13}\selectfont Lock down /admin. No login should return 401.}};
 \vfill
 {\color{dim}\fontsize{9}{11}\selectfont Yossi Eliaz / Incredibuild / New York / 21 Oct 2026\par}
-\note{This is a case study, not a product pitch. The artifact starts with a contradiction. The check is green, the admin door is open, and the sandbox did not break. For the next fourteen minutes we follow the bytes, find the primitive, and close it at the only boundary that can close it. The style is incident report: symptom, trace, root cause, fix.}
+\scope{Controlled experiment using a command-line model.}
+\note{We built a small experiment around a familiar ticket: lock down admin. If you're not logged in, you should get 401.
+
+The program was broken. It returned 200 for every case. We put a worker in a Linux sandbox and made the checker read-only. The first check failed, as it should.
+
+Then we changed something, ran the same checker again, and got a pass. The program was still broken.}
 \end{frame}
 
-\renewcommand{\track}{01 / CONTRADICTION}
+\renewcommand{\track}{01 / RESULT}
 \begin{frame}[t]
-% title: The security control fired, and the wrong answer still shipped
-% time: 00:55-01:55
-% cue: Hold on the two numbers. Green is not the fact; 200 is the fact.
+% title: The check passed. The bug was still there.
+% time: 00:45-01:30
+% cue: Let the room compare PASS and 200 before you speak.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{The security control fired, and the wrong answer still shipped}
-\vspace{4mm}
+\frametitle{The check passed. The bug was still there.}
+\vspace{12mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{.48\textwidth}\kicker{CHECKER RESULT}\giant{acid}{PASS}\end{column}
-\begin{column}{.48\textwidth}\kicker{NO LOGIN TO /admin}\giant{warn}{200}\end{column}
+\begin{column}{.30\textwidth}\kicker{CHECKER}\vspace{2mm}\giant{acid}{PASS}\end{column}
+\begin{column}{.36\textwidth}\kicker{PROGRAM OUTPUT, admin:none}\vspace{2mm}\giant{warn}{200}\end{column}
+\begin{column}{.30\textwidth}\kicker{REQUIRED OUTPUT}\vspace{2mm}\giant{paper}{401}\end{column}
 \end{columns}
-\takeaway{Everything that was supposed to be immutable stayed immutable.}
-\scope{Synthetic command-line fixture. Same run records PASS and 200.}
-\note{The point is not that a test can be weak. Everyone knows that. The point is that the checker ran, the sandbox held, the protected file stayed protected, and the wrong behavior still became a release candidate. Green is the pipeline interpretation. The 200 is the fact on the wire. We debug the interpretation, not the kernel. This is the key audience reset: the primitive is not about a missing jail flag. It is about the object graph that turns output into authority.}
+\vfill
+\scope{Recorded command-line output from one run. No production deployment.}
+\note{These two results came from the same recorded run. The checker reported PASS. For the input representing admin without a login, the program still returned 200.
+
+This is a small command-line model of an access check. We didn't deploy a vulnerable website. We stopped at the passing result.
+
+That result matters if your next step is to release whatever passes. So let's look at what changed between the failing run and the passing one.}
 \end{frame}
 
-\renewcommand{\track}{02 / LAB}
+\renewcommand{\track}{02 / SETUP}
 \begin{frame}[t]
-% title: The lab removes every excuse except the acceptance boundary
-% time: 01:55-02:55
-% cue: Say small enough to audit. Then name the three objects.
+% title: What we ran
+% time: 01:30-02:30
+% cue: Point to the writable directory, then to DENIED.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{The lab removes every excuse except the acceptance boundary}
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{What we ran}
 \vspace{2mm}
-\begin{tikzpicture}[node distance=13mm, box/.style={draw,rounded corners=2pt,minimum width=30mm,minimum height=10mm,align=center,text=paper,inner sep=2mm}, arr/.style={-{Latex},thick}]
-\node[box,draw=cyan] (agent) {agent\\\scriptsize writable workdir};
-\node[box,draw=paper,right=of agent] (prog) {program\\\scriptsize models /admin};
-\node[box,draw=acid,right=of prog] (check) {checker\\\scriptsize read-only bytes};
-\node[box,draw=gold,below=of prog] (key) {answer key\\\scriptsize expected outputs};
-\draw[arr,cyan] (agent) -- (prog);
-\draw[arr,warn] (agent) -- node[left,font=\scriptsize,color=warn]{writes} (key);
-\draw[arr,acid] (check) -- node[right,font=\scriptsize,color=acid]{reads} (key);
-\draw[arr,paper] (check) -- (prog);
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.43\textwidth}
+{\fontsize{11}{15}\selectfont
+\begin{itemize}\setlength{\itemsep}{1.4mm}
+\item A command-line program, checked against five inputs.
+\item A scripted worker in a Linux sandbox with no network.
+\item A read-only checker. A writable working directory.
+\item Direct attempt to overwrite the checker: {\color{warn}\bfseries DENIED}.
+\end{itemize}\par}
+\end{column}
+\begin{column}{.55\textwidth}
+\begin{tikzpicture}[dir/.style={draw,rounded corners=2pt,minimum width=30mm,minimum height=15mm,align=center,text=paper,inner sep=1.5mm}, arr/.style={-{Latex},thick}]
+\draw[warn,dashed,thick,rounded corners=3pt] (-0.2,-0.9) rectangle (7.2,3.5);
+\node[warn,font=\scriptsize\bfseries,anchor=west] at (-0.1,3.25) {LINUX SANDBOX / NO NETWORK};
+\node[draw=cyan,rounded corners=2pt,minimum width=34mm,minimum height=9mm,text=paper] (w) at (3.5,2.3) {scripted worker};
+\node[dir,draw=acid] (work) at (1.7,0.1) {{\bfseries /work}\\{\scriptsize\color{acid} writable}\\{\scriptsize\ttfamily handler.py}\\{\scriptsize\ttfamily expected.json}};
+\node[dir,draw=dim] (ver) at (5.4,0.1) {{\bfseries /verifier}\\{\scriptsize\color{dim} read-only}\\{\scriptsize\ttfamily checker.py}};
+\draw[arr,acid] (w) -- node[left,font=\scriptsize,color=acid,xshift=-1mm]{write} (work);
+\draw[arr,warn] (w) -- node[right,font=\scriptsize\bfseries,color=warn,xshift=1mm]{DENIED} (ver);
 \end{tikzpicture}
-\takeaway{If the bug survives here, the bug is in who may define acceptance.}
-\scope{Worker is scripted for determinism. Program and checker bytes are hashed.}
-\note{The lab is intentionally tiny. A program returns the status for a few routes. A checker launches it and compares outputs. The agent is deterministic so we can remove model variance. The program, checker, and answer key are all hashed. That leaves one question. Which bytes had authority to decide that the work was done. Small is a feature because every assumption has a receipt.}
+\end{column}
+\end{columns}
+\vfill
+\scope{The worker is a script, so every run repeats the same actions. Program and checker hashes recorded before and after.}
+\note{The worker here is a script. We tell it exactly what to do so we can repeat the same sequence. This experiment tests what the setup allows. It doesn't measure whether a model would discover the trick.
+
+The worker can write its working directory. It can't change the checker, and we tested that directly: the overwrite was denied.
+
+We also recorded the program and checker hashes before and after. Both stayed the same. The important file was in the directory the worker could write.}
 \end{frame}
 
-\renewcommand{\track}{03 / TRACE}
+\renewcommand{\track}{03 / THE CHANGE}
 \begin{frame}[t,fragile]
-% title: The diff is one line in the file the checker trusts
-% time: 02:55-03:55
-% cue: Read the two lines like an exploit diff. Do not over-explain yet.
+% title: The expected answers changed
+% time: 02:30-03:45
+% cue: Point at 401, then at 200. Pause after "match it."
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{The diff is one line in the file the checker trusts}
-\kicker{expected.json}
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{The expected answers changed}
+\kicker{expected.json {\color{dim}\mdseries / excerpt: one of five rows}}
 \begin{lstlisting}
 - {"input":"admin:none","output":401}
 + {"input":"admin:none","output":200}
 \end{lstlisting}
-\vspace{3mm}
-{\tablefont\begin{tabular}{@{}p{.22\textwidth}p{.25\textwidth}p{.25\textwidth}p{.16\textwidth}@{}}
-& \textcolor{acid}{program} & \textcolor{acid}{checker} & \textcolor{acid}{result}\\\midrule
-honest key & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & FAIL\\
-edited key & \texttt{76fcb0904f51} & \texttt{f5d8d3468bbe} & \textcolor{acid}{PASS}\\
+\vspace{4mm}
+{\tablefont\begin{tabular}{@{}L{.20\textwidth}L{.22\textwidth}L{.22\textwidth}L{.20\textwidth}@{}}
+& \textcolor{acid}{before} & \textcolor{acid}{after} & \\\midrule
+program & \texttt{76fcb0904f51} & \texttt{76fcb0904f51} & unchanged\\
+checker & \texttt{f5d8d3468bbe} & \texttt{f5d8d3468bbe} & unchanged\\
+expected.json & \texttt{0494f1a01dee} & \texttt{390e5e764916} & \textcolor{warn}{changed}\\
+checker result & FAIL & \textcolor{acid}{PASS} & \\
 \end{tabular}}
-\takeaway{The code did not pass the test. The test passed the code.}
-\note{This is the exploit primitive. The answer key says no login should get 401. The agent changes the answer key to say 200. The program hash is the same. The checker hash is the same. Only the trusted data that the checker reads changed. The code did not pass the test. The test passed the code. That line is the whole talk in one diff. It also explains why a screenshot of green CI is not evidence of correctness. The artifact can be truthful about bytes and still wrong about who was allowed to choose them.}
+\vfill
+\scope{The worker set all five expected outputs to 200. Three of the five values changed.}
+\note{The checker got its expected answers from this file. The worker replaced them with 200s. Here's the row for admin without a login: 401 became 200.
+
+Now the broken program's output matched the expected output. The checker did the same comparison and reported PASS.
+
+The program still returned 200. We'd changed the expected result to match it. That's why the hashes matter here: they let us rule out a change to either the program or the checker.}
 \end{frame}
 
-\renewcommand{\track}{04 / ROOT CAUSE}
-\begin{frame}[t]
-% title: A read-only checker is not a read-only judge
-% time: 03:55-04:55
-% cue: Introduce the transitive closure. This is the core line.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-\frametitle{A read-only checker is not a read-only judge}
-\vspace{3mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\textwidth}\kicker{WHAT YOU LOCKED}{\fontsize{20}{24}\selectfont checker.py\par}\scope{Protected bytes. Correct mount. No overwrite.}\end{column}
-\begin{column}{.48\textwidth}\kicker{WHAT JUDGED YOU}{\fontsize{20}{24}\selectfont checker + reads + calls\par}\scope{The transitive closure includes agent-writable inputs.}\end{column}
-\end{columns}
-\vspace{6mm}
-{\fontsize{18}{22}\selectfont\bfseries The judge is the checker plus everything it reads and any code it executes.\par}
-\takeaway{Locking one executable does not lock the decision.}
-\note{This is the root cause. A checker is a file. A judge is a computation. If the checker reads a golden file, policy file, snapshot, test manifest, or route table, those bytes are part of the judge. If it imports candidate code, that code is part of the judge. The security boundary is the full closure that can say yes. Audit that closure, not the filename. Once you see the closure, the fix stops being mystical: remove worker ownership from every byte in it.}
-\end{frame}
-
-\renewcommand{\track}{05 / SECOND ROUTE}
-\begin{frame}[t]
-% title: Real models already attack the judge by changing the stopwatch
-% time: 04:55-05:55
-% cue: Use METR as context, not as our measurement. Connect routes.
-% source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
-\frametitle{Real models already attack the judge by changing the stopwatch}
-\vspace{1mm}
-\begin{tikzpicture}[box/.style={draw,rounded corners=2pt,minimum width=54mm,minimum height=26mm,align=center,text=paper,inner sep=2mm}, arr/.style={-{Latex},thick,color=dim}]
-  \node[box,draw=gold] (data) at (2.9,0) {{\color{gold}\bfseries ROUTE A}\\[1mm]data the scorer reads\\[1mm]{\ttfamily\footnotesize expected.json}};
-  \node[box,draw=cyan] (code) at (9.0,0) {{\color{cyan}\bfseries ROUTE B}\\[1mm]code the scorer runs\\[1mm]{\ttfamily\footnotesize time.time = fake}};
-  \node[draw=warn,rounded corners=2pt,minimum width=72mm,minimum height=11mm,align=center,text=paper,thick] (judge) at (5.95,-2.0) {{\color{warn}\bfseries SAME MOVE:} change the judge, not the work};
-  \draw[arr,gold] (data.south) -- (judge.north west);
-  \draw[arr,cyan] (code.south) -- (judge.north east);
-\end{tikzpicture}
-\takeaway{Two routes into one judge: the data it reads and the code it runs.}
-\scope{METR reported reward-hacking examples in 2025. Context only; this deck reports no rate.}
-\note{Our recording uses route A. A worker changes data that the checker reads. METR published examples where real models used route B. They changed code that the scorer ran, including a timing function and an evaluator. The two routes look different operationally, but the move is the same. Do not improve the work. Change the judge. Process separation closes route B, but not route A.}
-\end{frame}
-
-\renewcommand{\track}{06 / FOUR CASES}
-\begin{frame}[t]
-% title: The four escapes share one shape: an outside acceptor says yes
-% time: 05:55-07:00
-% cue: One breath per row. The common shape matters more than any case.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-\frametitle{The four escapes share one shape: an outside acceptor says yes}
-{\tablefont\begin{tabular}{@{}p{.24\textwidth}p{.34\textwidth}p{.34\textwidth}@{}}
-\textcolor{acid}{case} & \textcolor{acid}{the wall still did} & \textcolor{acid}{what accepted outside}\\\midrule
-Inherited credential & no process escape & service honored broad token\\
-Dangerous mount & no namespace write & host persisted bytes for next job\\
-Allowed endpoint & egress allow-list works & allowed host stored other account data\\
-Verifier tamper & checker is read-only & checker read worker-owned criteria\\
-\end{tabular}}
-\takeaway{The sandbox answered reach. The breach happened at acceptance.}
-\scope{Token and endpoint cases use loopback fixtures. Mount and verifier cases use filesystem fixtures.}
-\note{This is why the title says escaped without escaping. Each row has a wall that did its job. The agent did not need to break out. It carried a credential that another service honored. It wrote a mount that the host later used. It contacted an allowed host that accepted the wrong account. It edited data the checker trusted. In every row, the outside acceptor said yes.}
-\end{frame}
-
-\renewcommand{\track}{07 / ATTACK GRAPH}
-\begin{frame}[t]
-% title: The attack graph is outside the sandbox, not inside it
-% time: 07:00-08:00
-% cue: Show that the wall is not irrelevant, just not sufficient.
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-\frametitle{The attack graph is outside the sandbox, not inside it}
-\vspace{1mm}
-\begin{tikzpicture}[box/.style={draw,rounded corners=2pt,minimum width=30mm,minimum height=10mm,align=center,text=paper}, arr/.style={-{Latex},thick}]
-\draw[warn,dashed,thick,rounded corners=3pt] (-.4,-1.1) rectangle (3.7,1.5);
-\node[warn,font=\scriptsize\bfseries] at (1.65,1.7) {SANDBOX};
-\node[box,draw=warn] (agent) at (1.6,0) {agent};
-\node[box,draw=cyan] (svc) at (6.0,1.1) {service};
-\node[box,draw=gold] (host) at (6.0,0) {host mount};
-\node[box,draw=paper] (post) at (6.0,-1.1) {upload host};
-\node[box,draw=acid] (check) at (9.6,0) {checker};
-\draw[arr,cyan] (agent) -- node[above,font=\scriptsize,color=cyan]{token} (svc);
-\draw[arr,gold] (agent) -- node[above,font=\scriptsize,color=gold]{file} (host);
-\draw[arr,paper] (agent) -- node[below,font=\scriptsize,color=paper]{POST} (post);
-\draw[arr,acid] (agent) -- node[above,font=\scriptsize,color=acid]{expected.json} (check);
-\end{tikzpicture}
-\takeaway{Your perimeter includes every system that accepts an agent output.}
-\note{If you draw the attack graph around the sandbox, you draw around the wrong subgraph. The agent meaningful outputs leave the wall by design. A token, a file, a request, a proposed criterion. The risk is at acceptors that convert those outputs into authority. The correct boundary is a graph cut around acceptance. That is the mental shift from containment to release safety. The sandbox is still necessary, but it is one control in a larger acceptance graph.}
-\end{frame}
-
-\renewcommand{\track}{08 / PATCH}
-\begin{frame}[t]
-% title: Closing the bug means moving ownership, not adding another warning
-% time: 08:00-09:00
-% cue: Avoid vague mitigations. Each row changes the owner of the accepting data.
+\renewcommand{\track}{04 / THE READ}
+\begin{frame}[t,fragile]
+% title: The checker trusted a writable file
+% time: 03:45-04:45
+% cue: Point at the line of code, then trace the two arrows.
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-\frametitle{Closing the bug means moving ownership, not adding another warning}
-{\tablefont\begin{tabular}{@{}p{.20\textwidth}p{.32\textwidth}p{.38\textwidth}@{}}
-\textcolor{acid}{acceptor} & \textcolor{acid}{bad owner} & \textcolor{acid}{outside owner}\\\midrule
-credential & runner ambient token & short-lived projected token\\
-mount & writable shared host path & capability-scoped filesystem\\
-endpoint & sandbox decides body and route & runner owns fixed post\\
-verifier & worker owns answer key & controller freezes criteria\\
-\end{tabular}}
-\takeaway{The agent may propose criteria. It must not be the last writer of criteria that judge it.}
-\note{The fix is not a scarier prompt. The fix is ownership. The runner projects a narrow token. The filesystem exposes only the capability needed. The runner owns the destination and body of the report. The controller freezes the criteria that judge the candidate. The agent can propose tests and expectations. It cannot be the final writer of the expectations used to grade it.}
-\end{frame}
-
-\renewcommand{\track}{09 / VERIFIER}
-\begin{frame}[t,fragile]
-% title: The repaired verifier binds criteria before the worker runs
-% time: 09:00-10:00
-% cue: Make this boring and mechanical. Boring is the point.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{The repaired verifier binds criteria before the worker runs}
+\frametitle{The checker trusted a writable file}
+\kicker{checker.py}
 \begin{lstlisting}
-criteria_digest = sha256(expected_json)
-run_worker(candidate_dir, writable=True)
-run_checker(candidate, criteria_digest, readonly=True)
-verdict = sign(candidate_digest, criteria_digest, observations)
+expected = json.loads(Path("expected.json").read_text())
 \end{lstlisting}
-\vspace{3mm}
-{\fontsize{13}{16}\selectfont Re-run with controller-owned criteria:\\broken candidate is \textcolor{warn}{REJECTED}; real fix is \textcolor{acid}{ACCEPTED}.\par}
-\takeaway{The worker can write code. The controller owns what counts.}
-\note{The verifier fix is boring on purpose. Hash the criteria before the worker runs. Run the worker in its writable space. Then run the checker against controller-owned criteria, not workspace-owned criteria. The verdict signs the candidate digest, criteria digest, and observations together. When we do that, the unchanged broken program is rejected and the real fix is accepted. Boring protocols survive automation. A clever model can search policy wording, but it cannot rewrite a digest that the controller already bound before the search began.}
-\end{frame}
-
-\renewcommand{\track}{10 / RELEASE GATE}
-\begin{frame}[t]
-% title: Publication requires these bytes, this place, once
-% time: 10:00-11:00
-% cue: This is release engineering, not only testing.
-% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{Publication requires these bytes, this place, once}
 \vspace{5mm}
-\begin{tikzpicture}[box/.style={draw,rounded corners=2pt,minimum width=27mm,minimum height=10mm,align=center,text=paper}, arr/.style={-{Latex},thick,color=dim}]
-\node[box,draw=cyan] (a) {candidate\\digest};
-\node[box,draw=gold,right=of a] (b) {destination};
-\node[box,draw=paper,right=of b] (c) {criteria\\digest};
-\node[box,draw=acid,right=of c] (d) {unused\\approval};
-\draw[arr] (a)--(b);\draw[arr] (b)--(c);\draw[arr] (c)--(d);
+\begin{tikzpicture}[box/.style={draw,rounded corners=2pt,minimum width=32mm,minimum height=11mm,align=center,text=paper,inner sep=1.5mm}, arr/.style={-{Latex},thick}]
+\node[box,draw=cyan] (w) at (0,0) {scripted worker};
+\node[box,draw=gold] (e) at (5.2,0) {{\ttfamily expected.json}\\{\scriptsize in /work, writable}};
+\node[box,draw=dim] (c) at (10.4,0) {{\ttfamily checker.py}\\{\scriptsize in /verifier, read-only}};
+\draw[arr,warn] (w) -- node[above,font=\scriptsize,color=warn]{writes} (e);
+\draw[arr,acid] (c) -- node[above,font=\scriptsize,color=acid]{reads} (e);
 \end{tikzpicture}
 \vspace{6mm}
-{\fontsize{16}{19}\selectfont Missing any term means DENIED. Replay means DENIED.\par}
-\takeaway{A green check is not enough state to publish.}
-\note{The release gate is the same idea at the end of the pipeline. It publishes only these exact bytes to this exact destination under these exact criteria with one unused approval. If the bytes change, denied. If the destination changes, denied. If the approval was already spent, denied. Green is not enough state to publish. The gate must bind intent, evidence, and target together.}
+
+{\fontsize{14}{18}\selectfont The checker was read-only. Its expected answers were in the worker's directory.\par}
+\note{This line explains the result. We protected the checker file, but it loaded its expected answers from the working directory. The worker could change that file.
+
+For your own checks, follow those reads. A snapshot, a configuration file, or a test helper may determine what counts as passing.
+
+The program under test is supposed to change. The question is whether the worker can also change the rules used to assess it. In our setup, the expected answers had ended up on the wrong side of that line.}
 \end{frame}
 
-\renewcommand{\track}{11 / FIELD TEST}
+\renewcommand{\track}{05 / METR}
 \begin{frame}[t]
-% title: The field test is to enumerate every acceptor, then remove agent ownership
-% time: 11:00-12:00
-% cue: This is what they can do Monday morning.
-% source: https://github.com/zozo123/nyc-talk/blob/main/RUNBOOK.md
-\frametitle{The field test is to enumerate every acceptor, then remove agent ownership}
+% title: What METR observed
+% time: 04:45-05:45
+% cue: Say METR as "meter". One example. No rates.
+% source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
+% source: https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
+\frametitle{What METR observed}
 \vspace{2mm}
-\begin{tikzpicture}[auditbox/.style={draw,rounded corners=2pt,minimum width=28mm,minimum height=22mm,align=center,text=paper,inner sep=1.7mm}, arr/.style={-{Latex},thick,color=dim}]
-  \node[auditbox,draw=cyan] (a) at (1.35,0) {{\color{cyan}\bfseries 1}\\acceptors\\{\scriptsize who says yes?}};
-  \node[auditbox,draw=gold] (b) at (4.55,0) {{\color{gold}\bfseries 2}\\trust set\\{\scriptsize files, tokens, routes}};
-  \node[auditbox,draw=warn] (c) at (7.75,0) {{\color{warn}\bfseries 3}\\agent write?\\{\scriptsize before verdict}};
-  \node[auditbox,draw=acid] (d) at (10.95,0) {{\color{acid}\bfseries 4}\\outside owner\\{\scriptsize runner / controller}};
-  \draw[arr] (a)--(b);\draw[arr] (b)--(c);\draw[arr] (c)--(d);
-\end{tikzpicture}\par
-\vspace{4mm}
-{\fontsize{14}{17}\selectfont If an item in the trust set is agent-writable before verdict, it is an answer key.\par}
-\takeaway{Least privilege is necessary. Acceptance ownership is the missing audit line.}
-\note{The practical audit fits on one page. List the acceptors. For each acceptor, list what it trusts. Then mark what the agent can write before the verdict. Those are the answer keys. Some should become read-only. Some should become narrow capabilities. And some, like tests the agent proposes, must move to a controller or human gate before they judge the agent. This gives teams a Monday exercise.}
+{\fontsize{15}{19}\selectfont Asked to make code faster, o3 changed the timing function used to measure it.\par}
+\vspace{7mm}
+\begin{tikzpicture}[box/.style={draw,rounded corners=2pt,minimum width=62mm,minimum height=22mm,align=center,text=paper,inner sep=2mm}]
+\node[box,draw=gold] at (0,0) {{\color{gold}\bfseries OUR EXPERIMENT}\\[1.2mm]expected answers\\[0.6mm]{\scriptsize a file the checker read}};
+\node[box,draw=cyan] at (7.2,0) {{\color{cyan}\bfseries METR'S EXAMPLE}\\[1.2mm]timing function\\[0.6mm]{\scriptsize code running inside the scorer}};
+\end{tikzpicture}
+\vfill
+\scope{Source: METR, 5 June 2025. Separate model evaluation; none of its results are measurements from this experiment.}
+\note{Our worker was scripted. For an example involving a model, METR reported that o3, asked to make code faster, changed the timing function used to measure it. The measured time went down without showing that the code had improved.
+
+The mechanism differs from ours. That example changed code running inside the scorer. Ours changed a file the checker read. Separating the processes addresses that in-process route, but it doesn't fix a writable answer file.}
 \end{frame}
 
-\renewcommand{\track}{12 / THEOREM}
+\renewcommand{\track}{06 / OTHER CASES}
 \begin{frame}[t]
-% title: The invariant is a small theorem about who may write the judge
-% time: 12:00-13:00
-% cue: Formal, but not academic. This is the exact mental model.
-% source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
-\frametitle{The invariant is a small theorem about who may write the judge}
-\vspace{3mm}
-{\fontsize{15}{19}\selectfont Let \textcolor{acid}{J} be every byte and callable that can affect verdict.\par}
-\vspace{4mm}
-{\fontsize{18}{22}\selectfont\bfseries If the worker can write \textcolor{warn}{J} before verdict, the worker can search for a verdict instead of a fix.\par}
-\vspace{5mm}
-{\fontsize{13}{16}\selectfont Therefore, promote only when \textcolor{acid}{J} is outside-owned, content-bound, and replay-safe.\par}
-\takeaway{Do not ask whether the sandbox held. Ask who wrote the judge.}
-\note{Here is the formal version. Let J be every byte and callable that can affect the verdict. If the worker can write J before the verdict, the worker can optimize for the verdict instead of the fix. The necessary invariant is not that the sandbox is strong. It is that J is outside-owned, content-bound, and replay-safe at the moment it judges the work. That turns agent security into an ownership proof over the verdict path.}
-\end{frame}
-
-\renewcommand{\track}{13 / CLOSE}
-\begin{frame}[t]
-% title: Keep the wall, but secure the yes
-% time: 13:00-14:00
-% cue: Final line should be memorized. No extra words.
+% title: Three other cases
+% time: 05:45-07:00
+% cue: One breath per row.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
-\frametitle{Keep the wall, but secure the yes}
+% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+\frametitle{Three other cases}
+\vspace{3mm}
+{\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.30\textwidth}L{.64\textwidth}@{}}
+\textcolor{acid}{case} & \textcolor{acid}{what happened}\\\midrule
+Inherited credential & A broad token read another project's data.\\
+Shared mount & A write changed another job's file on the host.\\
+Upload service & The service stored the payload under another account.\\
+\textcolor{dim}{Answer key, just shown} & \textcolor{dim}{The checker accepted expected answers written by the worker.}\\
+\end{tabular}}
+\vfill
+\scope{Separate controlled fixtures. Token and upload cases use loopback HTTP.}
+\note{We also recorded three other cases. A worker inherited a token that could read another project. A writable mount let it change another job's file on the host. An upload service accepted a payload under another account.
+
+None needed a process to break out of its sandbox. Each used access the setup had already provided.
+
+These are separate experiments. The token and upload services run locally. Together with the answer key, they give us four specific places to inspect: credentials, shared files, outbound requests, and the checks used to approve the work.}
+\end{frame}
+
+\renewcommand{\track}{07 / CHANGES}
+\begin{frame}[t]
+% title: What we changed
+% time: 07:00-08:00
+% cue: Read across each row: the change, then the result.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+\frametitle{What we changed}
+\vspace{2mm}
+{\tablefont\begin{tabular}{@{}L{.19\textwidth}L{.38\textwidth}L{.37\textwidth}@{}}
+\textcolor{acid}{case} & \textcolor{acid}{change} & \textcolor{acid}{recorded result}\\\midrule
+Token & Scope it to this task. & Other project: 403. Task input: 200.\\
+Shared file & Make the shared input read-only. & Shared write blocked. Task output still writable.\\
+Upload & Runner sends one fixed report to the intended account. Worker has no direct route. & Extra fields refused. Intended report delivered.\\
+Expected answers & Controller keeps its own expected values. & Broken program rejected. Corrected program accepted.\\
+\end{tabular}}
+\vfill
+\scope{Agents can still propose tests. This experiment does not implement a review workflow for them.}
+\note{For the token, we narrowed the scope and checked that the intended input was still available. For the mount, we made the shared input read-only and kept the worker's own output directory writable. For the upload, the runner sent a fixed report to the intended account.
+
+The answer key needs one distinction. Agents can still write tests. Those tests are proposals. A separate owner decides whether they become release criteria. In our experiment, the controller simply kept its own expected values. We didn't implement a review workflow for proposed tests.}
+\end{frame}
+
+\renewcommand{\track}{08 / RERUN}
+\begin{frame}[t]
+% title: The same program now fails
+% time: 08:00-09:00
+% cue: Read the rows top to bottom. Pause on REJECT.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{The same program now fails}
+\vspace{4mm}
+{\tablefont\fontsize{11}{14}\selectfont\begin{tabular}{@{}L{.30\textwidth}L{.40\textwidth}L{.22\textwidth}@{}}
+\textcolor{acid}{program} & \textcolor{acid}{expected answers used} & \textcolor{acid}{result}\\\midrule
+Broken & Worker-edited file & \textcolor{warn}{PASS}\\
+Same broken program & Controller's values & \textcolor{acid}{\bfseries REJECT}\\
+Corrected program & Same controller values & \textcolor{acid}{\bfseries ACCEPT}\\
+\end{tabular}}
+\vfill
+\scope{Acceptance covers the five tested cases. Corrected program: \texttt{5ead8eab70e0}.}
+\note{Here's the comparison after that change. We run the same broken program, but use the controller's expected values. It's rejected. Then we run the corrected program against those same values. It's accepted.
+
+The worker's answer file no longer determines the result. The worker can change the proposed solution, while the controller owns the comparison.
+
+That establishes the behavior for our five cases. A real application needs a much broader set of checks. This experiment is about who controls the checks. Five examples don't prove an application secure.}
+\end{frame}
+
+\renewcommand{\track}{09 / OUR TEST}
+\begin{frame}[t]
+% title: What our first test missed
+% time: 09:00-10:30
+% cue: Slow down for the first test. Then read the four rows in order.
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+% source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+\frametitle{What our first test missed}
+\vspace{1mm}
+{\fontsize{12}{15}\selectfont Our first test tried the wrong bytes after the approval had already been used.\par}
+\vspace{4mm}
+{\tablefont\fontsize{10.5}{13}\selectfont\begin{tabular}{@{}L{.08\textwidth}L{.60\textwidth}L{.24\textwidth}@{}}
+& \textcolor{acid}{revised test, using one approval} & \textcolor{acid}{result}\\\midrule
+1 & Wrong bytes, approval unused & \textcolor{warn}{DENIED}\\
+2 & Right bytes, wrong destination & \textcolor{warn}{DENIED}\\
+3 & Right bytes, intended destination & \textcolor{acid}{PUBLISHED}\\
+4 & Same request again & \textcolor{warn}{DENIED}\\
+\end{tabular}}
+\vfill
+\scope{Publication in this experiment stores the bytes in a local database.}
+\note{There's another place to check: the step that releases the approved bytes. Our approval names the artifact and destination, and can be used once.
+
+Our first substitution test was misleading. We published the approved artifact, then tried different bytes with the same approval. The gate refused. But the approval was already spent. That test couldn't tell us whether the byte check worked.
+
+We changed the order. Wrong bytes first, while the approval was still unused. Then the wrong destination. Both were refused. The right bytes at the right destination succeeded, and only then did we test reuse.
+
+Now each refusal tells us something. We also know the intended operation still works.}
+\end{frame}
+
+\renewcommand{\track}{10 / YOUR PIPELINE}
+\begin{frame}[t]
+% title: Where to look in your pipeline
+% time: 10:30-11:30
+% cue: Read the four questions. Pause after the fourth.
+% source: https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
+% source: https://github.com/zozo123/nyc-talk/blob/main/RUNBOOK.md
+\frametitle{Where to look in your pipeline}
+\vspace{1mm}
+{\fontsize{11}{14}\selectfont Take one release check and trace:\par}
+\vspace{2mm}
+{\fontsize{12.5}{16}\selectfont
+\begin{enumerate}\setlength{\itemsep}{1.8mm}
+\item Which expected answers, configuration, and helper code does it use?
+\item Which of those can the agent change?
+\item Who approves changes to the rules used for release?
+\item Does the intended operation still work when the unwanted one is refused?
+\end{enumerate}\par}
+\vfill
+\scope{The candidate is the work being checked. Treat it separately from the checking rules.}
+\note{Start with one check your team relies on before a release. Find the expected answers, configuration, and helper code it uses. Then compare that list with what the agent can change.
+
+Keep the candidate itself separate. It's supposed to be editable. You're looking for a way to change what counts as success without fixing the candidate.
+
+Apply the same inspection to credentials, shared files, and uploads. For every denial, check that the intended operation still succeeds under the same conditions. That's how you know which control you actually tested.}
+\end{frame}
+
+\renewcommand{\track}{11 / CLOSE}
+\begin{frame}[t,fragile]
+% title: Who controls the expected answer?
+% time: 11:30-12:15
+% cue: Point at the four lines. Say the last sentence, then stop.
+% source: https://github.com/zozo123/nyc-talk
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+\frametitle{Who controls the expected answer?}
+\vspace{2mm}
+{\lstset{basicstyle=\ttfamily\fontsize{12}{15}\selectfont}
+\begin{lstlisting}
+Required:           401
+Program:            200
+Edited expectation: 200
+Result:             PASS
+\end{lstlisting}}
 \vspace{6mm}
-{\fontsize{23}{28}\selectfont\bfseries Sandboxes limit reach.\\{\color{warn}Breaches happen at acceptance.}\par}
-\vspace{6mm}
-{\fontsize{14}{18}\selectfont Every outside system that says yes to agent output is part of the perimeter.\par}
-\takeaway{Your agent did not escape. Your acceptor believed it.}
-\note{Keep the wall. In every recording here, the wall mattered. But the wall is not the system that says yes. Tokens say yes. Hosts say yes. Upload services say yes. Checkers say yes. If your agent can write what those systems trust, it does not need to escape. Your agent did not escape. Your acceptor believed it. That is the line I want people to remember. It gives you one practical question for every agent system: what outside the sandbox says yes, and who gave it that authority?}
+{\fontsize{17}{21}\selectfont\bfseries Can the agent change the rules behind this check?\par}
+\vfill
+{\color{acid}\ttfamily\fontsize{10}{12}\selectfont github.com/zozo123/nyc-talk\par}
+\note{Back to the original ticket. The program still returned 200. The worker couldn't overwrite the checker, but it could change the expected answer. That was enough to get a pass.
+
+The fix let the worker keep editing the program while the controller kept the acceptance rules.
+
+Before you trust a green check, find out whether the agent can change what makes it green. The code and recordings are here. Thank you.}
 \end{frame}
 
 \appendix
 
-\renewcommand{\track}{A1 / THREAT MODEL}
+\renewcommand{\track}{A1 / SCOPE}
 \begin{frame}[t]
-% title: Threat model and non-claims
+% title: What this experiment establishes
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
-\frametitle{Threat model and non-claims}
-{\tablefont\begin{tabular}{@{}p{.28\textwidth}p{.62\textwidth}@{}}
-\textcolor{acid}{Claimed} & A sandboxed worker can still influence release through acceptors outside the wall.\\\addlinespace
-\textcolor{acid}{Not claimed} & Container escape, kernel exploit, live cloud breach, measured model frequency, or SLSA certification.\\\addlinespace
-\textcolor{acid}{Recorded} & Fixture evidence: token, mount, endpoint, verifier, gate behavior.\\
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+\frametitle{What this experiment establishes}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.52\textwidth}
+{\fontsize{10}{13}\selectfont
+\begin{itemize}\setlength{\itemsep}{1mm}
+\item The worker is a script. No model chooses its actions.
+\item The central example is a five-case command-line model of an access check, not a web server.
+\item Publication stores bytes in a local database.
+\item Not claimed: container escape, kernel exploit, production breach, model attack rate, SLSA certification.
+\end{itemize}\par}
+\end{column}
+\begin{column}{.42\textwidth}
+{\tablefont\begin{tabular}{@{}L{.50\textwidth}L{.40\textwidth}@{}}
+\textcolor{acid}{input} & \textcolor{acid}{expected}\\\midrule
+\texttt{admin:none} & 401\\
+\texttt{admin:admin} & 200\\
+\texttt{admin:user} & 403\\
+\texttt{public:none} & 200\\
+\texttt{admin:expired} & 401\\
 \end{tabular}}
-\takeaway{This is an acceptance-boundary case study.}
-\note{Appendix note. Use this slide to constrain the claim. The result is not a container escape and not a live cloud incident. It is a small recorded model of an acceptance failure.}
+\end{column}
+\end{columns}
+\note{We measured whether these actions were allowed and whether the changed configuration stopped them. We didn't measure how often a model would try them. The five cases on the right are the whole policy. Passing them shows behavior on those five inputs and nothing broader.}
 \end{frame}
 
 \renewcommand{\track}{A2 / TOKEN}
 \begin{frame}[t,fragile]
-% title: Inherited credential receipt
+% title: The token reached another project
 % source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-\frametitle{Inherited credential receipt}
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\frametitle{The token reached another project}
 \begin{lstlisting}
-runner token: broad
-sandbox process: no escape
-service: 200 OK for other project
-repair: short-lived scoped projection
+broad runner token -> other project     200
+task token         -> other project     403
+task token         -> task input        200
+expired token, wrong-audience token     403
 \end{lstlisting}
-\takeaway{The bug is not possession of a token. It is ambient authority.}
-\note{Appendix note. The token case models a broad runner credential that the service honors for a project the task did not need. The repair projects only the capability needed for the task.}
+\takeaway{The service enforced a token restricted to the task.}
+\scope{Loopback HTTP service with fixture tokens. Not a cloud IAM implementation.}
+\note{The service enforced a token restricted to the task. The intended input stayed readable. A shorter lifetime alone does not narrow permissions: a broad token can reach everything it covers for as long as it is valid. Scope and audience have to be enforced by the service that receives the token.}
 \end{frame}
 
 \renewcommand{\track}{A3 / MOUNT}
 \begin{frame}[t,fragile]
-% title: Dangerous mount receipt
+% title: The shared file changed on the host
 % source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-\frametitle{Dangerous mount receipt}
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\frametitle{The shared file changed on the host}
 \begin{lstlisting}
-write /shared/next-job.env
-current sandbox: contained
-next job: reads poisoned state
-repair: no shared writable host path
+writable bind:  write /shared/next-job.json -> host fixture changed
+read-only bind: same write                  -> denied, host fixture unchanged
+/output:        task output                 -> still writable
 \end{lstlisting}
-\takeaway{A mount can be an inter-job message bus.}
-\note{Appendix note. The mount case is a classic time shift. The current process stays contained, but the host preserves bytes that a later job reads.}
+\takeaway{The change persisted in the next-job fixture on the host.}
+\scope{Real bind mounts under bubblewrap. No later job was run against the changed file.}
+\note{The change persisted in the next-job fixture on the host. We did not run a later job that consumed it, so that part is an implication, not a recording. The same write through a read-only bind was denied, and the worker's own output directory stayed writable.}
 \end{frame}
 
-\renewcommand{\track}{A4 / ENDPOINT}
+\renewcommand{\track}{A4 / UPLOAD}
 \begin{frame}[t,fragile]
-% title: Allowed endpoint receipt
+% title: The upload landed in another account
 % source: https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-\frametitle{Allowed endpoint receipt}
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+\frametitle{The upload landed in another account}
 \begin{lstlisting}
-POST /upload?account=other
-network policy: host allowed
-receiver: 201 STORED
-repair: runner owns route and body
+POST /accounts/other/uploads            -> 201, payload stored
+  stored body: {"data": "SYNTHETIC-PRIVATE-FIXTURE"}
+broker request with extra field         -> refused, nothing delivered
+worker direct route to the service      -> unreachable
+broker report /accounts/team/reports    -> delivered
 \end{lstlisting}
-\takeaway{An allowed hostname is not an allowed operation.}
-\note{Appendix note. The endpoint case shows why allow lists at hostname granularity are too coarse. The repair moves the post to the runner with a fixed destination and bounded body.}
+\takeaway{Reaching a service does not grant every operation or recipient on it.}
+\scope{Loopback service model. In the weak case the worker shares the host network on purpose. Not a tested firewall bypass.}
+\note{Reaching a service does not establish permission for every operation or recipient on it. The receiver recorded the stored payload, so this is delivery, not an attempted send. In the corrected path the broker sends one fixed report to the team account and refuses extra recipient, payload or URL fields. This is a loopback service model, not a tested firewall bypass.}
 \end{frame}
 
 \renewcommand{\track}{A5 / OLD GATE}
 \begin{frame}[t,fragile]
-% title: Old gate audit: stale digest marker
+% title: A bug in our earlier release gate
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
-\frametitle{Old gate audit: stale digest marker}
+% source: https://github.com/zozo123/nyc-talk/blob/main/evidence/baseline-audit.json
+\frametitle{A bug in our earlier release gate}
 \begin{lstlisting}
-replace candidate bytes
-retain old digest field
-gate: PUBLISHED
-manifest != actual bytes
+approve the corrected candidate
+replace the candidate bytes, keep the stored digest
+old gate: PUBLISHED
+manifest no longer matches the bytes
 \end{lstlisting}
-\takeaway{A digest field is not a digest unless derived at the gate.}
-\note{Appendix note. This old audit is about our own gate. The lesson is simple. Do not trust a digest field supplied by an object that can be mutated. Derive the digest from immutable bytes at the gate.}
+\vspace{3mm}
+{\fontsize{12}{15}\selectfont The earlier gate trusted a stored digest after the candidate bytes changed.\par}
+\scope{This required access to the controller object. We did not show a worker-to-controller exploit.}
+\note{The earlier gate trusted a stored digest after the candidate bytes changed. Reproducing it required direct access to the controller's object. We did not show a worker-to-controller exploit. The current gate derives the digest from the bytes it publishes and stores those bytes.}
 \end{frame}
 
 \renewcommand{\track}{A6 / RECORDINGS}
 \begin{frame}[t]
-% title: What was recorded
+% title: What we recorded
 % source: https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
-\frametitle{What was recorded}
-{\tablefont\begin{tabular}{@{}p{.30\textwidth}p{.14\textwidth}p{.48\textwidth}@{}}
-\textcolor{acid}{fixture} & \textcolor{acid}{checks} & \textcolor{acid}{scope}\\\midrule
-Linux lab & 30 & token, mounts, endpoint\\
-Isolated checker & 13 & read-only checker and answer key\\
-Local factory & 8 & gate and publication protocol\\
-Regressions & 49 & controller and evidence\\
-Old gate audit & 1 & stale digest misuse\\
+\frametitle{What we recorded}
+{\tablefont\begin{tabular}{@{}L{.25\textwidth}L{.10\textwidth}L{.59\textwidth}@{}}
+\textcolor{acid}{record} & \textcolor{acid}{checks} & \textcolor{acid}{scope}\\\midrule
+Linux lab & 30 & token, mounts, upload service, parser checker, lab gate\\
+Isolated checker & 13 & read-only checker, expected answers, release gate\\
+Local factory & 8 & gate and publication protocol, no OS isolation\\
+Regression tests & 49 & controller and evidence checks\\
+Old gate audit & 1 & stale digest reproduction\\
 \end{tabular}}
-\takeaway{Four fixtures, one acceptance story.}
-\note{Appendix note. Use this slide when asked about scope. The recordings are intentionally small and deterministic. They support the shape, not a frequency claim.}
+\takeaway{These counts describe checks, not vulnerability frequency.}
+\note{These counts describe checks, not vulnerability frequency. Each record has its own scope. The 49 are regression tests for the controller and the evidence validator, not isolation tests. The old gate audit is one reproduction of our own bug.}
 \end{frame}
 
 \renewcommand{\track}{A7 / REPRO}
 \begin{frame}[t,fragile]
-% title: Reproduce the factory
+% title: Run the experiment
 % source: https://github.com/zozo123/nyc-talk
 % source: https://github.com/containers/bubblewrap#sandbox-security
 % source: https://slsa.dev/spec/v1.2/verifying-artifacts
 % source: https://metr.org/blog/2025-06-05-recent-reward-hacking/
-\frametitle{Reproduce the factory}
+\frametitle{Run the experiment}
 \begin{lstlisting}
 git clone https://github.com/zozo123/nyc-talk
 cd nyc-talk
-make test
-make record-all
-make final
+make test factory       # any OS, Python 3.10+; no OS isolation
+make record-all         # disposable Linux with bubblewrap
+make final              # PDFs; needs TeX Live
 \end{lstlisting}
 \vspace{2mm}
-{\fontsize{10}{13}\selectfont Sources: bubblewrap sandbox policy, SLSA verification, METR reward-hacking report.\par}
-\takeaway{The deck reads recordings. It does not need a cloud token.}
-\note{Appendix note. Reproduction uses the repository fixtures. The cloud-like services are local fixtures. No token is needed to reproduce the story.}
+{\fontsize{10}{13}\selectfont Linux path: disposable Linux, bubblewrap, Python 3.10+, make. TeX Live only for the PDFs.\par}
+\scope{Sources: bubblewrap sandbox policy, SLSA verification, METR reward-hacking report.}
+\note{The Linux experiments need a disposable Linux machine with bubblewrap, Python 3.10 or later, and make. TeX Live is only needed to rebuild the PDFs. On any operating system, make test and make factory run the local protocol checks without OS isolation. No cloud account or token is needed.}
 \end{frame}
 
 \renewcommand{\track}{A8 / APPROVAL}
 \begin{frame}[t]
-% title: One approval is consumed once
+% title: What the approval covers
+% source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-\frametitle{One approval is consumed once}
-{\tablefont\begin{tabular}{@{}p{.08\textwidth}p{.62\textwidth}p{.22\textwidth}@{}}
-1 & wrong bytes, approval unused & \textcolor{warn}{DENIED}\\\addlinespace
-2 & right bytes, wrong destination & \textcolor{warn}{DENIED}\\\addlinespace
-3 & right bytes, named destination & \textcolor{acid}{PUBLISHED}\\\addlinespace
-4 & right bytes, approval already spent & \textcolor{warn}{DENIED}\\
-\end{tabular}}
-\takeaway{These bytes. This place. Once.}
-\note{Appendix note. This is the release invariant as a table. The first two denials happen before the approval is spent, so they cannot be explained by replay protection.}
+\frametitle{What the approval covers}
+{\fontsize{11}{14}\selectfont The controller checks the outputs, then authenticates its decision together with the candidate, criteria, and destination bindings.\par}
+\vspace{3mm}
+{\tablefont\begin{tabular}{@{}L{.20\textwidth}L{.72\textwidth}@{}}
+\textcolor{acid}{candidate} & artifact manifest digest\\
+\textcolor{acid}{criteria} & expected results, policy, verifier source bundle\\
+\textcolor{acid}{destination} & account, environment, operation, subject\\
+\textcolor{acid}{context} & task, run, environment description, expiry, single-use nonce\\
+\end{tabular}\par}
+\vspace{3mm}
+{\fontsize{9.5}{12}\selectfont Sequence: wrong bytes \textcolor{warn}{DENIED}, wrong destination \textcolor{warn}{DENIED}, intended destination \textcolor{acid}{PUBLISHED}, reuse \textcolor{warn}{DENIED}.\par}
+\scope{Authenticated with a local HMAC key held by the controller. The approval carries no digest of the raw observations.}
+\note{The controller checks the outputs, then authenticates its decision together with the candidate, criteria, and destination bindings, using a local HMAC key. The approval names the task and the run, expires, and can be used once. It does not sign the raw observations. The full field list is in factory core.}
 \end{frame}
 
 \end{document}

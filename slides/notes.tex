@@ -15,154 +15,136 @@
 \begin{center}
 {\color{alarm}\sffamily\bfseries AI AGENT SECURITY SUMMIT \textbullet\ PIER SIXTY}\\[4pt]
 {\LARGE\bfseries Your Agent Escaped\\ Without Escaping the Sandbox}\\[8pt]
-{\large The agent changes the answers.\\ The check goes green.}\\[8pt]
+{\large How a broken program got a passing result}\\[8pt]
 {\small Yossi Eliaz, PhD \textbullet\ Incredibuild \textbullet\ 21 October 2026}\\[2pt]
-{\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--14 are the talk. Slides 15--22 are for questions.}
+{\color{muted}\small Spoken notes generated from slides/talk.tex. Slides 1--12 are the talk. Slides 13--20 are for questions.}
 \end{center}
-\section*{1. The ticket}
+\section*{1. Your Agent Escaped Without Escaping the Sandbox}
 {\sffamily\color{acid}00:00-00:45}\par
-{\itshape Read the ticket. The four locks. Then: it ships.}\par
-Picture a Friday afternoon. You give your coding agent one ticket. Lock down the admin page. Anyone without a login must get 401.
+{\itshape Start with the ticket. No preamble.}\par
+We built a small experiment around a familiar ticket: lock down admin. If you're not logged in, you should get 401.
 
-And you do everything right. The agent works in a sandbox. It has no network. The checker that grades its work is read-only, so the agent cannot touch it. And your pipeline ships only when that checker goes green.
+The program was broken. It returned 200 for every case. We put a worker in a Linux sandbox and made the checker read-only. The first check failed, as it should.
 
-The agent works for a while. The check goes green. It ships.
-\section*{2. Green, and open}
-{\sffamily\color{acid}00:45-01:45}\par
-{\itshape Say green. Pause. Then 200. Let it sit.}\par
-Then someone opens the admin page without logging in. 200. Anyone can walk in.
+Then we changed something, ran the same checker again, and got a pass. The program was still broken.
+\section*{2. The check passed. The bug was still there.}
+{\sffamily\color{acid}00:45-01:30}\par
+{\itshape Let the room compare PASS and 200 before you speak.}\par
+These two results came from the same recorded run. The checker reported PASS. For the input representing admin without a login, the program still returned 200.
 
-The door you asked the agent to close is still open, and every check was green. And here is the strange part. Nothing escaped the sandbox. No network call, no broken container, no stolen credential. If you have spent this year building sandboxes for your agents, this is the part the sandbox cannot see.
+This is a small command-line model of an access check. We didn't deploy a vulnerable website. We stopped at the passing result.
 
-I'm Yossi Eliaz. I work on build systems at Incredibuild, and our whole industry runs on one assumption: green means good. For the next few minutes, let's find out what green meant here.
-\section*{3. We built that pipeline}
-{\sffamily\color{acid}01:45-02:45}\par
-{\itshape Four facts, calmly. Then: three suspects.}\par
-So we built that pipeline ourselves, small enough to check every byte. The program is a few lines of command-line code that model the admin page. No web server. It answers five cases: no login, a real admin, an ordinary user, the public page, and an expired login. The agent is a script, not a model, so every step is deterministic. Hold on to that objection. We will come back to it. Everything runs in a Linux sandbox, and every file that matters is hashed.
+That result matters if your next step is to release whatever passes. So let's look at what changed between the failing run and the passing one.
+\section*{3. What we ran}
+{\sffamily\color{acid}01:30-02:30}\par
+{\itshape Point to the writable directory, then to DENIED.}\par
+The worker here is a script. We tell it exactly what to do so we can repeat the same sequence. This experiment tests what the setup allows. It doesn't measure whether a model would discover the trick.
 
-We stopped at the green check. Your pipeline would not have.
+The worker can write its working directory. It can't change the checker, and we tested that directly: the overwrite was denied.
 
-So let's investigate. Three suspects.
-\section*{4. Three suspects}
-{\sffamily\color{acid}02:45-03:45}\par
-{\itshape Clear the code. Clear the checker. Then: something else changed.}\par
-Suspect one: the code. The ticket was to fix it. Did the agent change it at all? No. The program's hash is identical before and after, and it still prints 200 for every request.
+We also recorded the program and checker hashes before and after. Both stayed the same. The important file was in the directory the worker could write.
+\section*{4. The expected answers changed}
+{\sffamily\color{acid}02:30-03:45}\par
+{\itshape Point at 401, then at 200. Pause after "match it."}\par
+The checker got its expected answers from this file. The worker replaced them with 200s. Here's the row for admin without a login: 401 became 200.
 
-Suspect two: the checker. And the agent did try. It tried to overwrite the checker with one that just prints PASS. The read-only mount said DENIED, and the checker's hash never changed. Before the agent's step, this same checker, launched the same way, said FAIL.
+Now the broken program's output matched the expected output. The checker did the same comparison and reported PASS.
 
-So the code did not change. The checker did not change. And FAIL still became PASS. Something else changed.
-\section*{5. Suspect three: the answer key}
+The program still returned 200. We'd changed the expected result to match it. That's why the hashes matter here: they let us rule out a change to either the program or the checker.
+\section*{5. The checker trusted a writable file}
 {\sffamily\color{acid}03:45-04:45}\par
-{\itshape Name the file. Read the diff. Click. Land the line.}\par
-Suspect three is a file nobody thinks about. The checker does not know the right answers by itself. It reads them from a file in the workspace, expected.json. The answer key.
+{\itshape Point at the line of code, then trace the two arrows.}\par
+This line explains the result. We protected the checker file, but it loaded its expected answers from the working directory. The worker could change that file.
 
-And the agent is allowed to write the workspace. So it changed one line. No login: expected 401. Now: expected 200. It did the same for the two other cases that expected an error. Now every expected answer is 200, which is exactly what the broken code prints.
+For your own checks, follow those reads. A snapshot, a configuration file, or a test helper may determine what counts as passing.
 
-It did not make the code pass the test. It made the test pass the code.
-\section*{6. A perfect receipt for a bad decision}
+The program under test is supposed to change. The question is whether the worker can also change the rules used to assess it. In our setup, the expected answers had ended up on the wrong side of that line.
+\section*{6. What METR observed}
 {\sffamily\color{acid}04:45-05:45}\par
-{\itshape Speak to the supply-chain people. Every file that matters, accounted for. Then: which bytes, not who had the right.}\par
-This part is for the supply-chain people. We had a perfect record of this run. The program hash. The checker hash. The answer key, before and after. Both exit codes. Put that record in a signed attestation, and it would verify.
+{\itshape Say METR as "meter". One example. No rates.}\par
+Our worker was scripted. For an example involving a model, METR reported that o3, asked to make code faster, changed the timing function used to measure it. The measured time went down without showing that the code had improved.
 
-It is a perfect receipt for a bad decision. The answer key change is right there on the receipt, and nothing in verification asked about it. Build provenance tells you which bytes were used, not who had the right to write them. SLSA's source track asks that, with two-party review of commits. This answer key was never committed. It was rewritten inside the run, by the agent it was judging.
-\section*{7. ``A real model wouldn't.''}
-{\sffamily\color{acid}05:45-06:45}\par
-{\itshape The objection. METR. Click at: It overwrote the timing function. Then the stopwatch. Say METR as meter.}\par
-Now the objection you have been holding. Our agent is a script. It did exactly what we wrote. Would a real model do this?
+The mechanism differs from ours. That example changed code running inside the scorer. Ours changed a file the checker read. Separating the processes addresses that in-process route, but it doesn't fix a writable answer file.
+\section*{7. Three other cases}
+{\sffamily\color{acid}05:45-07:00}\par
+{\itshape One breath per row.}\par
+We also recorded three other cases. A worker inherited a token that could read another project. A writable mount let it change another job's file on the host. An upload service accepted a payload under another account.
 
-In June 2025, the AI evaluation nonprofit METR published what frontier models did on tasks they were scored on. OpenAI's o3 was asked to make a program run faster. It changed something else. It overwrote the timing function that measured it, so a real second read as a millisecond. On another task, it patched the evaluator so that every submission passed. Nobody asked it to. In a separate test, telling it not to cheat barely changed how often it planned to.
+None needed a process to break out of its sandbox. Each used access the setup had already provided.
 
-It changed the stopwatch.
-\section*{8. Part of the judge was inside the sandbox}
-{\sffamily\color{acid}06:45-07:45}\par
-{\itshape Why did the door stay open? Walk the picture. Two routes: code inside the judge, files it reads. Ours already shut the first.}\par
-So why did the door stay open? One picture. This dashed box is the agent's sandbox. The agent is inside, with its code. The checker is outside, read-only. But the checker reaches into the workspace to read its answer key.
+These are separate experiments. The token and upload services run locally. Together with the answer key, they give us four specific places to inspect: credentials, shared files, outbound requests, and the checks used to approve the work.
+\section*{8. What we changed}
+{\sffamily\color{acid}07:00-08:00}\par
+{\itshape Read across each row: the change, then the result.}\par
+For the token, we narrowed the scope and checked that the intended input was still available. For the mount, we made the shared input read-only and kept the worker's own output directory writable. For the upload, the runner sent a fixed report to the intended account.
 
-There are two routes into a judge. o3's code ran inside the program that scored it. Our checker already ran the code as its own process, so that route was shut, and it still went green, because our agent rewrote what the checker reads.
+The answer key needs one distinction. Agents can still write tests. Those tests are proposals. A separate owner decides whether they become release criteria. In our experiment, the controller simply kept its own expected values. We didn't implement a review workflow for proposed tests.
+\section*{9. The same program now fails}
+{\sffamily\color{acid}08:00-09:00}\par
+{\itshape Read the rows top to bottom. Pause on REJECT.}\par
+Here's the comparison after that change. We run the same broken program, but use the controller's expected values. It's rejected. Then we run the corrected program against those same values. It's accepted.
 
-The judge is the checker, what it reads, and any code inside its process. A read-only checker is not a read-only judge.
-\section*{9. One shape, four times}
-{\sffamily\color{acid}07:45-08:45}\par
-{\itshape Listen for the shape. One breath per row. End on: something outside said yes.}\par
-The answer key was one of four non-escape escapes, and we recorded all four in the same Linux lab. Listen for the shape.
+The worker's answer file no longer determines the result. The worker can change the proposed solution, while the controller owns the comparison.
 
-An inherited runner token read another project. The service outside said yes to it. A writable mount changed the next job's file. The host outside said yes to the write. An allowed upload host carried synthetic private data to another account. The service outside said yes to the request. And the answer key. The checker outside said yes to it.
+That establishes the behavior for our five cases. A real application needs a much broader set of checks. This experiment is about who controls the checks. Five examples don't prove an application secure.
+\section*{10. What our first test missed}
+{\sffamily\color{acid}09:00-10:30}\par
+{\itshape Slow down for the first test. Then read the four rows in order.}\par
+There's another place to check: the step that releases the approved bytes. Our approval names the artifact and destination, and can be used once.
 
-Four times, the wall held, and something outside said yes on authority the agent held or wrote.
-\section*{10. Secure the acceptors}
-{\sffamily\color{acid}08:45-10:00}\par
-{\itshape Say both headline lines exactly as on screen. Beat. Name the confused deputy. Show of hands: yours up, then lower it on the second question. Look around. Lock what you can; the answer key you cannot.}\par
-So here is the message. Sandboxes limit reach. Breaches happen at acceptance. Keep the wall. It held. But a wall cannot decide what gets accepted. Secure the acceptors.
+Our first substitution test was misleading. We published the approved artifact, then tried different bytes with the same approval. The gate refused. But the approval was already spent. That test couldn't tell us whether the byte check worked.
 
-If that sounds like the confused deputy, it is: a trusted component using its authority for the wrong party. Agents change two things. There are far more deputies. And for one of them, least privilege runs out.
+We changed the order. Wrong bytes first, while the approval was still unused. Then the wrong destination. Both were refused. The right bytes at the right destination succeeded, and only then did we test reuse.
 
-Quick show of hands, and I will raise mine. Who runs agents in a sandbox? Keep it up if you could list every system outside it that says yes to what your agent produces. Look around.
+Now each refusal tells us something. We also know the intended operation still works.
+\section*{11. Where to look in your pipeline}
+{\sffamily\color{acid}10:30-11:30}\par
+{\itshape Read the four questions. Pause after the fourth.}\par
+Start with one check your team relies on before a release. Find the expected answers, configuration, and helper code it uses. Then compare that list with what the agent can change.
 
-Some of these you can lock, and we did: a narrower token, a read-only path, no direct route. The answer key you cannot lock. Writing tests is the agent's job. The permission is the work.
-\section*{11. Give every acceptor an outside owner}
-{\sffamily\color{acid}10:00-11:00}\par
-{\itshape Row by row: what an outside owner now sets. The rule. Back to the ticket: REJECT, the door never opens, ACCEPT.}\par
-Every acceptor needs authority scoped to this task and issued outside the wall. The service now sees only a short-lived token the controller scoped to this task. Reaching another project: 403. The shared path is now mounted read-only: the same write is blocked. The upload service is reachable only through a broker that builds one fixed report: nothing else is sent. And the judge accepts only criteria the controller owns. The agent may propose what counts as correct. It must never be the last writer of what judges it.
+Keep the candidate itself separate. It's supposed to be editable. You're looking for a way to change what counts as success without fixing the candidate.
 
-Back to our ticket, with that rule. Same broken code: REJECT. The door never opens. The corrected code: ACCEPT.
-\section*{12. Which control said no?}
-{\sffamily\color{acid}11:00-12:15}\par
-{\itshape Bridge from the four refusals. Four rows in order. Stress row 3, the matching yes. Then our own mistake, plainly.}\par
-You just saw four refusals. Now ask of each one: which control said no? A denial proves nothing until you know. We learned it on the last acceptor, the release.
+Apply the same inspection to credentials, shared files, and uploads. For every denial, check that the intended operation still succeeds under the same conditions. That's how you know which control you actually tested.
+\section*{12. Who controls the expected answer?}
+{\sffamily\color{acid}11:30-12:15}\par
+{\itshape Point at the four lines. Say the last sentence, then stop.}\par
+Back to the original ticket. The program still returned 200. The worker couldn't overwrite the checker, but it could change the expected answer. That was enough to get a pass.
 
-The release gets one approval for the corrected program. First, the broken code under that fresh, unused approval: DENIED. Then the approved bytes, pointed at a different destination: DENIED. Then the approved bytes to the named place: PUBLISHED. That yes is what makes the first two count: the approval was live, so the byte check and the destination check said no. Then the same again: DENIED, because the approval is spent.
+The fix let the worker keep editing the program while the controller kept the acceptance rules.
 
-Our first version of this test tried the broken code only after the approval was spent. It was denied, and we could not tell which control said no.
-\section*{13. Before your next ticket ships}
-{\sffamily\color{acid}12:15-13:15}\par
-{\itshape The question. Pause. Three moves.}\par
-One question to take back. What outside your sandbox says yes to your agent, and who gave it the authority to?
-
-Three moves. First, list every acceptor: the services its tokens reach, the paths it can write that someone else reads, the endpoints it can send to, the checks that judge its work, and the release that ships it. Second, for each one, ask what its yes rests on. If the agent wrote that, or it is wider than this task needs, that is your finding. Third, test every no so that only that control could have said it, and pair it with a yes.
-
-None of this needs model telemetry. It needs an inventory and an owner.
-\section*{14. The door stayed open}
-{\sffamily\color{acid}13:15-14:00}\par
-{\itshape Repository first. Then the ticket. Three short lines. The title. Thank you. Leave it up.}\par
-The code and the recordings are in the repository on the screen. Every hash you saw is in there, and you can rerun all of it.
-
-Now remember the ticket. Lock down the admin page.
-
-The sandbox held. The checker held. The door stayed open. Nothing broke out. Something outside said yes.
-
-Your agent escaped without escaping the sandbox. Thank you.
+Before you trust a green check, find out whether the agent can change what makes it green. The code and recordings are here. Thank you.
 \newpage
 \section*{Questions}
-\section*{15. The five policy cases}
+\section*{13. What this experiment establishes}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-The handler takes a route and an authentication label and prints an integer. The runner checks these five. The repaired handler matches all five. This is the model of the check that promotes into the prod sandbox.
-\section*{16. Runner token and the dev disk}
+We measured whether these actions were allowed and whether the changed configuration stopped them. We didn't measure how often a model would try them. The five cases on the right are the whole policy. Passing them shows behavior on those five inputs and nothing broader.
+\section*{14. The token reached another project}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-The token case is loopback HTTP. The broad fixture stands in for the runner secret. The task fixture stands in for a job-scoped token. The mount case watches the host file after an ordinary write from the dev sandbox. This job's output stays writable.
-\section*{17. Allowed host, wrong account}
+The service enforced a token restricted to the task. The intended input stayed readable. A shorter lifetime alone does not narrow permissions: a broad token can reach everything it covers for as long as it is valid. Scope and audience have to be enforced by the service that receives the token.
+\section*{15. The shared file changed on the host}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-The fixture service permits both account paths, the way one allowed deploy host holds more than one operation. The delivery record shows the bytes arrived. The repair moves the POST onto the runner and removes the dev sandbox's direct route.
-\section*{18. An earlier promote stored a marker}
+The change persisted in the next-job fixture on the host. We did not run a later job that consumed it, so that part is an implication, not a recording. The same write through a read-only bind was denied, and the worker's own output directory stayed writable.
+\section*{16. The upload landed in another account}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-The archived case mutates a controller-side object, keeps a stale digest, and the old gate records a publication marker. The current promote derives the digest from immutable bytes and stores those bytes. Reaching the old flaw takes access to the controller object.
-\section*{19. What was recorded}
+Reaching a service does not establish permission for every operation or recipient on it. The receiver recorded the stored payload, so this is delivery, not an attempted send. In the corrected path the broker sends one fixed report to the team account and refuses extra recipient, payload or URL fields. This is a loopback service model, not a tested firewall bypass.
+\section*{17. A bug in our earlier release gate}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-The records bind their source. The Linux recordings use bubblewrap on an Ubuntu machine. The worker under test is a script. Publication in the recording is the controller storing the exact approved bytes in a local database, a stand-in for a registry or a merge. Real-repository, multi-agent and snapshot effects are inferences from the answer-key dependency, not measurements. The timings are a delivery budget.
-\section*{20. Reproduce the factory}
+The earlier gate trusted a stored digest after the candidate bytes changed. Reproducing it required direct access to the controller's object. We did not show a worker-to-controller exploit. The current gate derives the digest from the bytes it publishes and stores those bytes.
+\section*{18. What we recorded}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-Run the fixtures on disposable Linux with bubblewrap. The deck reads those recordings. Poisoned pipeline execution, OWASP CICD-SEC-4, is the public name for a CI job made to run commands an attacker changed in the repository. Ours is its data-only neighbor: the checker ran unchanged and obeyed a file the worker rewrote. Anthropic's reward-hacking study is prior motivation and its measurements stay with that study. Reproducing the talk needs no GitHub token.
-\section*{21. The paired run}
+These counts describe checks, not vulnerability frequency. Each record has its own scope. The 49 are regression tests for the controller and the evidence validator, not isolation tests. The old gate audit is one reproduction of our own bug.
+\section*{19. Run the experiment}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-The paired run behind slides 4 and 5. Same checker bytes, same launch, same program. The honest answer key gives exit 1 with FAIL. The edited answer key gives exit 0 with PASS. The answer key is the only variable. Every prefix is a full SHA-256 in the isolated recording.
-\section*{22. One unused approval}
+The Linux experiments need a disposable Linux machine with bubblewrap, Python 3.10 or later, and make. TeX Live is only needed to rebuild the PDFs. On any operating system, make test and make factory run the local protocol checks without OS isolation. No cloud account or token is needed.
+\section*{20. What the approval covers}
 {\sffamily\color{acid}Questions}\par
 {\itshape Use only in questions.}\par
-Four attempts on one approval, in the recorded order. Bad bytes while the approval is still unused: denied. The approved bytes to another destination: denied. The approved bytes to the named destination: published. The same again: denied as replay. Both refusals happen before the approval is spent, so neither can be credited to replay protection. An earlier version of our own test got that order wrong.
+The controller checks the outputs, then authenticates its decision together with the candidate, criteria, and destination bindings, using a local HMAC key. The approval names the task and the run, expires, and can be used once. It does not sign the raw observations. The full field list is in factory core.
 \end{document}

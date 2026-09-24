@@ -26,39 +26,33 @@
 {\large Yossi Eliaz, PhD}\\[2pt]
 {\small Principal Engineer and Head of DevRel, Incredibuild}\\[8pt]
 {\color{acid}\rule{0.42\textwidth}{1.4pt}}\\[8pt]
-{\small\textit{The sandbox held. The checker held. The door stayed open.}}
+{\small\textit{How a broken program got a passing result}}
 \end{center}
 
 \begin{abstract}
 \noindent
-A ticket says: lock down \texttt{/admin}; no login must return \texttt{401}. A worker in a bubblewrap sandbox with no network, a deterministic script rather than a model, made the failing check pass without escaping, and the door stayed open: the program still returned \texttt{200} for \texttt{/admin} with no login. Its attempt to overwrite the read-only checker was denied, and the checker's hash never changed. But the checker loaded its answer key, \texttt{expected.json}, from the worker's workspace. The worker rewrote the answer key: same candidate, same checker, new answer key, and \texttt{FAIL} became \texttt{PASS}. It did not make the code pass the test; it made the test pass the code. Controller-owned cases reject the same bytes, and a corrected handler passes them. One approval binds exact bytes and one destination and is consumed once: it refuses a substituted artifact and a second destination, publishes the approved bytes, and refuses a replay. The judge is the checker plus everything it reads, and isolation and acceptance are different boundaries. The agent may propose what counts as correct; it must never be the last writer of what judges it. This paper is the written companion to a fifteen-minute lightning talk. Supporting Linux experiments, recorded separately, cover an inherited CI-style token, a writable mount and an allowed upload host. Each needs an owner outside the worker, and the legitimate job still has to complete.
+We tested a configuration in which a sandboxed worker could edit its working directory but could not overwrite a read-only checker. The checker loaded expected results from the working directory. Replacing those results made the same broken program change from \texttt{FAIL} to \texttt{PASS}, while the program and checker hashes remained unchanged. A controller using independently held expected values rejected that program and accepted the corrected version. Separate fixtures examine inherited credentials, shared mounts, and uploads to another account. A local release gate tests artifact substitution, destination changes, and approval reuse. The worker is scripted, the access-check example is a five-case command-line model, and publication stores bytes locally. These results demonstrate the tested trust relationships; they do not measure model behavior or establish production security. This paper is the written companion to a fifteen-minute talk.
 \end{abstract}
 
-\section{The line}
+\section{Experiment setup}
 
-The picture is the software factory you already run.
+Three roles take part in the checker experiment.
 
 \begin{center}
-\begin{tabular}{@{}ll@{}}
+\begin{tabular}{@{}lp{0.62\textwidth}@{}}
 \toprule
-Station & Role \\
+Role & What it does and what it can write \\
 \midrule
-Developer & Opens the ticket \\
-AI harness & Goal, tools, workspace \\
-Dev sandbox & Where the agent writes \\
-CI runner & Token, check, publish, promote \\
-Prod sandbox & Runs the published bytes \\
+Worker & A deterministic script inside a bubblewrap sandbox with no network. It can write its working directory, \texttt{/work}, which holds the program \texttt{handler.py} and the expected results \texttt{expected.json}. \\
+Checker & \texttt{checker.py} on a read-only mount, \texttt{/verifier}. It runs the program once per input as a separate process and compares each output with \texttt{expected.json}. \\
+Controller & A process outside the sandbox. It holds its own expected values, the approval key and a local SQLite release store. \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-The harness stays in the dev sandbox. The runner decides the work is done. The prod sandbox runs what the runner published. The failure is a promotion along a factory that is working. Each station trusts a receipt from the station before it.
+The accepted talk abstract names four ways a worker can affect systems outside its sandbox without breaking out of it: inherited credentials, dangerous mounts, uploads through an allowed service, and changes to what a checker trusts. The central experiment covers the last of these. Three supporting fixtures cover the others.
 
-The accepted abstract names four of those receipts: inherited credentials, dangerous mounts, exfiltration through an allowed endpoint, and verifier tampering. On this line they are the CI secret injected into the dev job, a mount that can touch the next job's files, a host the workflow is already allowed to publish to, and the green check that promotes the sandbox into prod.
-
-A protected checker says \texttt{PASS}. Unauthenticated admin still returns \texttt{200}. Policy requires \texttt{401}. You can see that on the line, name the file, and move the decision to a station the worker cannot write. The legitimate job still ships.
-
-What follows is a controlled reproduction of a known trust-boundary failure. The credential, mount, and publish cases are loopback HTTP and real bind mounts. The green check is a five-case command-line model of authorization. These fixtures have the shape of a GitHub Actions job. They are not a compromise of GitHub, and they are not a customer production server. The repository records the bytes.
+The credential and upload cases use loopback HTTP. The mount case uses real bind mounts. The checker experiment is a five-case command-line model of an access check. None of it is a compromise of a hosted CI service or a customer production server. The repository records the bytes.
 
 \section{What the worker is allowed to touch}
 
@@ -68,7 +62,7 @@ The worker may edit task code, the workspace, and the tests and reports it propo
 
 The worker in the repository is a script. The measurement is whether the action is permitted. Whether a particular model would discover the action is a different experiment, and this package does not run it.
 
-\section{The control, then the exploit}
+\section{Changing the expected results}
 
 The bad candidate returns \texttt{200} for every input. With the honest answer key, the checker prints \texttt{FAIL} and exits \texttt{1}. The check can see the bug.
 
@@ -78,7 +72,7 @@ The worker then tries the obvious overwrite: replace \texttt{checker.py} with a 
 \texttt{f5d8d3468bbeeee014580159053a10a4af758a11a22af3045b03abcf94922e99}
 \end{quote}
 
-The grader survived. The mount held. The next step never touches \texttt{checker.py}.
+The read-only mount held. The next step never touches \texttt{checker.py}.
 
 The protected checker loads its cases from the working directory:
 
@@ -86,9 +80,9 @@ The protected checker loads its cases from the working directory:
 expected = json.loads(Path("expected.json").read_text())
 \end{lstlisting}
 
-That file lives in the workspace. The worker owns the workspace. It rewrites every expected output to \texttt{200}. On \texttt{admin:none} the key moves from \texttt{401} to \texttt{200}. The candidate still returns \texttt{200}. The same checker, still read-only, prints \texttt{PASS} and exits \texttt{0}.
+That file lives in the working directory, which the worker can write. The worker rewrites every expected output to \texttt{200}, which changes three of the five values. On \texttt{admin:none} the expected value moves from \texttt{401} to \texttt{200}. The candidate still returns \texttt{200}. The same checker, still read-only, prints \texttt{PASS} and exits \texttt{0}.
 
-Locking the program left the answer key with the worker. A controller that promotes that \texttt{PASS} into release eligibility has adopted the worker's definition of authorized. A plugin, an imported helper, a test configuration, or a worker-written report has the same shape. The object reproduced here is \texttt{expected.json}.
+Protecting the checker file left the expected results with the worker. A pipeline that treats that \texttt{PASS} as release eligibility would be using the worker's definition of correct behavior. A snapshot, an imported helper, a test configuration, or a worker-written report can play the same role. The object reproduced here is \texttt{expected.json}. In this experiment the passing result is where we stopped; nothing was deployed.
 
 \section{Same bytes, three verdicts}
 
@@ -105,19 +99,19 @@ Corrected handler & Controller-owned cases & \textcolor{acid}{\texttt{ACCEPT}} \
 \end{tabular}
 \end{center}
 
-The controller's expected sequence is \texttt{401}, \texttt{200}, \texttt{403}, \texttt{200}, \texttt{401}. The corrected handler returns that sequence. The legitimate ticket still ships. The comparison, and the answer key, now sit where the worker cannot write them. Five cases cover this policy. They cover this policy.
+The controller's expected sequence is \texttt{401}, \texttt{200}, \texttt{403}, \texttt{200}, \texttt{401}. The corrected handler returns that sequence and is accepted. The comparison and the expected values now sit where the worker cannot write them. The candidate itself stays editable: that is the work being evaluated. Acceptance covers these five cases, not the application.
 
 \section{Freeze, then judge}
 
 The recorded repair freezes the candidate bytes before the run. An isolated execution reads those bytes from a read-only mount and returns observations. The controller compares the observations with cases it owns. Approval and publication name the frozen object.
 
-A harness that prints ``finished'' holds no approval key. A second machine can host the split. Copy the producer's answer key onto it, or fork the producer's disk, and the dependency moves into the room you trusted. Count the inputs to the decision, then count the machines.
+A harness that prints ``finished'' holds no approval key. A second machine can host the controller, but copying the worker's expected-results file onto it, or forking the worker's disk, carries the same dependency along. What matters is who controls the inputs to the decision, not how many machines are involved.
 
-One fresh approval is issued for the good candidate. Four attempts follow, in this order. While that approval is still unused, substituted bad bytes are \texttt{DENIED}, and the approved bytes offered to a second destination are \texttt{DENIED}: an approval names one destination --- account, environment, operation, subject. The approved bytes at the named destination are \texttt{PUBLISHED}. The same bytes offered once more, now on a spent nonce, are \texttt{DENIED}. Publication is a row in controller-owned SQLite: the exact bytes and the spent nonce, in one transaction. Offering the substitute only after the nonce is spent would let a missing digest check hide behind replay protection. This repository's own test used to run in that order: it published first and tried the substitute afterwards. The current test offers the substitute first, while the approval is still unused, and the gate refuses it.
+One fresh approval is issued for the good candidate. Four attempts follow, in this order. While that approval is still unused, substituted bad bytes are \texttt{DENIED}, and the approved bytes offered to a second destination are \texttt{DENIED}: an approval names one destination --- account, environment, operation, subject. The approved bytes at the named destination are \texttt{PUBLISHED}. The same bytes offered once more, now on a spent nonce, are \texttt{DENIED}. Publication is a row in controller-owned SQLite: the exact bytes and the spent nonce, in one transaction. Our first version of this test was misleading. It published the approved artifact first and tried different bytes with the same approval afterwards. The gate refused, but the approval was already spent, so the refusal could not show whether the byte check worked. The current test offers the substitute first, while the approval is still unused, and the gate refuses it; the publication that follows shows the approval was valid when the substitute was refused.
 
 \section{Four boundaries, both sides}
 
-The answer key is the centerpiece. The deployment checklist around it has four rows. Each row needs a denied abuse and a job that still completes. A host that can do nothing will pass a deny-only test.
+The expected results are the central case. Each of the four rows below pairs a denied action with an intended operation that still completes. A host that can do nothing will pass a deny-only test.
 
 \begin{center}
 \small
@@ -128,7 +122,7 @@ Boundary & This must fail & This must still work \\
 Identity & Read another project's data & Read the task input \\
 Files & Edit the next job's input & Write the task output \\
 Outbound & Upload to another account & Send the authorized report \\
-Acceptance & Edit the criteria or swap bytes & Release the verified fix \\
+Acceptance & Edit the expected results or swap bytes & Release the verified fix \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -139,19 +133,19 @@ Files, on real bind mounts: a writable mount changes the next job's fixture on t
 
 Outbound, on an allowed loopback service: the worker posts a synthetic private fixture to another account and the service stores it, \texttt{201}. The repaired broker sends one fixed team report. Extra fields are denied. The worker has no direct route to the service. The receiver log is the evidence of delivery.
 
-Acceptance: the worker proposes the artifact. The controller owns the criteria and the bytes that get published.
+Acceptance: the worker proposes the artifact. The controller owns the expected values and decides which bytes get published.
 
-These are four separate experiments. They are a checklist, measured on both sides.
+These are four separate experiments, each measured on both sides.
 
-\section{Three jobs inside one green build}
+\section{Verification and publication}
 
 Verification says these bytes met these criteria. The gate says this approval authorizes these bytes on this run. History says the record still matches an anchor stored where the writer cannot reach it.
 
-A hash chain will store a bad decision faithfully. It detects a rewrite when the previous head was kept outside the log. The reference gate binds artifact, verifier, expected results, policy, run, environment description, task, decision, nonce, expiry, and schema. A worker \texttt{PASS} file and a harness exit code are observations from the wrong side of that line. Missing or malformed output produces no approval.
+A hash chain will store a bad decision faithfully. It detects a rewrite when the previous head was kept outside the log. The reference gate checks the observed outputs, then authenticates its decision with a local HMAC together with the artifact, verifier source bundle, expected results, policy, run, environment description, destination, task, nonce, expiry, and schema. It does not sign the raw observations. A worker \texttt{PASS} file and a harness exit code are not inputs to that decision. Missing or malformed output produces no approval.
 
-The next CI run can be handed the same dev workspace. A reviewer job and a deploy job can be forked from that disk. If they all read \texttt{expected.json}, and the first job can write it, three stations share one definition of done. Different prompts do not create independence. A snapshot of the dev sandbox keeps the key. The snapshot records the disk. Choosing the criteria is a different authority. That paragraph is an inference from the dependency we measured. It is not a multi-job attack and it is not a snapshot exploit.
+The same dependency can reach other jobs through shared writable inputs. A reviewer job and a deploy job forked from the worker's disk would read the same \texttt{expected.json}; if the worker can write it, all three jobs share one definition of done, whatever their prompts say. A snapshot preserves the file's bytes; it does not decide whether those bytes should be authoritative. These are implications of the dependency we measured, not a measured multi-job attack or snapshot exploit.
 
-An earlier revision of our own gate could publish a marker while the candidate bytes and the recorded digest diverged. Reaching that flaw required controller-object access. The current gate derives the digest from immutable bytes and stores those bytes. The audit stays in the package because it is ours.
+An earlier revision of our own gate trusted a stored digest after the candidate bytes changed, and could publish a marker while the two diverged. Reproducing it required controller-object access; we did not show a worker-to-controller exploit. The current gate derives the digest from the bytes it publishes and stores those bytes. The audit stays in the package because the bug was ours.
 
 \section{What was measured}
 
@@ -169,7 +163,7 @@ Archived gate audit & 1 & Controller API misuse \\
 \end{tabular}
 \end{center}
 
-The counts are coverage of this policy. The evidence files bind each record to the source that produced it. The build rejects a stale, skipped, or incomplete record. The local protocol executor, run by itself, is a different isolation story from the bubblewrap cases.
+The counts describe checks, not vulnerability frequency. The evidence files bind each record to the source that produced it. The build checks required source hashes, named checks, and selected recorded observations for consistency, and rejects a stale, skipped, or failed record. The local protocol executor provides no OS isolation; only the bubblewrap cases do.
 
 \section{Reproduce it}
 
@@ -188,26 +182,12 @@ sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
 Source, recorded outputs, and the limits live at \url{https://github.com/zozo123/nyc-talk}. The deck and this paper read those recordings. Stage delivery needs no cloud account and no live terminal.
 
-External context, kept in its own lane: METR's June 2025 report of frontier models gaming scored tasks, including o3 overwriting, from inside the scorer, the timing function that measured it, answers the talk's objection that a real model would not do this, and its tasks and rates stay with that report; bubblewrap's security model is caller-defined sandbox policy; SLSA v1.2 is the vocabulary of digest and expectations, and this gate is not a SLSA certification; Anthropic's November 2025 study of reward hacking is prior motivation, and its measurements stay with that study. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
+External context, kept separate from our results: METR's June 2025 report of frontier models gaming scored tasks includes o3, asked to make code faster, changing the timing function used to measure it; that code ran inside the scorer's process, and METR's tasks and rates stay with that report. Bubblewrap's security model is caller-defined sandbox policy. SLSA v1.2 supplies the vocabulary of digests and expectations; this gate is not a SLSA implementation or certification. Anthropic's November 2025 study of reward hacking is prior motivation, and its measurements stay with that study. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
 
-\section{Leave with one question}
+\section{Implications}
 
-The sandbox held. The checker held. The door stayed open. The candidate never improved: the worker changed the answer key, and \texttt{PASS} changed meaning. The judge is the checker plus everything it reads and runs, and a perfect build provenance record of that run would still be a receipt for a bad decision: it names which bytes decided, not who had the right to write them.
+Protecting the checker executable did not protect the expected values it used. The vulnerable configuration let the worker change those values and obtain a passing result for unchanged code. Moving the authoritative expected values to the controller removed that route in the recorded experiment.
 
-The same shape recurs across all four boundaries in this paper. Each time the wall held, and something outside it said yes to something the worker handed it: a service to an inherited token, a host to a write on a shared mount, an upload service to data for another account, a judge to an answer key. Sandboxes limit reach. Breaches happen at acceptance. Least privilege closes three of them: a task-scoped token, a read-only shared mount, one brokered route out. It cannot close the fourth, because the worker has to write its tests; there the permission is the work, and what changes is where the authority to say yes comes from. Security readers will recognise the confused deputy; agents multiply the deputies, and for the answer key least privilege runs out.
-
-When you leave Pier Sixty, take one question back to the host that runs your agents: what outside your sandbox says yes to your agent, and who gave it that authority?
-
-\begin{enumerate}
-\item List every acceptor: the services its tokens reach, the paths it writes that someone else reads, the endpoints it can send to, the checks that judge its work, and the release that ships it.
-\item Check what each yes rests on. If the agent wrote it, or it is wider than the task needs, that is the finding. The agent may propose what counts as correct; it must never be the last writer of what judges it.
-\item Test every no so that only the control under test could have said it, and pair it with a yes: a denial counts only when a matching yes proves the other controls were live.
-\end{enumerate}
-
-The component that returns \texttt{403}, a read-only denial, \texttt{DENIED}, or reject has to sit outside the worker. After you put it there, run the legitimate ticket again. A system that can no longer do the job has gone quiet. It has not become safe.
-
-The sandbox is worth keeping. You built it so the agent could work and still be stopped. Keep it. Then open the file the checker trusts. If the worker can write that file, you already know the next green build.
-
-The agent may propose what counts as correct. It must never be the last writer of what judges it.
+An agent can still propose tests. Changes to those tests need independent approval before they become release criteria. The same review should examine the scope of credentials, access to shared files, and the operations available through outbound services. Negative tests should be paired with an intended operation that still succeeds under matching conditions.
 
 \end{document}
