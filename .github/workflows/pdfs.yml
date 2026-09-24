@@ -1,0 +1,117 @@
+name: Build LaTeX PDFs
+# Builds the deck, speaker notes and paper from the canonical LaTeX.
+# Pull requests get the PDFs as a downloadable artifact. On main, the rebuilt
+# files are committed back when they differ, so the published PDFs always match
+# their source. Pushes made with GITHUB_TOKEN do not start new workflow runs.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'slides/talk.tex'
+      - 'paper/paper.tex'
+      - 'tools/**'
+      - 'evidence/**'
+      - 'factory/**'
+      - 'lab/**'
+      - 'Makefile'
+      - '.github/workflows/pdfs.yml'
+  pull_request:
+    paths:
+      - 'slides/talk.tex'
+      - 'paper/paper.tex'
+      - 'tools/**'
+      - 'evidence/**'
+      - 'factory/**'
+      - 'lab/**'
+      - 'Makefile'
+      - '.github/workflows/pdfs.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pdfs-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  OUTPUTS: >-
+    slides/talk.pdf slides/notes.pdf paper/paper.pdf
+    TALK.md SPEAKER_NOTES.md slides/notes.tex demo/replay.html
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install TeX Live
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-latex-recommended texlive-pictures lmodern poppler-utils
+      - name: Build deck, notes and paper
+        # Pin PDF dates to the last change of any input, so unchanged sources
+        # rebuild to byte-identical files and nothing is committed.
+        run: |
+          SOURCE_DATE_EPOCH=$(git log -1 --format=%ct -- slides/talk.tex paper/paper.tex tools evidence factory lab Makefile)
+          export SOURCE_DATE_EPOCH FORCE_SOURCE_DATE=1
+          make final
+      - name: Report what changed
+        run: |
+          read -ra outputs <<< "$OUTPUTS"
+          git status --short -- "${outputs[@]}"
+          if ! git diff --quiet -- TALK.md SPEAKER_NOTES.md slides/notes.tex; then
+            echo "::warning::TALK.md, SPEAKER_NOTES.md or slides/notes.tex was stale; run python3 tools/build_deck.py and commit the result."
+          fi
+          {
+            echo "### Built PDFs"
+            echo
+            for f in slides/talk.pdf slides/notes.pdf paper/paper.pdf; do
+              echo "- \`$f\`: $(pdfinfo "$f" 2>/dev/null | awk '/^Pages:/ {print $2}') pages"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: talk-pdfs
+          path: |
+            slides/talk.pdf
+            slides/notes.pdf
+            paper/paper.pdf
+            TALK.md
+            SPEAKER_NOTES.md
+            slides/notes.tex
+            demo/replay.html
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: latex-logs
+          path: build/*.log
+          if-no-files-found: ignore
+
+  publish:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: talk-pdfs
+          path: .
+      - name: Commit rebuilt files if they changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          read -ra outputs <<< "$OUTPUTS"
+          git add -- "${outputs[@]}"
+          if git diff --cached --quiet; then
+            echo "PDFs already match their source; nothing to commit."
+            exit 0
+          fi
+          git diff --cached --stat
+          git commit -m "Rebuild PDFs from ${GITHUB_SHA::7}"
+          # Only generated files are in this commit, so it rebases cleanly over
+          # any unrelated push that landed while the PDFs were building.
+          git pull --rebase origin main
+          git push origin HEAD:main

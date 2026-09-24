@@ -21,7 +21,8 @@ def main():
     script = ['# Your Agent Escaped Without Escaping the Sandbox', '',
               '*How a broken program got a passing result*', '',
               '**Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**', '',
-              'Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. '
+              'Generated from `slides/talk.tex`. Edit the LaTeX, run `python3 tools/build_deck.py`, and commit; '
+              'GitHub Actions rebuilds the PDFs. '
               f'Main route: slides 1-{MAIN}. Slide windows total {TARGET}; with {RESERVE} of shared reserve '
               f'for transitions and pauses, the rehearsal target is {BUDGET} of a 15-minute slot. '
               'Timings are rehearsal allowances, not measured delivery.', '']
