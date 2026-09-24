@@ -41,7 +41,7 @@ Rehearse with an audible timer and record the result above. Checkpoints: the pas
 
 Pauses of two or three seconds: after the ticket (1), before speaking on slide 2, after "We'd changed the expected result to match it." (4), after "It's rejected." (9), after "But the approval was already spent." (10), and after the fourth question (11).
 
-Read the whole script aloud at least once before the day. Rewrite any sentence that is awkward to say or needs a second reading, in `slides/talk.tex`, then run `make snapshot`.
+Read the whole script aloud at least once before the day. Rewrite any sentence that is awkward to say or needs a second reading, in `slides/talk.tex`, then run `python3 tools/build_deck.py` and commit. GitHub Actions rebuilds and commits the PDFs on `main`; download them from the workflow run or pull again before presenting.
 
 Say "admin" plainly; the only case read aloud is no login. Do not read hashes aloud: the slides carry them. Say METR as "meter". Name METR, the date and o3 as written on slide 6, and add no rates on stage; if asked, the numbers and METR's own caveats are in `research/DOSSIER.md`.
 
@@ -58,8 +58,10 @@ The talk describes a controlled experiment around a familiar mechanism. Do not i
 ```sh
 make test
 make evidence
-make snapshot
+python3 tools/build_deck.py
 ```
+
+GitHub Actions builds the PDFs ([Build LaTeX PDFs](.github/workflows/pdfs.yml)). `make snapshot` builds them locally if TeX Live is installed. Before the talk, pull `main` so `slides/talk.pdf` is the version the workflow built.
 
 After changing experiment source, first run `make record-all` on disposable Linux with bubblewrap. Ubuntu 24.04 restricts unprivileged user namespaces, and bubblewrap then fails while bringing up a network namespace. On that release:
 

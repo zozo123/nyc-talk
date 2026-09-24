@@ -4,7 +4,7 @@
 
 **Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**
 
-Generated from `slides/talk.tex`. Edit the LaTeX, then run `make deck`. Main route: slides 1-12. Slide windows total 12:15; with 1:00 of shared reserve for transitions and pauses, the rehearsal target is 13:15 of a 15-minute slot. Timings are rehearsal allowances, not measured delivery.
+Generated from `slides/talk.tex`. Edit the LaTeX, run `python3 tools/build_deck.py`, and commit; GitHub Actions rebuilds the PDFs. Main route: slides 1-12. Slide windows total 12:15; with 1:00 of shared reserve for transitions and pauses, the rehearsal target is 13:15 of a 15-minute slot. Timings are rehearsal allowances, not measured delivery.
 
 Spoken manuscript: 1,005 words.
 
