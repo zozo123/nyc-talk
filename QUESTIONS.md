@@ -40,7 +40,7 @@ The closest public name is poisoned pipeline execution, OWASP CICD-SEC-4: someon
 
 The worker is a script so the experiment repeats the same actions. We measure what the setup permits, not how likely a model is to try it.
 
-There is no model attack-success rate. For models doing it, the slide "When the answer is in reach" and the 2026 slide cite others' reports; their results stay with them.
+There is no model attack-success rate. For models doing it, the slide "It has happened before" and the 2026 slide cite others' reports; their results stay with them.
 
 ## Are real agents doing this today?
 
