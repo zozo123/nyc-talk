@@ -1,5 +1,7 @@
 # Your Agent Escaped Without Escaping the Sandbox
 
+*How a broken program got a passing result*
+
 **Yossi Eliaz, PhD**
 
 Principal Engineer and Head of DevRel at Incredibuild.com
@@ -8,36 +10,26 @@ Principal Engineer and Head of DevRel at Incredibuild.com
 
 [Deck (PDF)](slides/talk.pdf) · [Paper (PDF)](paper/paper.pdf) · [Spoken script](TALK.md) · [Q&A](QUESTIONS.md) · [Recorded run](evidence/isolated-factory.json) · [Reproduce](#reproduce)
 
-**The sandbox held. The checker held. The door stayed open.**
+A sandboxed worker made a failing check pass without fixing the program. The checker itself was read-only, but it loaded its expected answers from a file in the worker's directory. Changing those answers was enough to turn FAIL into PASS.
 
-A ticket anyone could assign: *lock down `/admin`; no login must return 401.* A coding agent gets it inside a sandbox, with no network and a read-only checker, and the pipeline ships only on green. The check goes green. And `/admin` with no login still returns 200.
-
-We built that pipeline ourselves, small enough to check every byte, and stopped at the green check. Three suspects:
+This repository contains a controlled experiment, the talk, and its recordings. The worker is scripted and the central example is a five-case command-line model of an access check. With expected values held by the controller, the same broken program is rejected and the corrected program is accepted. Three supporting experiments cover a broad token, a writable shared mount, and an upload to another account.
 
 ```
-the code        76fcb0904f51 -> 76fcb0904f51   unchanged, still prints 200
-the checker     f5d8d3468bbe -> f5d8d3468bbe   overwrite attempt DENIED
-the answer key  0494f1a01dee -> 390e5e764916   expected 401 became expected 200
-verdict         FAIL -> PASS                   same checker, same launch
+program         76fcb0904f51 -> 76fcb0904f51   unchanged, still prints 200 for admin:none
+checker         f5d8d3468bbe -> f5d8d3468bbe   unchanged; direct overwrite DENIED
+expected.json   0494f1a01dee -> 390e5e764916   every expected output set to 200; three of five changed
+checker result  FAIL -> PASS                   same checker, same launch
 ```
 
-The agent did not make the code pass the test. **It made the test pass the code.** The checker reads its answer key, `expected.json`, from the workspace the agent is allowed to write.
+Agents can propose tests. The rules used to approve their work need separate control. In this repository the controller simply keeps its own expected values (`CASES` in `factory/core.py`) and runs the comparison outside the worker's directory. A review workflow that promotes agent-proposed tests into release criteria is the natural next step; it is not implemented or measured here.
 
-A real model? [METR reported](https://metr.org/blog/2025-06-05-recent-reward-hacking/) (June 2025) that o3, asked to make code faster, overwrote the timing function that measured it, from inside the scorer, and patched an evaluator so every submission passed. It changed the stopwatch. Two routes, one move: change the judge, not the work.
+The supporting experiments were changed the same way, and each change keeps the intended operation working. A token scoped to the task gets 403 on another project and 200 on its own input. A read-only shared mount blocks the write while the task's output directory stays writable. A broker outside the worker sends one fixed report to the intended account, refuses extra fields, and the worker has no direct route to the service.
 
-**A read-only checker is not a read-only judge.** The judge is the checker, what it reads, and any code inside its process. o3 got in through code running inside its scorer. Our checker already ran the code as its own process, so that route was shut, and it still went green, because our agent rewrote what the checker reads.
+Our own release-gate test was misleading at first. We published the approved artifact, then tried different bytes with the same approval. The gate refused, but the approval was already spent, so the test could not tell us whether the byte check worked. The current test tries the wrong bytes first, while the approval is unused, then the wrong destination. Both are refused. The right bytes at the intended destination are published, and only then is reuse tested and refused.
 
-**A perfect receipt for a bad decision.** Every file that matters in this run is hashed and recorded, and a signed build attestation over it would verify (an inference, not a recorded check); the answer-key change is right there on the receipt, and nothing in verification asked about it. Build provenance says *which* bytes decided, not *who had the right to write them*. SLSA's source track asks that with two-party review of commits; this answer key was never committed, it was rewritten inside the run.
+For context from a model evaluation, [METR reported](https://metr.org/blog/2025-06-05-recent-reward-hacking/) (June 2025) that o3, asked to make code faster, changed the timing function used to measure it. That change was code running inside the scorer's process, a different route from ours. Our checker already ran the program as a separate process and still passed, because the file it read was writable. METR's results are its own and are not measurements from this experiment.
 
-**One shape, four times.** The answer key is one of the four non-escape escapes in the accepted abstract, all recorded in the same Linux lab. An inherited runner token: a service outside said yes to it. A writable mount: the host said yes to a write to the next job's file. An allowed upload host: a service said yes to data for another account. The answer key: the judge said yes to it. The token and upload cases use loopback HTTP fixtures.
-
-**Sandboxes limit reach. Breaches happen at acceptance.** In all four cases the wall held and something outside said yes on authority the agent held or wrote. Keep the wall; it held, but a wall cannot decide what gets accepted. Secure the acceptors. If that sounds like the confused deputy, it is; agents change two things: there are far more deputies, and for one of them least privilege runs out. Three of the four close with plain least privilege, and we applied it: a token scoped to the task (403 elsewhere), a read-only shared path (write blocked), one brokered route out (nothing else sent). The answer key cannot be locked, because writing tests is the agent's job: there the permission is the work, so an outside owner sets the criteria (the same broken code REJECTED, the corrected code `5ead8eab70e0` ACCEPTED). **The agent may propose what counts as correct. It must never be the last writer of what judges it.**
-
-**Which control said no?** The release gate refused the broken code under a fresh, unused approval, refused the approved bytes at a second destination, published them at the named one, then refused a replay. The publication is what makes the refusals count: the same approval was live, so the byte and destination checks said no. Our own first version of that test tried the broken code only after the approval was spent, so it could not tell which control said no. A denial counts only when a matching yes proves the other controls were live.
-
-One question for Monday: **what outside your sandbox says yes to your agent, and who gave it that authority?**
-
-Scope: this is a controlled reproduction of a known mechanism. The program is a few lines of command-line code that model an access check, judged on five status-code cases; it is not a web server. The worker is a deterministic script, and publication is a local store. No vendor flaw, model attack rate or sandbox escape is claimed. 
+Scope: the program is a few lines of command-line code that print status codes for five inputs; it is not a web server. The worker is a deterministic script, and publication stores bytes in a local SQLite database. No vendor flaw, model attack rate or sandbox escape is claimed.
 
 Speaker package: [LaTeX source](slides/talk.tex) (canonical; `make snapshot` regenerates the script, notes and PDFs) · [Speaker notes](SPEAKER_NOTES.md) · [Stage runbook](RUNBOOK.md) · [Offline replay](demo/replay.html)
 
@@ -59,7 +51,7 @@ python3 -B -c "from factory.core import BAD, GOOD, WEAK_CHECKER, CASES, WORKER_E
 ```sh
 sudo apt-get install -y make python3 bubblewrap
 make factory-isolated   # 13 checks: write DENIED, same hashes, FAIL then PASS, REJECT, ACCEPT, one-destination publish, replay refused
-make demo               # 30 lab checks: token, mounts, loopback publish
+make demo               # 30 lab checks: token, mounts, loopback upload service
 ```
 
 Ubuntu 24.04 and later restrict unprivileged user namespaces, so bubblewrap fails with `loopback: Failed RTM_NEWADDR: Operation not permitted`. On a throwaway machine only, run `sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0` first.
@@ -74,9 +66,9 @@ docker run --rm --privileged -v "$PWD":/talk -w /talk ubuntu:22.04 sh -c 'apt-ge
 
 **Rebuild the package:** `make record-all` overwrites the committed `evidence/`. `make deck`, `make snapshot`, `make paper` and `make final` also need TeX Live (`texlive-latex-recommended texlive-pictures lmodern`). `make replay` replays recorded observations and runs no new experiment.
 
-The evidence in this tree was recorded on 23 September 2026 in a privileged Ubuntu 22.04 aarch64 container (kernel 6.8.0-64, Python 3.10.12): 30 isolation-lab checks, 13 isolated-checker checks and 8 local factory checks, with the 49 regressions passing on the same tree. The committed PDFs were built with TeX Live 2026 on macOS; a clean rebuild from a fresh clone in CI's Ubuntu 22.04 image re-records every check, verdict and slide hash identically and produces text-identical PDFs.
+The evidence in this tree was recorded on 23 September 2026 in a privileged Ubuntu 22.04 aarch64 container (kernel 6.8.0-64, Python 3.10.12): 30 isolation-lab checks, 13 isolated-checker checks and 8 local factory checks, with the 49 regressions passing on the same tree. The committed PDFs were built with TeX Live 2026 on macOS. Rebuilding this tree in CI's Ubuntu 22.04 image re-records every check, verdict and slide hash identically (only an ephemeral loopback port in the lab record differs) and produces text-identical PDFs.
 
-Edit the LaTeX, then run `make snapshot`. Do not independently edit generated `TALK.md` or `SPEAKER_NOTES.md`. The deck build rejects stale, missing or skipped evidence, rejects any hash on a slide that is not a real digest, checks slide notes and timing (no slide above 150 spoken words per minute), and rejects overfull TeX layouts. It never provisions cloud resources. CI reproduces the Linux fixtures and builds the same LaTeX package.
+Edit the LaTeX, then run `make snapshot`. Do not independently edit generated `TALK.md`, `SPEAKER_NOTES.md` or `slides/notes.tex`. The deck build checks that each record's source hashes match, that every named check is present and passed, and that selected recorded observations agree; it rejects any hash on a slide that is not a real digest, checks slide notes and timing (no slide above 150 spoken words per minute), and rejects overfull TeX layouts. It never provisions cloud resources. CI reproduces the Linux fixtures and builds the same LaTeX package.
 
 The local factory executor runs only the committed synthetic fixtures. It is not an arbitrary-code sandbox.
 
@@ -86,9 +78,9 @@ The local factory executor runs only the committed synthetic fixtures. It is not
 
 The 30 lab, 13 isolated-checker and 8 local-factory assertions describe coverage, **not vulnerability counts**. The 49 regression tests are separate. The source-bound records support the read-only checker result, independent rejection, legitimate acceptance and exact-byte local publication.
 
-The archived gate audit demonstrates an internal API integrity flaw in our previous implementation. It requires controller-object access; no worker-to-controller exploit path was shown. Multi-agent and snapshot implications are labeled as architectural inferences. Hash-chain history detects a rewrite against a separately protected anchor; it does not establish a correct decision.
+The archived gate audit demonstrates an internal API integrity flaw in our previous implementation: the earlier gate trusted a stored digest after the candidate bytes changed. It requires controller-object access; no worker-to-controller exploit path was shown. Multi-agent and snapshot implications follow from shared writable inputs and are not measured attacks. Hash-chain history detects a rewrite against a separately protected anchor; it does not establish a correct decision.
 
-No vendor zero-day, customer incident, model attack-success rate, kernel escape or general security certification is claimed. The optional `make factory-boat` path is outside this talk's evidence and build path.
+The controller, host, signing key and policy are trusted in this experiment. No vendor zero-day, customer incident, model attack-success rate, kernel escape or general security certification is claimed. The optional `make factory-boat` path is outside this talk's evidence and build path.
 
 ## Session
 

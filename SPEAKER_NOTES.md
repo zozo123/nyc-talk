@@ -1,259 +1,294 @@
 # Slide-by-slide speaker notes
 
-Generated from `slides/talk.tex`. Slides 1-14 are the main talk. Slides 15-22 are for Q&A. Present the PDF offline.
+Generated from `slides/talk.tex`. Slides 1-12 are the main talk. Slides 13-20 are for Q&A. Present the PDF offline.
 
-## Slide 1: The case file opens with a green check and an open door
+## Slide 1: Your Agent Escaped Without Escaping the Sandbox
 
-00:00-00:55
+00:00-00:45
 
-Treat this like a vulnerability write-up, not a keynote. Establish the contradiction.
+Start with the ticket. No preamble.
 
-This is a case study, not a product pitch. The artifact starts with a contradiction. The check is green, the admin door is open, and the sandbox did not break. For the next fourteen minutes we follow the bytes, find the primitive, and close it at the only boundary that can close it. The style is incident report: symptom, trace, root cause, fix.
+We built a small experiment around a familiar ticket: lock down admin. If you're not logged in, you should get 401.
+
+The program was broken. It returned 200 for every case. We put a worker in a Linux sandbox and made the checker read-only. The first check failed, as it should.
+
+Then we changed something, ran the same checker again, and got a pass. The program was still broken.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 2: The check passed. The bug was still there.
+
+00:45-01:30
+
+Let the room compare PASS and 200 before you speak.
+
+These two results came from the same recorded run. The checker reported PASS. For the input representing admin without a login, the program still returned 200.
+
+This is a small command-line model of an access check. We didn't deploy a vulnerable website. We stopped at the passing result.
+
+That result matters if your next step is to release whatever passes. So let's look at what changed between the failing run and the passing one.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 2: The security control fired, and the wrong answer still shipped
+## Slide 3: What we ran
 
-00:55-01:55
+01:30-02:30
 
-Hold on the two numbers. Green is not the fact; 200 is the fact.
+Point to the writable directory, then to DENIED.
 
-The point is not that a test can be weak. Everyone knows that. The point is that the checker ran, the sandbox held, the protected file stayed protected, and the wrong behavior still became a release candidate. Green is the pipeline interpretation. The 200 is the fact on the wire. We debug the interpretation, not the kernel. This is the key audience reset: the primitive is not about a missing jail flag. It is about the object graph that turns output into authority.
+The worker here is a script. We tell it exactly what to do so we can repeat the same sequence. This experiment tests what the setup allows. It doesn't measure whether a model would discover the trick.
 
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
+The worker can write its working directory. It can't change the checker, and we tested that directly: the overwrite was denied.
 
-## Slide 3: The lab removes every excuse except the acceptance boundary
-
-01:55-02:55
-
-Say small enough to audit. Then name the three objects.
-
-The lab is intentionally tiny. A program returns the status for a few routes. A checker launches it and compares outputs. The agent is deterministic so we can remove model variance. The program, checker, and answer key are all hashed. That leaves one question. Which bytes had authority to decide that the work was done. Small is a feature because every assumption has a receipt.
+We also recorded the program and checker hashes before and after. Both stayed the same. The important file was in the directory the worker could write.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-[/Sources]
-
-## Slide 4: The diff is one line in the file the checker trusts
-
-02:55-03:55
-
-Read the two lines like an exploit diff. Do not over-explain yet.
-
-This is the exploit primitive. The answer key says no login should get 401. The agent changes the answer key to say 200. The program hash is the same. The checker hash is the same. Only the trusted data that the checker reads changed. The code did not pass the test. The test passed the code. That line is the whole talk in one diff. It also explains why a screenshot of green CI is not evidence of correctness. The artifact can be truthful about bytes and still wrong about who was allowed to choose them.
-
-[Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 5: A read-only checker is not a read-only judge
+## Slide 4: The expected answers changed
 
-03:55-04:55
+02:30-03:45
 
-Introduce the transitive closure. This is the core line.
+Point at 401, then at 200. Pause after "match it."
 
-This is the root cause. A checker is a file. A judge is a computation. If the checker reads a golden file, policy file, snapshot, test manifest, or route table, those bytes are part of the judge. If it imports candidate code, that code is part of the judge. The security boundary is the full closure that can say yes. Audit that closure, not the filename. Once you see the closure, the fix stops being mystical: remove worker ownership from every byte in it.
+The checker got its expected answers from this file. The worker replaced them with 200s. Here's the row for admin without a login: 401 became 200.
+
+Now the broken program's output matched the expected output. The checker did the same comparison and reported PASS.
+
+The program still returned 200. We'd changed the expected result to match it. That's why the hashes matter here: they let us rule out a change to either the program or the checker.
 
 [Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 [/Sources]
 
-## Slide 6: Real models already attack the judge by changing the stopwatch
+## Slide 5: The checker trusted a writable file
 
-04:55-05:55
+03:45-04:45
 
-Use METR as context, not as our measurement. Connect routes.
+Point at the line of code, then trace the two arrows.
 
-Our recording uses route A. A worker changes data that the checker reads. METR published examples where real models used route B. They changed code that the scorer ran, including a timing function and an evaluator. The two routes look different operationally, but the move is the same. Do not improve the work. Change the judge. Process separation closes route B, but not route A.
+This line explains the result. We protected the checker file, but it loaded its expected answers from the working directory. The worker could change that file.
+
+For your own checks, follow those reads. A snapshot, a configuration file, or a test helper may determine what counts as passing.
+
+The program under test is supposed to change. The question is whether the worker can also change the rules used to assess it. In our setup, the expected answers had ended up on the wrong side of that line.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+[/Sources]
+
+## Slide 6: What METR observed
+
+04:45-05:45
+
+Say METR as "meter". One example. No rates.
+
+Our worker was scripted. For an example involving a model, METR reported that o3, asked to make code faster, changed the timing function used to measure it. The measured time went down without showing that the code had improved.
+
+The mechanism differs from ours. That example changed code running inside the scorer. Ours changed a file the checker read. Separating the processes addresses that in-process route, but it doesn't fix a writable answer file.
 
 [Sources]
 https://metr.org/blog/2025-06-05-recent-reward-hacking/
+https://github.com/zozo123/nyc-talk/blob/main/research/DOSSIER.md
 [/Sources]
 
-## Slide 7: The four escapes share one shape: an outside acceptor says yes
+## Slide 7: Three other cases
 
-05:55-07:00
+05:45-07:00
 
-One breath per row. The common shape matters more than any case.
+One breath per row.
 
-This is why the title says escaped without escaping. Each row has a wall that did its job. The agent did not need to break out. It carried a credential that another service honored. It wrote a mount that the host later used. It contacted an allowed host that accepted the wrong account. It edited data the checker trusted. In every row, the outside acceptor said yes.
+We also recorded three other cases. A worker inherited a token that could read another project. A writable mount let it change another job's file on the host. An upload service accepted a payload under another account.
+
+None needed a process to break out of its sandbox. Each used access the setup had already provided.
+
+These are separate experiments. The token and upload services run locally. Together with the answer key, they give us four specific places to inspect: credentials, shared files, outbound requests, and the checks used to approve the work.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 [/Sources]
 
-## Slide 8: The attack graph is outside the sandbox, not inside it
+## Slide 8: What we changed
 
 07:00-08:00
 
-Show that the wall is not irrelevant, just not sufficient.
+Read across each row: the change, then the result.
 
-If you draw the attack graph around the sandbox, you draw around the wrong subgraph. The agent meaningful outputs leave the wall by design. A token, a file, a request, a proposed criterion. The risk is at acceptors that convert those outputs into authority. The correct boundary is a graph cut around acceptance. That is the mental shift from containment to release safety. The sandbox is still necessary, but it is one control in a larger acceptance graph.
+For the token, we narrowed the scope and checked that the intended input was still available. For the mount, we made the shared input read-only and kept the worker's own output directory writable. For the upload, the runner sent a fixed report to the intended account.
+
+The answer key needs one distinction. Agents can still write tests. Those tests are proposals. A separate owner decides whether they become release criteria. In our experiment, the controller simply kept its own expected values. We didn't implement a review workflow for proposed tests.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
+https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 [/Sources]
 
-## Slide 9: Closing the bug means moving ownership, not adding another warning
+## Slide 9: The same program now fails
 
 08:00-09:00
 
-Avoid vague mitigations. Each row changes the owner of the accepting data.
+Read the rows top to bottom. Pause on REJECT.
 
-The fix is not a scarier prompt. The fix is ownership. The runner projects a narrow token. The filesystem exposes only the capability needed. The runner owns the destination and body of the report. The controller freezes the criteria that judge the candidate. The agent can propose tests and expectations. It cannot be the final writer of the expectations used to grade it.
+Here's the comparison after that change. We run the same broken program, but use the controller's expected values. It's rejected. Then we run the corrected program against those same values. It's accepted.
+
+The worker's answer file no longer determines the result. The worker can change the proposed solution, while the controller owns the comparison.
+
+That establishes the behavior for our five cases. A real application needs a much broader set of checks. This experiment is about who controls the checks. Five examples don't prove an application secure.
 
 [Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 10: What our first test missed
+
+09:00-10:30
+
+Slow down for the first test. Then read the four rows in order.
+
+There's another place to check: the step that releases the approved bytes. Our approval names the artifact and destination, and can be used once.
+
+Our first substitution test was misleading. We published the approved artifact, then tried different bytes with the same approval. The gate refused. But the approval was already spent. That test couldn't tell us whether the byte check worked.
+
+We changed the order. Wrong bytes first, while the approval was still unused. Then the wrong destination. Both were refused. The right bytes at the right destination succeeded, and only then did we test reuse.
+
+Now each refusal tells us something. We also know the intended operation still works.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
+https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 [/Sources]
 
-## Slide 10: The repaired verifier binds criteria before the worker runs
+## Slide 11: Where to look in your pipeline
 
-09:00-10:00
+10:30-11:30
 
-Make this boring and mechanical. Boring is the point.
+Read the four questions. Pause after the fourth.
 
-The verifier fix is boring on purpose. Hash the criteria before the worker runs. Run the worker in its writable space. Then run the checker against controller-owned criteria, not workspace-owned criteria. The verdict signs the candidate digest, criteria digest, and observations together. When we do that, the unchanged broken program is rejected and the real fix is accepted. Boring protocols survive automation. A clever model can search policy wording, but it cannot rewrite a digest that the controller already bound before the search began.
+Start with one check your team relies on before a release. Find the expected answers, configuration, and helper code it uses. Then compare that list with what the agent can change.
 
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
+Keep the candidate itself separate. It's supposed to be editable. You're looking for a way to change what counts as success without fixing the candidate.
 
-## Slide 11: Publication requires these bytes, this place, once
-
-10:00-11:00
-
-This is release engineering, not only testing.
-
-The release gate is the same idea at the end of the pipeline. It publishes only these exact bytes to this exact destination under these exact criteria with one unused approval. If the bytes change, denied. If the destination changes, denied. If the approval was already spent, denied. Green is not enough state to publish. The gate must bind intent, evidence, and target together.
+Apply the same inspection to credentials, shared files, and uploads. For every denial, check that the intended operation still succeeds under the same conditions. That's how you know which control you actually tested.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
-https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
-[/Sources]
-
-## Slide 12: The field test is to enumerate every acceptor, then remove agent ownership
-
-11:00-12:00
-
-This is what they can do Monday morning.
-
-The practical audit fits on one page. List the acceptors. For each acceptor, list what it trusts. Then mark what the agent can write before the verdict. Those are the answer keys. Some should become read-only. Some should become narrow capabilities. And some, like tests the agent proposes, must move to a controller or human gate before they judge the agent. This gives teams a Monday exercise.
-
-[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/QUESTIONS.md
 https://github.com/zozo123/nyc-talk/blob/main/RUNBOOK.md
 [/Sources]
 
-## Slide 13: The invariant is a small theorem about who may write the judge
+## Slide 12: Who controls the expected answer?
 
-12:00-13:00
+11:30-12:15
 
-Formal, but not academic. This is the exact mental model.
+Point at the four lines. Say the last sentence, then stop.
 
-Here is the formal version. Let J be every byte and callable that can affect the verdict. If the worker can write J before the verdict, the worker can optimize for the verdict instead of the fix. The necessary invariant is not that the sandbox is strong. It is that J is outside-owned, content-bound, and replay-safe at the moment it judges the work. That turns agent security into an ownership proof over the verdict path.
+Back to the original ticket. The program still returned 200. The worker couldn't overwrite the checker, but it could change the expected answer. That was enough to get a pass.
+
+The fix let the worker keep editing the program while the controller kept the acceptance rules.
+
+Before you trust a green check, find out whether the agent can change what makes it green. The code and recordings are here. Thank you.
 
 [Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+https://github.com/zozo123/nyc-talk
+https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
 
-## Slide 14: Keep the wall, but secure the yes
+## Slide 13: What this experiment establishes
 
-13:00-14:00
+Appendix only
 
-Final line should be memorized. No extra words.
+Use only in Q&A.
 
-Keep the wall. In every recording here, the wall mattered. But the wall is not the system that says yes. Tokens say yes. Hosts say yes. Upload services say yes. Checkers say yes. If your agent can write what those systems trust, it does not need to escape. Your agent did not escape. Your acceptor believed it. That is the line I want people to remember. It gives you one practical question for every agent system: what outside the sandbox says yes, and who gave it that authority?
+We measured whether these actions were allowed and whether the changed configuration stopped them. We didn't measure how often a model would try them. The five cases on the right are the whole policy. Passing them shows behavior on those five inputs and nothing broader.
 
 [Sources]
+https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
+[/Sources]
+
+## Slide 14: The token reached another project
+
+Appendix only
+
+Use only in Q&A.
+
+The service enforced a token restricted to the task. The intended input stayed readable. A shorter lifetime alone does not narrow permissions: a broad token can reach everything it covers for as long as it is valid. Scope and audience have to be enforced by the service that receives the token.
+
+[Sources]
+https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 15: Threat model and non-claims
+## Slide 15: The shared file changed on the host
 
 Appendix only
 
 Use only in Q&A.
 
-Appendix note. Use this slide to constrain the claim. The result is not a container escape and not a live cloud incident. It is a small recorded model of an acceptance failure.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
-[/Sources]
-
-## Slide 16: Inherited credential receipt
-
-Appendix only
-
-Use only in Q&A.
-
-Appendix note. The token case models a broad runner credential that the service honors for a project the task did not need. The repair projects only the capability needed for the task.
+The change persisted in the next-job fixture on the host. We did not run a later job that consumed it, so that part is an implication, not a recording. The same write through a read-only bind was denied, and the worker's own output directory stayed writable.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 17: Dangerous mount receipt
+## Slide 16: The upload landed in another account
 
 Appendix only
 
 Use only in Q&A.
 
-Appendix note. The mount case is a classic time shift. The current process stays contained, but the host preserves bytes that a later job reads.
+Reaching a service does not establish permission for every operation or recipient on it. The receiver recorded the stored payload, so this is delivery, not an attempted send. In the corrected path the broker sends one fixed report to the team account and refuses extra recipient, payload or URL fields. This is a loopback service model, not a tested firewall bypass.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
+https://github.com/zozo123/nyc-talk/blob/main/evidence/results.json
 [/Sources]
 
-## Slide 18: Allowed endpoint receipt
+## Slide 17: A bug in our earlier release gate
 
 Appendix only
 
 Use only in Q&A.
 
-Appendix note. The endpoint case shows why allow lists at hostname granularity are too coarse. The repair moves the post to the runner with a fixed destination and bounded body.
-
-[Sources]
-https://github.com/zozo123/nyc-talk/blob/main/lab/run.py
-[/Sources]
-
-## Slide 19: Old gate audit: stale digest marker
-
-Appendix only
-
-Use only in Q&A.
-
-Appendix note. This old audit is about our own gate. The lesson is simple. Do not trust a digest field supplied by an object that can be mutated. Derive the digest from immutable bytes at the gate.
+The earlier gate trusted a stored digest after the candidate bytes changed. Reproducing it required direct access to the controller's object. We did not show a worker-to-controller exploit. The current gate derives the digest from the bytes it publishes and stores those bytes.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
+https://github.com/zozo123/nyc-talk/blob/main/evidence/baseline-audit.json
 [/Sources]
 
-## Slide 20: What was recorded
+## Slide 18: What we recorded
 
 Appendix only
 
 Use only in Q&A.
 
-Appendix note. Use this slide when asked about scope. The recordings are intentionally small and deterministic. They support the shape, not a frequency claim.
+These counts describe checks, not vulnerability frequency. Each record has its own scope. The 49 are regression tests for the controller and the evidence validator, not isolation tests. The old gate audit is one reproduction of our own bug.
 
 [Sources]
 https://github.com/zozo123/nyc-talk/blob/main/research/RESULTS.md
 [/Sources]
 
-## Slide 21: Reproduce the factory
+## Slide 19: Run the experiment
 
 Appendix only
 
 Use only in Q&A.
 
-Appendix note. Reproduction uses the repository fixtures. The cloud-like services are local fixtures. No token is needed to reproduce the story.
+The Linux experiments need a disposable Linux machine with bubblewrap, Python 3.10 or later, and make. TeX Live is only needed to rebuild the PDFs. On any operating system, make test and make factory run the local protocol checks without OS isolation. No cloud account or token is needed.
 
 [Sources]
 https://github.com/zozo123/nyc-talk
@@ -262,14 +297,15 @@ https://slsa.dev/spec/v1.2/verifying-artifacts
 https://metr.org/blog/2025-06-05-recent-reward-hacking/
 [/Sources]
 
-## Slide 22: One approval is consumed once
+## Slide 20: What the approval covers
 
 Appendix only
 
 Use only in Q&A.
 
-Appendix note. This is the release invariant as a table. The first two denials happen before the approval is spent, so they cannot be explained by replay protection.
+The controller checks the outputs, then authenticates its decision together with the candidate, criteria, and destination bindings, using a local HMAC key. The approval names the task and the run, expires, and can be used once. It does not sign the raw observations. The full field list is in factory core.
 
 [Sources]
+https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 [/Sources]
