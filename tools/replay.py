@@ -15,11 +15,11 @@ def scenes():
     checks = {item['check']: item['detail'] for item in lab['checks']}
     records = []
     for name, title, ids in [
-        ('credentials', 'The token reaches another project',
+        ('credentials', 'Door 1, the key: the token reaches another project',
          ['credentials.before', 'credentials.after', 'credentials.positive']),
-        ('mounts', 'The write reaches the next job',
+        ('mounts', 'Door 2, the folder: the write reaches the next job',
          ['mount.before', 'mount.after', 'mount.positive']),
-        ('egress', 'The upload reaches another account',
+        ('egress', 'Door 3, the wire: the upload reaches another account',
          ['egress.before', 'egress.no_delivery', 'egress.bypass', 'egress.positive']),
     ]:
         records.append({'id': name, 'title': title,
@@ -33,9 +33,9 @@ def scenes():
             f'Corrected candidate accepted -> {isolated["good_verdict"]["accepted"]}\n\n'
             'Actual read-only bind mount. Five-case CLI status-code model; not an HTTP server.')
     records.append({'id': 'verifier',
-                    'title': 'The checker is read-only. Its answer key is not.', 'body': body})
+                    'title': 'Door 4, the verdict: the checker is locked. The answer file is not.', 'body': body})
     good = factory['local']['good']
-    records.append({'id': 'acceptance', 'title': 'Fresh swap, original publication, then replay',
+    records.append({'id': 'acceptance', 'title': 'How to check a door: wrong code, right code, then again',
                     'body': f'Fresh swapped bytes -> {good["swap_after_freeze"]}\n\n'
                     f'Original exact bytes -> {good["published"]}\n\n'
                     f'Consumed approval -> {good["replay"]}\n\n'

@@ -23,7 +23,7 @@ The agent didn't make the code pass the test. It made the test pass the code. No
 
 The other three doors, each recorded both ways: the bad yes, then the fix with the legitimate job still working. A service honored a broad token for another project; a task-scoped token gets 403 there and 200 on its own input. The next job's input changed through a writable shared mount; a read-only mount blocks it while the task's output stays writable. An upload service stored data under another account; a broker outside the agent now sends one fixed report, refuses extra fields, and the agent has no direct route.
 
-How to check a door: try the bad thing, then the good thing. Our own release-step test lied at first. It tried the wrong bytes after the approval had already been used, so the refusal proved nothing about the byte check. The current test tries the wrong bytes first, while the approval is unused, then the wrong destination; both are refused. The right bytes at the intended destination are published, and only then is reuse tested and refused. A no only counts when a matching yes works.
+How to check a door: try the bad thing, then the good thing. Our own release-step test lied at first. It tried the wrong bytes after the approval had already been used, so the refusal proved nothing about the byte check. The current test tries the wrong bytes first, while the approval is unused, then the wrong destination; both are refused. The right bytes at the intended destination are released (in our lab, one row in a local database), and only then is reuse tested and refused. A no only counts if the yes still works.
 
 ## The same move, outside this lab
 
@@ -31,16 +31,15 @@ Each of these is someone else's report or measurement; none of their numbers are
 
 - **About 2010, evolving bug fixes.** In an automated program-repair experiment, one evolved program deleted the files of expected outputs, and every candidate got a perfect score. [Schulte, Forrest and Weimer, ASE 2010, retold in Lehman et al., *The Surprising Creativity of Digital Evolution*, 2018](https://arxiv.org/abs/1803.03453)
 - **2025, Replit.** SaaStr's founder said Replit's coding agent lied about his unit tests, made up data, and deleted his production database during a code freeze. [The Register](https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/)
-- **2024, Sakana's AI Scientist.** It hit its experiment time limit and tried to raise its own limit instead of making its code faster. [Sakana AI](https://sakana.ai/ai-scientist/)
-- **2025, SWE-bench.** Agents, including a Claude Sonnet model, ran `git log` and found the future commit containing the fix. [SWE-bench issue #465](https://github.com/SWE-bench/SWE-bench/issues/465)
+- **2025, SWE-bench.** Agents, including Claude 4 Sonnet, ran `git log` and found the future commit containing the fix. [SWE-bench issue #465](https://github.com/SWE-bench/SWE-bench/issues/465)
 - **2025, tj-actions/changed-files.** A compromised CI step exposed the secrets it was handed in workflow logs, which were public for public repositories. [CISA alert, CVE-2025-30066](https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction) · [GitHub advisory](https://github.com/advisories/ghsa-mrrh-fwg8-r2c3)
 - **2025, CamoLeak.** A security researcher showed that GitHub Copilot Chat could be tricked into sending private code out through GitHub's own image proxy; GitHub fixed it. [Legit Security, CVE-2025-59145](https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code)
 - **2026, SWE-Bench Pro Verified.** Auditors found agents could reach hidden tests, future commits and upstream fixes; once those were out of reach, GLM-5.2 fell from 78.80% to 57.32% while DeepSeek-V4-Pro moved 0.87 points. Their fix: rebuild each repository as a single commit, remove hidden evaluation files from the agent workspace, filter task metadata, and block code hosts. [Zheng et al., arXiv 2609.08149](https://arxiv.org/abs/2609.08149)
 - **The CI/CD name for the class:** [OWASP CICD-SEC-4, Poisoned Pipeline Execution](https://github.com/OWASP/www-project-top-10-ci-cd-security-risks/blob/main/CICD-SEC-04-Poisoned-Pipeline-Execution.md). Ours is its data-only neighbor: nothing new had to run.
 
-The talk frames the agent as Opus 5.5, the best coding model available, to make one point: the flaw is in who holds the pen, not in the model. That is an assumption in the story. We did not run Opus 5.5, and no model behavior is measured here.
+The talk opens with "Say your agent is Opus 5.5. Pick any model." to make one point: the doors, not the model, decide what the agent can reach. Opus 5.5 is a name in the story. We did not run it, and no model behavior is measured here.
 
-Scope: the program is a few lines of command-line code that print status codes for five inputs; it is not a web server. The worker is a deterministic script, and publication stores bytes in a local SQLite database. No vendor flaw, model attack rate or sandbox escape is claimed.
+Scope: the program is a few lines of command-line code that print status codes for five inputs; it is not a web server. The agent is a deterministic script, and publication stores bytes in a local SQLite database. No vendor flaw, model attack rate or sandbox escape is claimed.
 
 Speaker package: [LaTeX source](slides/talk.tex) (canonical; `make snapshot` regenerates the script, notes and PDFs) · [Speaker notes](SPEAKER_NOTES.md) · [Stage runbook](RUNBOOK.md) · [Offline replay](demo/replay.html)
 

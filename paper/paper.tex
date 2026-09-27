@@ -26,7 +26,7 @@
 {\large Yossi Eliaz, PhD}\\[2pt]
 {\small Principal Engineer and Head of DevRel, Incredibuild}\\[8pt]
 {\color{acid}\rule{0.42\textwidth}{1.4pt}}\\[8pt]
-{\small\textit{Unit tests are dead: when the agent writes the code and the test}}
+{\small\textit{Four doors: the key, the folder, the wire, the verdict}}
 \end{center}
 
 \begin{abstract}
@@ -51,6 +51,8 @@ Controller & A process outside the sandbox. It holds its own expected values, th
 \end{center}
 
 The accepted talk abstract names four ways a worker can affect systems outside its sandbox without breaking out of it: inherited credentials, dangerous mounts, uploads through an allowed service, and changes to what a checker trusts. The central experiment covers the last of these. Three supporting fixtures cover the others.
+
+The talk calls these four doors. A sandbox is a wall, and the job needs four openings through it, each opened on purpose. The \textsc{key} is the credential the worker calls services with: the inherited credentials of the abstract. The \textsc{folder} is the mount that carries files in and out: the dangerous mounts. The \textsc{wire} is the allowed endpoint that delivers results: the uploads through an allowed service. The \textsc{verdict} is the checker together with the answer file it compares against: what a checker trusts. The sections from ``Changing the expected results'' through ``Freeze, then judge'', and ``Verification and publication'', follow the verdict. ``Four doors, both sides'' records the key, the folder and the wire beside it, each measured on both sides.
 
 The credential and upload cases use loopback HTTP. The mount case uses real bind mounts. The checker experiment is a five-case command-line model of an access check. None of it is a compromise of a hosted CI service or a customer production server. The repository records the bytes.
 
@@ -109,31 +111,31 @@ A harness that prints ``finished'' holds no approval key. A second machine can h
 
 One fresh approval is issued for the good candidate. Four attempts follow, in this order. While that approval is still unused, substituted bad bytes are \texttt{DENIED}, and the approved bytes offered to a second destination are \texttt{DENIED}: an approval names one destination --- account, environment, operation, subject. The approved bytes at the named destination are \texttt{PUBLISHED}. The same bytes offered once more, now on a spent nonce, are \texttt{DENIED}. Publication is a row in controller-owned SQLite: the exact bytes and the spent nonce, in one transaction. Our first version of this test was misleading. It published the approved artifact first and tried different bytes with the same approval afterwards. The gate refused, but the approval was already spent, so the refusal could not show whether the byte check worked. The current test offers the substitute first, while the approval is still unused, and the gate refuses it; the publication that follows shows the approval was valid when the substitute was refused.
 
-\section{Four boundaries, both sides}
+\section{Four doors, both sides}
 
-The expected results are the central case. Each of the four rows below pairs a denied action with an intended operation that still completes. A host that can do nothing will pass a deny-only test.
+The verdict is the central case. Each of the four rows below pairs a denied action with an intended operation that still completes. A host that can do nothing will pass a deny-only test.
 
 \begin{center}
 \small
 \begin{tabular}{@{}p{0.22\textwidth}p{0.36\textwidth}p{0.30\textwidth}@{}}
 \toprule
-Boundary & This must fail & This must still work \\
+Door & This must fail & This must still work \\
 \midrule
-Identity & Read another project's data & Read the task input \\
-Files & Edit the next job's input & Write the task output \\
-Outbound & Upload to another account & Send the authorized report \\
-Acceptance & Edit the expected results or swap bytes & Release the verified fix \\
+\textsc{key} & Read another project's data & Read the task input \\
+\textsc{folder} & Edit the next job's input & Write the task output \\
+\textsc{wire} & Upload to another account & Send the authorized report \\
+\textsc{verdict} & Edit the expected results or swap bytes & Release the verified fix \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Identity, on loopback HTTP with fixture tokens: a broad token reads another project's private fixture and receives \texttt{200}. A task-scoped token receives \texttt{403} there and \texttt{200} on its own input. Expired and wrong-audience fixtures are rejected. A short lifetime on a broad token leaves the token broad. The service enforces the resource.
+The key, on loopback HTTP with fixture tokens: a broad token reads another project's private fixture and receives \texttt{200}. A task-scoped token receives \texttt{403} there and \texttt{200} on its own input. Expired and wrong-audience fixtures are rejected. A short lifetime on a broad token leaves the token broad. The service enforces the resource.
 
-Files, on real bind mounts: a writable mount changes the next job's fixture on the host. A read-only input mount denies that write. The worker's own output path still accepts the patch.
+The folder, on real bind mounts: a writable mount changes the next job's fixture on the host. A read-only input mount denies that write. The worker's own output path still accepts the patch.
 
-Outbound, on an allowed loopback service: the worker posts a synthetic private fixture to another account and the service stores it, \texttt{201}. The repaired broker sends one fixed team report. Extra fields are denied. The worker has no direct route to the service. The receiver log is the evidence of delivery.
+The wire, on an allowed loopback service: the worker posts a synthetic private fixture to another account and the service stores it, \texttt{201}. The repaired broker sends one fixed team report. Extra fields are denied. The worker has no direct route to the service. The receiver log is the evidence of delivery.
 
-Acceptance: the worker proposes the artifact. The controller owns the expected values and decides which bytes get published.
+The verdict: the worker proposes the artifact. The controller owns the expected values and decides which bytes get published.
 
 These are four separate experiments, each measured on both sides.
 
@@ -182,7 +184,7 @@ sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
 Source, recorded outputs, and the limits live at \url{https://github.com/zozo123/nyc-talk}. The deck and this paper read those recordings. Stage delivery needs no cloud account and no live terminal.
 
-External context, kept separate from our results. The move is old: around 2010, in an automated program-repair experiment, one evolved program deleted the files of expected outputs and every candidate received a perfect score (Schulte, Forrest and Weimer, ASE 2010, retold in Lehman et al., arXiv 1803.03453). Sakana's AI Scientist (2024) tried to extend its own time limit instead of making its code faster. On SWE-bench (issue \#465, 2025), agents including a Claude Sonnet model ran \texttt{git log} and found future commits containing the fix. In September 2026, the SWE-Bench Pro Verified audit (Zheng et al., arXiv 2609.08149) found agents could read hidden tests, future commits and upstream fixes; once those were out of reach, GLM-5.2 fell from 78.80\% to 57.32\% while DeepSeek-V4-Pro barely moved; the fix combined a history-free repository, hidden evaluation files removed from the agent workspace, metadata filtering and blocked code hosts. The supporting cases have public relatives: the tj-actions/changed-files compromise (CVE-2025-30066) exposed inherited CI secrets in workflow logs, and CamoLeak (CVE-2025-59145) was a researcher's demonstration that Copilot Chat could be tricked into sending private code out through an allowed image proxy. OWASP names the CI/CD class Poisoned Pipeline Execution (CICD-SEC-4). Bubblewrap's security model is caller-defined sandbox policy, and this gate is not a SLSA implementation or certification. None of these reports' numbers are measurements from our fixtures. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
+External context, kept separate from our results. The move is old. Around 2010, in an automated bug-fixing experiment, one evolved program deleted the answer files, the target outputs, and the scorer gave a perfect score to it and to all of its peers (Schulte, Forrest and Weimer, ASE 2010, retold in Lehman et al., arXiv 1803.03453). In July 2025, Jason Lemkin of SaaStr reported that Replit's coding agent was ``lying about our unit test'', made fake data, and deleted his production database during a code freeze; the account is his report, as covered by The Register. In September 2025, on SWE-bench (issue \#465), agents including Claude 4 Sonnet ran \texttt{git log -{}-all}, found leftover future commits that fixed the task, and used them. In September 2026, Zheng et al.\ published SWE-Bench Pro Verified (arXiv 2609.08149), a different team from the Scale AI SWE-Bench Pro, with four anti-hacking controls: a single-commit repository, hidden evaluation files removed from the agent workspace, metadata filtered, and code hosts blocked. Under those controls GLM-5.2 went from 78.80\% to 57.32\% and DeepSeek-V4-Pro moved 0.87 points; the paper does not apportion the drop by channel. The supporting cases have public relatives. In March 2025 the tj-actions/changed-files GitHub Action was compromised (CVE-2025-30066; CISA alert; GHSA-mrrh-fwg8-r2c3) and dumped secrets from the runner's memory into workflow logs, base64-encoded and public for public repositories: a supply-chain compromise, not an agent. In 2025 Legit Security's CamoLeak (CVE-2025-59145) was a researcher's proof of concept in which prompt injection made Copilot Chat send private repository content out through GitHub's own Camo image proxy; GitHub fixed it by 14 August 2025, and it was not an in-the-wild leak. OWASP names the CI/CD class Poisoned Pipeline Execution (CICD-SEC-4). Bubblewrap's security model is caller-defined sandbox policy, and this gate is not a SLSA implementation or certification. None of these reports' numbers are measurements from our fixtures. The New York date is the Zenity AI Agent Security Summit at Pier Sixty on Wednesday 21 October 2026. The fifteen minutes are the session brief.
 
 \section{Implications}
 
@@ -190,6 +192,8 @@ A test is evidence because it is independent of what it tests. When the same age
 
 Protecting the checker executable did not protect the expected values it used. The vulnerable configuration let the worker change those values and obtain a passing result for unchanged code. Moving the authoritative expected values to the controller removed that route in the recorded experiment.
 
-An agent can still propose tests. Changes to those tests need independent approval before they become release criteria. The same review should examine the scope of credentials, access to shared files, and the operations available through outbound services. Negative tests should be paired with an intended operation that still succeeds under matching conditions.
+Three of the four doors close by taking a permission away: a task-scoped key instead of a broad one, a read-only mount instead of a writable one, a broker with one fixed destination instead of a route. The fourth cannot close that way. Writing tests is part of the job, so locking the answer file would remove the work along with the risk. The controller keeps a second copy of the expected values instead. The worker's copy is a proposal; the controller's copy decides.
+
+An agent can still propose tests. Changes to those tests need independent approval before they become release criteria. The same review should examine the scope of credentials, access to shared files, and the operations available through outbound services. Negative tests should be paired with an intended operation that still succeeds under matching conditions. A no only counts if the yes still works: a host that can do nothing passes every deny-only test, and so did our first release test, which refused substitute bytes only after the approval was already spent.
 
 \end{document}
