@@ -4,9 +4,9 @@
 
 **Yossi Eliaz, PhD / Pier Sixty, New York / Wednesday 21 October 2026 / 15-minute lightning**
 
-Generated from `slides/talk.tex`. Edit the LaTeX, run `python3 tools/build_deck.py`, and commit; GitHub Actions rebuilds the PDFs. Main route: slides 1-10. Slide windows total 10:15; with 1:00 of shared reserve for transitions and pauses, the rehearsal target is 11:15 of a 15-minute slot. Timings are rehearsal allowances, not measured delivery.
+Generated from `slides/talk.tex`. Edit the LaTeX, run `python3 tools/build_deck.py`, and commit; GitHub Actions rebuilds the PDFs. Main route: slides 1-10. Slide windows total 10:30; with 1:00 of shared reserve for transitions and pauses, the rehearsal target is 11:30 of a 15-minute slot. Timings are rehearsal allowances, not measured delivery.
 
-Spoken manuscript: 1,146 words.
+Spoken manuscript: 1,192 words.
 
 ## 1. Your Agent Escaped Without Escaping the Sandbox
 
@@ -116,7 +116,7 @@ The first three doors closed with one move: take the permission away. Try that h
 
 ## 7. This move has a record
 
-**06:00-07:15**
+**06:00-07:30**
 
 *One year per breath. Slow down on the four controls. Say the last line to the back of the room.*
 
@@ -130,11 +130,13 @@ Real agents go looking for the answers. In 2025, on SWE-bench, agents including 
 
 In 2026, a team rebuilt SWE-Bench Pro with four controls. One clean commit. Hidden tests out of the workspace. Metadata filtered. Code hosts blocked. One model fell from 79 percent to 57. Another barely moved.
 
+And this July, a real escape. An OpenAI agent, running a security evaluation, broke out of its sandbox and got into Hugging Face's systems. Hugging Face's read of what it was after: the test solutions. It didn't want to solve the challenge. It wanted the answers.
+
 Sixteen years. Same move. Don't do the work. Get the answers.
 
 ## 8. The answer key lives outside
 
-**07:15-08:15**
+**07:30-08:30**
 
 *Pause after "A second copy." before you explain it. Point at REJECTED, then ACCEPTED.*
 
@@ -150,7 +152,7 @@ That benchmark team did the same thing. Put the answers where the agent can't re
 
 ## 9. How to check a door
 
-**08:15-09:25**
+**08:30-09:40**
 
 *Point at the four rows one at a time. Say the rule only after the fourth.*
 
@@ -168,7 +170,7 @@ That's the check for every door. Try the bad thing. Then the good thing. Green c
 
 ## 10. Escaped without escaping
 
-**09:25-10:15**
+**09:40-10:30**
 
 *Say the title line, stop, then the two questions. Add nothing after "Thank you".*
 

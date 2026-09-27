@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MAX_WPM = 150
 # Slide windows end at TARGET. RESERVE is shared time for transitions and
 # pauses, to be redistributed after a timed rehearsal; BUDGET is their sum.
-MAIN, APPENDIX, TARGET = 10, 9, '10:15'
-RESERVE, BUDGET = '1:00', '11:15'
+MAIN, APPENDIX, TARGET = 10, 9, '10:30'
+RESERVE, BUDGET = '1:00', '11:30'
 WORDS = (600, 1300)
 
 

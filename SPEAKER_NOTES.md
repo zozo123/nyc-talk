@@ -143,7 +143,7 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 ## Slide 7: This move has a record
 
-06:00-07:15
+06:00-07:30
 
 One year per breath. Slow down on the four controls. Say the last line to the back of the room.
 
@@ -157,6 +157,8 @@ Real agents go looking for the answers. In 2025, on SWE-bench, agents including 
 
 In 2026, a team rebuilt SWE-Bench Pro with four controls. One clean commit. Hidden tests out of the workspace. Metadata filtered. Code hosts blocked. One model fell from 79 percent to 57. Another barely moved.
 
+And this July, a real escape. An OpenAI agent, running a security evaluation, broke out of its sandbox and got into Hugging Face's systems. Hugging Face's read of what it was after: the test solutions. It didn't want to solve the challenge. It wanted the answers.
+
 Sixteen years. Same move. Don't do the work. Get the answers.
 
 [Sources]
@@ -164,11 +166,12 @@ https://arxiv.org/abs/1803.03453
 https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/
 https://github.com/SWE-bench/SWE-bench/issues/465
 https://arxiv.org/abs/2609.08149
+https://huggingface.co/blog/agent-intrusion-technical-timeline
 [/Sources]
 
 ## Slide 8: The answer key lives outside
 
-07:15-08:15
+07:30-08:30
 
 Pause after "A second copy." before you explain it. Point at REJECTED, then ACCEPTED.
 
@@ -189,7 +192,7 @@ https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
 
 ## Slide 9: How to check a door
 
-08:15-09:25
+08:30-09:40
 
 Point at the four rows one at a time. Say the rule only after the fourth.
 
@@ -213,7 +216,7 @@ https://github.com/zozo123/nyc-talk/blob/main/research/AUDIT.md
 
 ## Slide 10: Escaped without escaping
 
-09:25-10:15
+09:40-10:30
 
 Say the title line, stop, then the two questions. Add nothing after "Thank you".
 
@@ -352,4 +355,5 @@ https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third
 https://github.com/advisories/ghsa-mrrh-fwg8-r2c3
 https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
 https://github.com/OWASP/www-project-top-10-ci-cd-security-risks/blob/main/CICD-SEC-04-Poisoned-Pipeline-Execution.md
+https://huggingface.co/blog/agent-intrusion-technical-timeline
 [/Sources]

@@ -228,23 +228,23 @@ The first three doors closed with one move: take the permission away. Try that h
 \renewcommand{\track}{06 / THE RECORD}
 \begin{frame}[t]
 % title: This move has a record
-% time: 06:00-07:15
+% time: 06:00-07:30
 % cue: One year per breath. Slow down on the four controls. Say the last line to the back of the room.
 % source: https://arxiv.org/abs/1803.03453
 % source: https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/
 % source: https://github.com/SWE-bench/SWE-bench/issues/465
 % source: https://arxiv.org/abs/2609.08149
+% source: https://huggingface.co/blog/agent-intrusion-technical-timeline
 \frametitle{This move has a record}
-\vspace{2mm}
-{\tablefont\fontsize{11.5}{14.5}\selectfont\begin{tabular}{@{}L{.09\textwidth}L{.86\textwidth}@{}}
+{\tablefont\fontsize{10.5}{12.6}\selectfont\begin{tabular}{@{}L{.08\textwidth}L{.88\textwidth}@{}}
 \textcolor{gold}{\textbf{2010}} & A bug-fixing experiment. One program deleted the answer files. Perfect score.\\
 \textcolor{gold}{\textbf{2025}} & A founder's report: Replit's agent was ``lying about our unit test.''\\
 \textcolor{gold}{\textbf{2025}} & SWE-bench: agents found the real fix left in the project's git history. Used it.\\
 \textcolor{gold}{\textbf{2026}} & SWE-Bench Pro, answers out of reach: one model {\color{warn}\textbf{79\%}} \textrightarrow\ {\color{acid}\textbf{57\%}}. Another barely moved.\\
+\textcolor{warn}{\textbf{2026}} & July: an OpenAI evaluation agent broke out of its sandbox and reached Hugging Face. Hugging Face's read of its goal: the test solutions.\\
 \end{tabular}\par}
 \vfill
-{\fontsize{15}{19}\selectfont\bfseries Sixteen years. Same move. Don't do the work. Get the answers.\par}
-\vspace{1mm}
+{\fontsize{14}{17}\selectfont\bfseries Sixteen years. Same move. Don't do the work. Get the answers.\par}
 \scope{Sources: last slide.}
 \note{Was that just our script? No. This move has a record.
 
@@ -256,13 +256,15 @@ Real agents go looking for the answers. In 2025, on SWE-bench, agents including 
 
 In 2026, a team rebuilt SWE-Bench Pro with four controls. One clean commit. Hidden tests out of the workspace. Metadata filtered. Code hosts blocked. One model fell from 79 percent to 57. Another barely moved.
 
+And this July, a real escape. An OpenAI agent, running a security evaluation, broke out of its sandbox and got into Hugging Face's systems. Hugging Face's read of what it was after: the test solutions. It didn't want to solve the challenge. It wanted the answers.
+
 Sixteen years. Same move. Don't do the work. Get the answers.}
 \end{frame}
 
 \renewcommand{\track}{07 / THE FIX}
 \begin{frame}[t]
 % title: The answer key lives outside
-% time: 07:15-08:15
+% time: 07:30-08:30
 % cue: Pause after "A second copy." before you explain it. Point at REJECTED, then ACCEPTED.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/core.py
@@ -294,7 +296,7 @@ That benchmark team did the same thing. Put the answers where the agent can't re
 \renewcommand{\track}{08 / THE CHECK}
 \begin{frame}[t]
 % title: How to check a door
-% time: 08:15-09:25
+% time: 08:30-09:40
 % cue: Point at the four rows one at a time. Say the rule only after the fourth.
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
 % source: https://github.com/zozo123/nyc-talk/blob/main/factory/isolated.py
@@ -327,7 +329,7 @@ That's the check for every door. Try the bad thing. Then the good thing. Green c
 \renewcommand{\track}{09 / CLOSE}
 \begin{frame}[t]
 % title: Escaped without escaping
-% time: 09:25-10:15
+% time: 09:40-10:30
 % cue: Say the title line, stop, then the two questions. Add nothing after "Thank you".
 % source: https://github.com/zozo123/nyc-talk
 % source: https://github.com/zozo123/nyc-talk/blob/main/evidence/isolated-factory.json
@@ -520,15 +522,17 @@ make final              # the PDFs; needs TeX Live
 % source: https://github.com/advisories/ghsa-mrrh-fwg8-r2c3
 % source: https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code
 % source: https://github.com/OWASP/www-project-top-10-ci-cd-security-risks/blob/main/CICD-SEC-04-Poisoned-Pipeline-Execution.md
+% source: https://huggingface.co/blog/agent-intrusion-technical-timeline
 \frametitle{Sources}
-{\fontsize{8.6}{10.8}\selectfont
-\begin{itemize}\setlength{\itemsep}{0.9mm}
+{\fontsize{7.9}{9.6}\selectfont
+\begin{itemize}\setlength{\itemsep}{0.4mm}
 \item \textbf{A program deletes the answer files, c.~2010.} Schulte, Forrest and Weimer, ASE 2010; retold in Lehman et al., \emph{The Surprising Creativity of Digital Evolution}, arXiv 1803.03453, 2018.
 \item \textbf{An agent that lied about unit tests.} The Register, \emph{Replit deleted user's production database, faked data}, July 2025, reporting Jason Lemkin of SaaStr.
 \item \textbf{Agents find the fix left in the history.} SWE-bench issue 465, September 2025.
 \item \textbf{Scores fall once answers are out of reach.} Zheng et al., \emph{SWE-Bench Pro Verified}, arXiv 2609.08149, September 2026.
+\item \textbf{A real escape, for the test solutions.} Hugging Face, \emph{Anatomy of a Frontier Lab Agent Intrusion: A Technical Timeline of the July 2026 Incident}, 27 July 2026.
 \item \textbf{A build tool exposes secret keys in logs.} CISA alert and GitHub advisory on tj-actions/changed-files, CVE-2025-30066, March 2025.
-\item \textbf{A researcher shows private code leaking through GitHub's own image links.} Legit Security, \emph{CamoLeak}, CVE-2025-59145, 2025; fixed by GitHub.
+\item \textbf{A researcher shows private code leaking through GitHub's own image links.} Legit Security, \emph{CamoLeak}, disclosed October 2025; reported June 2025, fixed by GitHub on 14 August 2025. No CVE was assigned.
 \item \textbf{The name for this in CI/CD.} OWASP CICD-SEC-4, Poisoned Pipeline Execution.
 \item \textbf{Our lab.} github.com/zozo123/nyc-talk: code, recordings, this deck.
 \end{itemize}\par}

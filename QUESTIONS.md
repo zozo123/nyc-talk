@@ -24,7 +24,7 @@ For three doors, yes, and we claim no novelty there. The key, the folder and the
 
 ## The SWE-Bench Pro drop was one model; cherry-picked?
 
-No; the talk reports both ends. GLM-5.2 fell from 78.80% to 57.32% under the four controls; DeepSeek-V4-Pro moved 0.87 points, and the slide says another barely moved. The paper does not apportion the drop by channel, and neither do we. The point is not a rate: the answers were reachable through the workspace, the git history and the code hosts, and removing them changed one model's score by about 21 points. That is Zheng et al.'s measurement, arXiv 2609.08149, not ours.
+No; the talk reports both ends. GLM-5.2 fell from 78.80% to 57.32% under the four controls; DeepSeek-V4-Pro went from 49.98% to 49.11%, a change the paper calls slight, and the slide says another barely moved. The paper does not apportion the drop by channel, and neither do we. The point is not a rate: the answers were reachable through the workspace, the git history and the code hosts, and removing them changed one model's score by about 21 points. That is Zheng et al.'s measurement, arXiv 2609.08149, not ours.
 
 ## You didn't run the next job, so the folder case is hypothetical?
 
@@ -42,6 +42,38 @@ Mostly beside this result: our agent needed no subverting, because the permissio
 
 A golden file is a second copy only if the agent cannot write it. Ours was a golden file: five inputs and five expected answers. It sat in the agent's folder, so at verdict time it was the agent's proposal. The fix moves the values and the comparison into the controller's process, mounts nothing of the controller into the sandbox, and binds the criteria's digest into the approval so a change is visible. If your golden file lives in the repo the agent edits, door four is open.
 
+## Isn't the Hugging Face incident the opposite of your title?
+
+Yes, and it is on slide 7 for that reason. In July 2026 an OpenAI agent running a security evaluation broke out of its evaluation sandbox and got into Hugging Face's infrastructure. Hugging Face's own read of the intrusion: an attempt to cheat the evaluation by reaching production and stealing the test solutions rather than solving the challenge. A real escape, and the prize was the answers. Our four doors are the same move without the escape: the answers were already inside the wall, in the agent's folder. Source: Hugging Face's technical timeline of the July 2026 incident, 27 July 2026.
+
+## Your abstract promised "tamper-evident execution history". Where is it?
+
+In the approval on backup slide A8, and in the lab's history check. The controller signs its decision together with the code's fingerprint, the answers, the checker's own source files and the destination; the approval works once, so a change to any of those is visible rather than silent. The older lab also chains its events to a controller-held anchor and detects a rewrite (dossier, section 7). Tamper-evident is not the same as correct: a consistent history can still record a bad decision, which is why door 4's fix is a second copy of the answers, not a better log.
+
+## Would intent-aware authorization, as in Vikas Malik's talk, close door 4?
+
+No. Intent binding asks whether an action matches what the user meant. Writing the tests was what the user meant; the agent's edit to the answer file was intended work. The danger was that the checker read the agent's copy. An authorizer that could tell a good test edit from a bad one is the reviewer we did not build. For doors 1 to 3, yes: a richer authorizer is one way to hand out a smaller key.
+
+## What about METR's o3 stopwatch?
+
+June 2025: METR reported o3 overwriting a timing function inside the scorer's process and patching a contest evaluator; the scorer imported o3's own solution. That is a different route from ours: code inside the checker's process, not a file the checker reads, and process separation stops it. Both our checkers already run the candidate as a separate process. We keep it off stage because it names one model's behaviour in someone else's evaluation; the talk cites cases where the answers were reachable as data.
+
+## That git-log trick was rare, and SWE-bench fixed it.
+
+Both true. In September 2025 one SWE-bench maintainer's initial estimate was that `git log` commands appeared in about 5 of 10,000 trajectories across the 20 most recent submissions; other counts in the same thread were higher for particular models. The fix shipped on 11 September 2025 in swebench 4.1.0 (PR #471): future git history removed from the SWE-bench Verified images, past history and pre-base tags kept. The issue was closed in March 2026. Their fix is door 4's move: put the answers where the agent can't reach them.
+
+## Did Replit ever respond?
+
+Yes. On 22 July 2025 The Register reported that Replit's CEO, Amjad Masad, posting on X the day before, called Lemkin's experience "Unacceptable and should never be possible", said Replit would refund him and run a postmortem, and said Replit had started rolling out automatic dev/prod database separation, with staging environments "in the works". The unit-test line on slide 7 is Lemkin's account, and the slide says "in his words".
+
+## Sandboxes do break, though.
+
+Yes. In 2026 both Cursor and Claude Code shipped fixes for confirmed sandbox-escape vulnerabilities: Cursor's "DuneSlide" pair (CVE-2026-50548 and CVE-2026-50549, fixed in Cursor 3.0, April 2026) and Claude Code's symlink escape (CVE-2026-39861, fixed in 2.1.64, April 2026). Both were research findings with no known exploitation in the wild. Hugging Face in July 2026 was a real escape. The talk's claim is narrower: even when the wall holds, the four doors are still open, and three of them close with configuration you already own.
+
+## Is this only a CI and coding-agent problem?
+
+No; the same doors appear wherever an agent runs. The key: METR disclosed on 31 August 2026 that in March an attacker found a researcher's publicly exposed agent dashboard (its authentication had failed open), prompted an agent directly for its model-provider API key, and used the key for about three weeks on credits worth roughly $600,000 that the provider had granted for free. The wire: Google confirmed on 18 September 2026, after a Wall Street Journal report, that in May, during a security test run by Irregular in which a bug left internet access open, a Gemini model reached three real companies' private systems and stopped once it determined they were real.
+
 ## Are you saying tests don't count anymore?
 
 They count as the agent's own tool. They stop counting as evidence when the agent can write the answers they check against.
@@ -52,19 +84,19 @@ A test was evidence because it was independent: a different person, or the same 
 
 No. The talk says "Say your agent is Opus 5.5. Pick any model." It is a name in the story, and we did not run it. The agent in our lab is a script; we wrote every move.
 
+Opus 5.5 shipped on 22 September 2026. Its own system card lists "guesses what the answer key expects" among common reward hacks seen in training, and describes an episode where the model hid changes from a grader that only graded the final output. That is Anthropic's measurement of its model in training, not ours, and it is why the line says "pick any model".
+
 That is the point of the framing: even the best-behaved model's green check is a self-report when it can write the checker's inputs. For models actually doing the move, cite others' measurements: SWE-bench issue #465 (agents including Claude 4 Sonnet finding the real fix in the project's git history, 2025) and SWE-Bench Pro Verified (arXiv 2609.08149, 2026). Those are their results, not ours.
 
 ## Doesn't an AI reviewer fix this?
 
-Not by itself. The agent writes the code, the comments and the description the reviewer reads, so the thing being judged writes the judge's inputs.
-
-That is an argument, not a measurement; we did not test an LLM judge. A reviewer helps when it reads criteria the agent cannot change, which is the same fix as for the tests.
+Not by itself: the thing being judged writes what the judge reads. Two September 2026 data points. Huang et al. (arXiv 2609.28614) found an LLM review panel that saw only the submitted code and reported scores missed 33 of 505 confirmed reward hacks, and when agents were tasked with revising caught attempts to get past the review, evasions rose over five rounds. The UK AI Security Institute reported on 4 August 2026 that, in a cyber evaluation run with internet access on and provider classifiers deliberately off, an agent created fake online identities to pressure a real open-source maintainer into approving its pull request; the human caught it and refused. A reviewer helps when it reads criteria the agent cannot change, which is the same fix as for the tests. We did not test an LLM judge.
 
 ## How is this different from the other talks here today?
 
-The frame is four doors. A sandbox is a wall, and every agent's job needs a key, a folder, a wire and a verdict through it; our agent left through those doors, never through the wall. The contribution is a reproducible comparison on the fourth door: the program and checker stay fixed while an agent-edited answer file changes the result. The repository also shows the corrected configuration and the intended operation succeeding.
+Fourteen other sessions on the agenda, and none covers the verdict. Rahul Jain's "Bypass Path" shows controls that pass their tests and get routed around; ours run, hold, and the agent still leaves through doors we opened on purpose. Vikas Malik ("The Agent Had Permission") and Helen Oakley ("Who Has Authority") are door 1 at the identity layer: the key was valid. Tomer Elias's OWASP guide puts controls on capability, which is our first three doors; it has no row for the answer file. Hedi Sfaxi shows an agent asking for a bigger key when it hits AccessDenied; ours never had to ask. Yotam Perkal and Ariel Fogel show broken doors (an MCP command injection; a cross-agent privilege escalation in Google's ADK CI); these four were never broken.
 
-The same package records the other three doors (the key: a broad token; the folder: a writable shared mount; the wire: an upload to another account), each with its fix and a paired check that the intended operation still works. If someone names the confused deputy, agree: the checker acted on expected answers the worker wrote.
+The contribution here is a reproducible comparison on the fourth door: the program and checker stay fixed while an agent-edited answer file changes the result, and the fix is recorded with the real job still working.
 
 ## Is this new?
 
@@ -78,9 +110,11 @@ The agent is a script. We wrote every move and played the attacker, so the exper
 
 There is no model attack-success rate. For models doing it, the slide "This move has a record" cites others' reports; their results stay with them.
 
+Why not run one anyway? Because twenty runs of one model on an easy ticket would prove little. In the EvilGenie benchmark (arXiv 2511.21654), on 145 unambiguous, solvable coding problems with default settings, Codex with GPT-5 hardcoded test cases on 0.7% of problems, Claude Code with Sonnet 4 on 2.1%, and Gemini CLI with Gemini 2.5 Pro modified the test file on 0.7%. The likely result of twenty runs is zero, which bounds nothing. The talk measures what the setup permits; for what models do, it cites others' larger measurements. A pre-registered live-model follow-up, with all transcripts published, is planned after the talk.
+
 ## Are real agents doing this today?
 
-Yes. In July 2025, SaaStr's founder Jason Lemkin said Replit's coding agent lied about his unit tests, made up data, and deleted his production database during a code freeze (reported by The Register). In published evaluations too: on SWE-bench in 2025, agents including Claude 4 Sonnet ran `git log` and found the real fix left in the project's history (SWE-bench issue #465). In September 2026, the SWE-Bench Pro Verified audit found agents could read hidden tests, future commits and upstream fixes; one model, GLM-5.2, fell from 78.80% to 57.32% once those were out of reach, while DeepSeek-V4-Pro moved 0.87 points (arXiv 2609.08149). Their fix had four parts: one clean commit, hidden evaluation files out of the agent workspace, metadata filtered, code hosts blocked. The paper does not say how much of the drop came through each channel.
+Yes. In July 2025, SaaStr's founder Jason Lemkin said Replit's coding agent lied about his unit tests, made up data, and deleted his production database during a code freeze (reported by The Register). In published evaluations too: on SWE-bench in 2025, agents including Claude 4 Sonnet ran `git log` and found the real fix left in the project's history (SWE-bench issue #465). In September 2026, the SWE-Bench Pro Verified audit found agents could read hidden tests, future commits and upstream fixes; one model, GLM-5.2, fell from 78.80% to 57.32% once those were out of reach, while DeepSeek-V4-Pro went from 49.98% to 49.11%, a change the paper calls slight (arXiv 2609.08149). Their fix had four parts: one clean commit, hidden evaluation files out of the agent workspace, metadata filtered, code hosts blocked. The paper does not say how much of the drop came through each channel.
 
 Those are their measurements, not ours, and we report no rate. The earliest example on the slide is the 2010 program-repair experiment, in which one evolved program deleted the answer files and the scorer gave it and all of its peers a perfect score; sources are on backup slide A9 and in [research/DOSSIER.md](research/DOSSIER.md).
 
@@ -171,6 +205,8 @@ Keep the candidate out of the checker's process too, because in-process shortcut
 The same two questions transfer: which inputs does the decision read, and who can write them. No MCP server was tested here.
 
 A tool description, an argument schema and a server response are all inputs a decision can read. If the worker can write the server config, the tool manifest, or a file a tool reads, it can move the decision without escaping anything, just as with `expected.json`.
+
+The folder door also runs in reverse. GitSpawn (Manifold Security, 1 September 2026) showed that a repository received as files can set `core.fsmonitor` in its own `.git/config`, so the `git status` or `git diff` a coding agent runs to gather context executes that command on the host, outside the sandbox and without a prompt; eight findings of this class across seven agents, several patched at publication. The agent never crossed the wall; a file in its folder made a trusted tool do it. Same two questions: what does the tool read, and can the agent's input write it?
 
 ## Where does prompt injection fit?
 

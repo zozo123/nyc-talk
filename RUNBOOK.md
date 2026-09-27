@@ -37,7 +37,7 @@ Lines to know by heart:
 
 ## Timing
 
-The slide windows total 10:15. With 1:00 of shared reserve, the rehearsal target is 11:15, which leaves about 3:45 of the 15-minute slot for questions and the host.
+The slide windows total 10:30. With 1:00 of shared reserve, the rehearsal target is 11:30. Zenity's 15-minute lightning slots run back-to-back on the quarter-hour with no scheduled Q&A (the London and SF grids), so the remaining 3:30 is buffer, not question time. Under-run rather than over-run.
 
 The spoken script is 1,153 words of short sentences: about 113 words per minute across the windows, with no slide above 118. That is a brisk conversational pace; do not rush past the three pauses below. These are allowances, not a measured delivery. After the first timed run-through, record the measured time here and update the `% time:` lines in `slides/talk.tex`.
 
@@ -51,16 +51,16 @@ Measured rehearsal: **not yet recorded.**
 | 02:55-03:55 | 4 | Say "201, created" and stop for a beat before "front door". |
 | 03:55-04:55 | 5 | Point at each line in turn. End on "Which file did it?", count three seconds, and welcome the shout. |
 | 04:55-06:00 | 6 | Point at each row. Hold on CHANGED. Say the last line, then let it sit. |
-| 06:00-07:15 | 7 | One year per breath. Slow down on the four controls. Say the last line to the back of the room. |
-| 07:15-08:15 | 8 | Pause after "A second copy." before you explain it. Point at REJECTED, then ACCEPTED. |
-| 08:15-09:25 | 9 | Point at the four rows one at a time. Say the rule only after the fourth. |
-| 09:25-10:15 | 10 | Say the title line, stop, then the two questions. Add nothing after "Thank you". |
-| 10:15-11:15 | - | Shared reserve. |
-| 11:15-15:00 | - | Questions and the host. |
+| 06:00-07:30 | 7 | One year per breath. Slow down on the four controls. Say the last line to the back of the room. |
+| 07:30-08:30 | 8 | Pause after "A second copy." before you explain it. Point at REJECTED, then ACCEPTED. |
+| 08:30-09:40 | 9 | Point at the four rows one at a time. Say the rule only after the fourth. |
+| 09:40-10:30 | 10 | Say the title line, stop, then the two questions. Add nothing after "Thank you". |
+| 10:30-11:30 | - | Shared reserve. |
+| 11:30-15:00 | - | Buffer. Lightning slots have no scheduled Q&A; the next speaker starts on the quarter-hour. |
 
 ## Rehearsal
 
-Rehearse with an audible timer and record the result above. Checkpoints: "Four doors" by 01:10, "Which file did it?" by 05:00, "A second copy" by 07:30, the close by 09:30.
+Rehearse with an audible timer and record the result above. Checkpoints: "Four doors" by 01:10, "Which file did it?" by 05:00, "A second copy" by 07:45, the close by 09:45.
 
 The three pauses that matter: three seconds after "Which file did it?" (5), two after "A second copy." (8), two after "Your agent escaped without escaping the sandbox." (10).
 
@@ -68,7 +68,9 @@ Read the whole script aloud at least once before the day. Rewrite any sentence t
 
 Say "admin" plainly. Do not read hashes aloud. Name GLM-5.2 and DeepSeek-V4-Pro only if asked; the sources slide credits them. Add no rates beyond 79 and 57.
 
-Lines that stay on every run, even if behind: "Say your agent is Opus 5.5. Pick any model." and "with no model in it. Our agent is a script." (1); "Not an agent. Same door." for tj-actions (2); "a researcher showed" and "GitHub fixed it" for CamoLeak (4); "Another barely moved." (7); "We didn't build the step that reviews those proposals." (8); "In our lab that place is a local database." (9). Never say Opus 5.5 did anything; it was not run. If behind, slide 2 may drop the tj-actions sentence, slide 4 the CamoLeak sentence, and slide 7 the four controls.
+Lines that stay on every run, even if behind: "Say your agent is Opus 5.5. Pick any model." and "with no model in it. Our agent is a script." (1); "Not an agent. Same door." for tj-actions (2); "a researcher showed" and "GitHub fixed it" for CamoLeak (4); "Another barely moved." (7); "We didn't build the step that reviews those proposals." (8); "In our lab that place is a local database." (9). Opus 5.5 shipped on 22 September 2026. Say the line as written ("Pick any model"); we did not run it, and never say it did anything in our lab. If asked, its own system card lists "guesses what the answer key expects" among common reward hacks; that is Anthropic's measurement, not ours. If behind, slide 2 may drop the tj-actions sentence, slide 4 the CamoLeak sentence, and slide 7 the four controls. Keep the Hugging Face beat on slide 7: the summit's own page frames the day around that incident.
+
+Neighbour bridges, hallway lines only until the real grid appears (the published Sessionize grid is a placeholder): to Hedi Sfaxi, "Hedi's agent went looking for a bigger key. Ours never had to." To Rahul Jain, "Rahul's controls get routed around. Ours ran and held; the agent left through doors we opened on purpose." To Yotam Perkal and Ariel Fogel, "They showed broken doors. These four were never broken."
 
 ## Evidence on stage
 
