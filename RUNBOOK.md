@@ -23,6 +23,8 @@ Do not invent a stage time on the day. Private logistics are kept in `research/p
 10 Escaped without escaping   pick one door; what does it trust, can the agent write it
 ```
 
+If someone asks in the hallway what the talk is about, three sentences: A sandbox is a wall, but every agent's job needs four doors through it: a key, a folder, a wire, and a verdict. Our scripted agent never broke the wall and walked out through all four. Three close by taking a permission away; the fourth can't, because writing tests is the job, so the answers have to live where the agent can't reach them.
+
 Lines to know by heart:
 
 1. "Those aren't holes. They're doors. You opened them on purpose."
@@ -90,7 +92,7 @@ After changing experiment source, first run `make record-all` on disposable Linu
 sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 ```
 
-The current records come from a privileged Ubuntu 22.04 container on kernel 6.8.0-64, where that sysctl is not needed; on a stock Ubuntu 24.04 host it is. Inspect the compiled PDF and keep it offline. `make replay` is an optional, explicitly labeled recording. No cloud login or live terminal is part of the delivery.
+The current records come from a privileged Ubuntu 22.04 container on kernel 6.8.0-64, where that sysctl is not needed; on a stock Ubuntu 24.04 host it is. Inspect the compiled PDF and keep it offline. `make replay` is optional; it replays recorded observations and runs no new experiment. No cloud login or live terminal is part of the delivery.
 
 ## Organizer and AV
 

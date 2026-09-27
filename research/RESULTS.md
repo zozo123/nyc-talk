@@ -12,7 +12,7 @@ Run `make record-all` on disposable Linux, then `make evidence`. Each record bin
 
 These are assertion counts, not vulnerability or attack-success counts. A passing deliberately weakened check means the unwanted acceptance was successfully reproduced.
 
-## Paired checker result
+## Paired checker result (door 4, the verdict; slides 5 and 6)
 
 | Candidate bytes | Answer-key owner | Decision |
 |---|---|---|
@@ -23,7 +23,7 @@ These are assertion counts, not vulnerability or attack-success counts. A passin
 
 Both checker rows use one identical launch (same interpreter flags, working directory and mounts), and the record keeps both exit codes: `weak_before` is exit 1 with FAIL, `weak_after` is exit 0 with PASS, so the answer key is the only variable between them. The checker SHA-256 before and after is recorded, not merely asserted by a constant. The worker's direct write attempt is denied by a read-only mount. The candidate digest is also unchanged. The independent expected values are `[401, 200, 403, 200, 401]`; the bad candidate emits five 200s.
 
-## Publication controls
+## Publication controls (slide 9, How to check a door)
 
 A fresh unused approval is first offered with bad bytes: denied. The same still-unused approval is then offered the approved bytes for a different destination: denied. It then publishes the approved bytes at the named destination: accepted and read back from SQLite. Reuse is denied. This ordering distinguishes digest enforcement from a test that passes only because an earlier operation already consumed the nonce.
 

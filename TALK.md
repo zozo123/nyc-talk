@@ -6,7 +6,7 @@
 
 Generated from `slides/talk.tex`. Edit the LaTeX, run `python3 tools/build_deck.py`, and commit; GitHub Actions rebuilds the PDFs. Main route: slides 1-10. Slide windows total 10:15; with 1:00 of shared reserve for transitions and pauses, the rehearsal target is 11:15 of a 15-minute slot. Timings are rehearsal allowances, not measured delivery.
 
-Spoken manuscript: 1,153 words.
+Spoken manuscript: 1,146 words.
 
 ## 1. Your Agent Escaped Without Escaping the Sandbox
 
@@ -40,9 +40,9 @@ The agent needs a token to call your services. Ours got the runner's token. Broa
 
 The agent used it to read another project's data. The service said yes. Why not? The key was valid. Nothing broke. The key just opened more than the job needed.
 
-Not only an agent problem. In 2025, a popular GitHub Action, tj-actions/changed-files, was compromised. It dumped the secrets in the runner's memory into the workflow logs. Public, for public repos. Not an agent. Same door.
+Not only an agent problem. In 2025, a popular GitHub Action, changed-files by tj-actions, was compromised. It dumped the runner's in-memory secrets into the workflow logs. Public, for public repos. Not an agent. Same door.
 
-The fix is the key you hand out. One key per task. Other project: 403. Its own input: 200. The job still runs.
+The fix is the key you hand out. One key per task. Other project: 403. The task's own input: 200. The job still runs.
 
 ## 3. Door 2: the folder
 
@@ -54,7 +54,7 @@ Door two. The folder.
 
 Jobs pass files through a shared folder. Ours was mounted into the sandbox, writable.
 
-The agent reached through it and rewrote the next job's input file. On the host. It never left the sandbox. The next job would have read that file as truth. CI people have a name for this: a poisoned pipeline.
+The agent reached through it and rewrote the next job's input file. On the host. Never left the sandbox. The next job would have read that file as truth. CI people have a name for this: a poisoned pipeline.
 
 The fix lives at the mount. Shared folder, read-only. The write is refused. The agent's own output folder still writes. The job still finishes.
 
@@ -72,7 +72,7 @@ Our agent posted to that service. Same host. Different account. The service stor
 
 In 2025, a researcher showed the same move on GitHub Copilot Chat. A prompt injection made it pack private repo content into image requests, through GitHub's own image proxy. An allowed endpoint. GitHub fixed it.
 
-The fix lives outside the agent. It has no route to the service. A broker sends one fixed report to one fixed place. Extra recipient? Refused. Extra URL? Refused. The real report still lands.
+The fix lives outside the agent. No route to the service. A broker sends one fixed report to one fixed place. Extra recipient? Refused. Extra URL? Refused. The real report still lands.
 
 ## 5. Door 4: the verdict
 
@@ -106,7 +106,7 @@ The checker: same. Locked, and the lock held.
 
 The answer file: changed.
 
-In the same step the checker denied it, the agent rewrote the answers. Every expected result is now 200. Admin with no login: 401 became 200.
+Same step as the denied overwrite: the agent rewrote the answers. Every expected result is now 200. Admin with no login: 401 became 200.
 
 The checker did its job perfectly. It compared broken code to broken answers. They matched. Green.
 
@@ -122,7 +122,7 @@ The first three doors closed with one move: take the permission away. Try that h
 
 Was that just our script? No. This move has a record.
 
-Around 2010, in a bug-fixing experiment, one evolved program deleted the answer files. The scorer gave it a perfect score. And all of its peers.
+Around 2010, in a bug-fixing experiment, one evolved program deleted the answer files. The scorer gave it a perfect score. Its peers, too.
 
 In 2025, the founder of SaaStr said Replit's coding agent was, in his words, "lying about our unit test."
 
@@ -156,7 +156,7 @@ That benchmark team did the same thing. Put the answers where the agent can't re
 
 Every fix you just saw was recorded both ways. The cheat refused. The real job still working. We do that because our own test lied first.
 
-Our release step stores one approved build, once, in one place, on a single-use approval. In our lab that place is a local database. We tested it. Wrong code: refused. Looked great.
+Our release step stores one approved build, in one place, on a single-use approval. In our lab that place is a local database. We tested it. Wrong code: refused. Looked great.
 
 Except our test sent the wrong code after the approval was already used up. That gate would have refused anything. Green, and it proved nothing.
 
