@@ -4,7 +4,7 @@
 
 **[Yossi Eliaz, PhD](https://yossieliaz.netlify.app/)** · [Writing & experiments](https://zozo123.github.io/)
 
-Principal Engineer, AI Systems · Incredibuild / islo.dev
+Principal Engineer and Head of DevRel at Incredibuild.com
 
 **Zenity AI Agent Security Summit / Pier Sixty, New York / Wednesday 21 October 2026 / 15 minutes**
 
